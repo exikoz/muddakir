@@ -13,7 +13,7 @@ function NodeCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current
+    const canvas = canvasRef.current!
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
 
