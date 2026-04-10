@@ -1,0 +1,30 @@
+.dev-mode-toggle {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  color: #4ecca3;
+  border: 1px solid rgba(78, 204, 163, 0.3);
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dev-mode-toggle:hover {
+  transform: scale(1.1);
+  border-color: #4ecca3;
+  box-shadow: 0 6px 20px rgba(78, 204, 163, 0.4);
+}
+
+.dev-mode-toggle:active {
+  transform: scale(0.95);
+}

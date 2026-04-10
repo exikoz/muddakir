@@ -1,75 +1,114 @@
-# React + TypeScript + Vite
+Got it — here’s a **clean, minimal, developer-focused README** with:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+* No unnecessary sections (install, contributing, etc.)
+* Clear explanation of the project
+* Proper attribution
+* Professional GitHub style
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+# Muddakir - Quran Search & Exploration
 
-## React Compiler
+Muddakir is a modern Quran search and exploration application built with React and TypeScript. It provides advanced search capabilities, real-time highlighting, and graph-based exploration of verses.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+---
 
-Note: This will impact Vite dev & build performances.
+## Overview
 
-## Expanding the ESLint configuration
+The application enables deep exploration of the Quran through multiple search strategies and visual tools. It is designed as an internal/developer-focused project that leverages existing search engines and APIs rather than reimplementing core logic.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Core Capabilities
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Advanced Search
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Search across all 6,236 verses using:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+* Exact text matching
+* Lemma (morphological) search
+* Root-based search
+* Fuzzy matching
+* Semantic search
+* Regex patterns
+* Boolean logic (AND, OR, NOT)
+* Range queries (`2:255`, `1:1-7`, `2:`)
+* Phonetic search (Latin transliteration)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Visual Exploration
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+* Graph-based verse relationships
+* Expandable discovery of related verses
+* Node-based navigation
+
+### Text Processing
+
+* Arabic normalization
+* Diacritics removal (tashkeel)
+* Side-by-side comparison tools
+
+### Debug & Inspection Tools
+
+* Raw search response inspection
+* Execution logs
+* Performance metrics
+* Data loading visibility
+
+---
+
+## Technical Stack
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+
+### Key Libraries
+
+* `quran-search-engine`
+* `@quranjs/api`
+* `@xyflow/react`
+* `zustand`
+
+---
+
+## Attribution
+
+This project is built almost entirely on top of existing tools and data providers. Full credit goes to the original creators:
+
+### quran-search-engine
+
+[https://github.com/adelpro/quran-search-engine](https://github.com/adelpro/quran-search-engine)
+
+* Provides the full search engine powering the application
+* Handles:
+
+  * Arabic normalization
+  * Lemma and root matching
+  * Token scoring and ranking
+  * Semantic search logic
+
+Most of the search functionality in this project is directly powered by this library.
+
+### Quran.com API
+
+[https://quran.com](https://quran.com)
+[https://api.quran.com](https://api.quran.com)
+
+* Provides Quran text and structured data
+* Supplies verses, surah metadata, and related content
+* Maintained by the Quran Foundation
+
+All Quranic content used in this application comes from this API.
+
+---
+
+## Notes
+
+* This project is not affiliated with the above providers
+* It is a UI and integration layer built on top of their work
+* All credit for data and core logic belongs to their respective maintainers
+
+---
+
+Built for internal use and Quran exploration

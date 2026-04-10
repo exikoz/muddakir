@@ -1,0 +1,25 @@
+/* Minimal global styles - Tailwind handles the rest */
+
+.workspace {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.flow-canvas {
+  flex: 1;
+  background: #f8fafc;
+}
+
+/* ReactFlow handle visibility */
+.react-flow__handle {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+}

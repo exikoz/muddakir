@@ -1,0 +1,20 @@
+import type { Node, Edge } from '@xyflow/react'
+import type { Verse, MatchType } from './quran'
+
+export interface VerseNodeData extends Record<string, unknown> {
+  verse: Verse
+  activeWordIndex?: number
+  activeWordMatchType?: MatchType
+  // Search result metadata for highlighting
+  matchedTokens?: string[]
+  tokenTypes?: Record<string, string>
+}
+
+export type VerseNode = Node<VerseNodeData, 'verse'>
+export type VerseEdge = Edge
+
+export interface Snapshot {
+  nodes: VerseNode[]
+  edges: VerseEdge[]
+  timestamp: number
+}
