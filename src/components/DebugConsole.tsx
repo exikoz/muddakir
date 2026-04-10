@@ -303,12 +303,12 @@ export default function DebugConsole({ onClose }: Props) {
       setIsBoolean(false)
       
       // Apply example options
-      if (example.options.lemma) setLemma(true)
-      if (example.options.root) setRoot(true)
-      if (example.options.fuzzy) setFuzzy(true)
-      if (example.options.semantic) setSemantic(true)
-      if ((example.options as any).isRegex) setIsRegex(true)
-      if ((example.options as any).isBoolean) setIsBoolean(true)
+      if ('lemma' in example.options && example.options.lemma) setLemma(true)
+      if ('root' in example.options && example.options.root) setRoot(true)
+      if ('fuzzy' in example.options && example.options.fuzzy) setFuzzy(true)
+      if ('semantic' in example.options && example.options.semantic) setSemantic(true)
+      if ('isRegex' in example.options && example.options.isRegex) setIsRegex(true)
+      if ('isBoolean' in example.options && example.options.isBoolean) setIsBoolean(true)
       
       // Auto-search after a brief delay
       setTimeout(() => {
