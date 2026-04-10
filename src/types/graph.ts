@@ -10,8 +10,12 @@ export interface VerseNodeData extends Record<string, unknown> {
   tokenTypes?: Record<string, string>
 }
 
+export interface VerseEdgeData extends Record<string, unknown> {
+  matchType?: MatchType
+}
+
 export type VerseNode = Node<VerseNodeData, 'verse'>
-export type VerseEdge = Edge
+export type VerseEdge = Edge<VerseEdgeData, 'verse'>
 
 export interface Snapshot {
   nodes: VerseNode[]

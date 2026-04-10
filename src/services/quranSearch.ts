@@ -48,7 +48,7 @@ async function ensureLoaded(): Promise<void> {
       console.time('⏱️ loadQuranData()')
       const data = await loadQuranData()
       console.timeEnd('⏱️ loadQuranData()')
-      console.log(`✅ Loaded ${data.length} verses`)
+      console.log(`✅ Loaded ${data.size} verses`)
       return data
     })(),
     (async () => {
@@ -73,7 +73,7 @@ async function ensureLoaded(): Promise<void> {
       return data
     })(),
   ]).then(([qd, mm, wm, sm]) => {
-    quranData = qd
+    quranData = Array.isArray(qd) ? qd : Array.from(qd.values())
     morphologyMap = mm
     wordMap = wm
     semanticMap = sm
@@ -96,8 +96,13 @@ async function ensureLoaded(): Promise<void> {
 }
 
 function buildContext(): SearchContext<QuranText> {
+  // Convert array to Map if needed for the search context
+  const quranMap = Array.isArray(quranData) 
+    ? new Map<number, QuranText>(quranData.map((verse, index) => [index + 1, verse]))
+    : quranData!
+  
   return {
-    quranData: quranData!,
+    quranData: quranMap as Map<number, QuranText>,
     morphologyMap: morphologyMap!,
     wordMap: wordMap!,
     invertedIndex: invertedIndex ?? undefined,

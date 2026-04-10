@@ -1,4 +1,3 @@
-import { Search } from 'lucide-react'
 import SeedInput from './SeedInput'
 import ModeToggle from './ModeToggle'
 import DiscoveryToggle from './DiscoveryToggle'

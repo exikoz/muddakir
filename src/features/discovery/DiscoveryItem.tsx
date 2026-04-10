@@ -99,8 +99,6 @@ function DiscoveryItem({ result }: Props) {
         sourceHandle: 'right-src',
         target: newNodeId,
         targetHandle: 'left-tgt',
-        type: 'verse',
-        data: { matchType: result.matchType },
       })
     }
   }

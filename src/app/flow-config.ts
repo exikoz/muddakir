@@ -3,9 +3,9 @@ import VerseNode from '../features/graph/VerseNode/VerseNode'
 import VerseEdge from '../features/graph/VerseEdge/VerseEdge'
 
 export const NODE_TYPES = {
-  verse: VerseNode,
+  verse: VerseNode as any,
 } satisfies NodeTypes
 
 export const EDGE_TYPES = {
-  verse: VerseEdge,
+  verse: VerseEdge as any,
 } satisfies EdgeTypes

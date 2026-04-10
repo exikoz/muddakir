@@ -1,10 +1,7 @@
 import { memo } from 'react'
-import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
+import { BaseEdge, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
 import type { MatchType } from '../../../types/quran'
-
-interface VerseEdgeData {
-  matchType?: MatchType
-}
+import type { VerseEdgeData } from '../../../types/graph'
 
 const EDGE_COLORS: Record<MatchType, string> = {
   exact:    '#10b981', // emerald-500
@@ -15,8 +12,9 @@ const EDGE_COLORS: Record<MatchType, string> = {
   none:     '#94a3b8', // slate-400
 }
 
-function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }: EdgeProps<VerseEdgeData>) {
-  const matchType = data?.matchType ?? 'none'
+function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }: EdgeProps<any>) {
+  const edgeData = data as VerseEdgeData | undefined
+  const matchType: MatchType = edgeData?.matchType ?? 'none'
   const color = EDGE_COLORS[matchType]
 
   const [edgePath] = getSmoothStepPath({
@@ -32,7 +30,7 @@ function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
   return (
     <>
       <BaseEdge
-        id={id}
+        id={id as string}
         path={edgePath}
         style={{
           stroke: color,

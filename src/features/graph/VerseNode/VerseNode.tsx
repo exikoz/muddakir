@@ -4,8 +4,8 @@ import type { VerseNodeData } from '../../../types/graph'
 import ArabicText from './ArabicText'
 import NodeActions from './NodeActions'
 
-function VerseNode({ id, data }: NodeProps<VerseNodeData>) {
-  const { verse, activeWordIndex, matchedTokens, tokenTypes } = data
+function VerseNode({ id, data }: NodeProps<any>) {
+  const { verse, activeWordIndex, matchedTokens, tokenTypes } = data as VerseNodeData
 
   return (
     <div className="min-w-[300px] max-w-[500px] bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl group">
@@ -41,13 +41,13 @@ function VerseNode({ id, data }: NodeProps<VerseNodeData>) {
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Verse {verse.verse_key}
           </span>
-          <NodeActions nodeId={id} />
+          <NodeActions nodeId={id as string} />
         </div>
 
         {/* Arabic Text */}
         <ArabicText 
           verse={verse} 
-          sourceNodeId={id} 
+          sourceNodeId={id as string} 
           activeWordIndex={activeWordIndex}
           matchedTokens={matchedTokens}
           tokenTypes={tokenTypes}

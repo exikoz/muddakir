@@ -89,8 +89,6 @@ function ArabicText({ verse, activeWordIndex, sourceNodeId, matchedTokens, token
           sourceHandle: 'right-src',
           target: newNodeId,
           targetHandle: 'left-tgt',
-          type: 'verse',
-          data: { matchType: result.matchType },
         })
       }
 

@@ -8,131 +8,11 @@ import './DebugPage.css'
 interface SearchLog {
   timestamp: string
   query: string
-  options: SearchOptions
+  options: Partial<SearchOptions & { isRegex?: boolean; isBoolean?: boolean }>
   pagination: { page: number; limit: number }
   results: SearchResult[]
   duration: number
   error?: string
-}
-
-interface SearchExample {
-  label: string
-  query: string
-  description: string
-  options: Partial<SearchOptions & { isRegex?: boolean; isBoolean?: boolean }>
-}
-
-const SEARCH_EXAMPLES: Record<string, SearchExample[]> = {
-  'Basic': [
-    {
-      label: 'Simple Word',
-      query: 'الله',
-      description: 'Search for a single Arabic word. Finds exact matches in normalized text.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false }
-    },
-    {
-      label: 'Multi-Word',
-      query: 'الله الرحمن',
-      description: 'All words must appear (implicit AND logic).',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false }
-    },
-  ],
-  'Linguistic': [
-    {
-      label: 'Lemma',
-      query: 'الرحمن',
-      description: 'Match morphological lemmas. Finds word variations.',
-      options: { lemma: true, root: false, fuzzy: false, semantic: false }
-    },
-    {
-      label: 'Root',
-      query: 'الله',
-      description: 'Match Arabic trilateral roots.',
-      options: { lemma: false, root: true, fuzzy: false, semantic: false }
-    },
-    {
-      label: 'Lemma + Root',
-      query: 'الله الرحمن',
-      description: 'Comprehensive linguistic search.',
-      options: { lemma: true, root: true, fuzzy: false, semantic: false }
-    },
-  ],
-  'Range': [
-    {
-      label: 'Single Verse',
-      query: '2:255',
-      description: 'Ayat al-Kursi',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false }
-    },
-    {
-      label: 'Verse Range',
-      query: '1:1-7',
-      description: 'All of Al-Fatihah',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false }
-    },
-    {
-      label: 'Entire Sura',
-      query: '1:',
-      description: 'Retrieve all verses from a sura (Al-Fatihah).',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false }
-    },
-  ],
-  'Regex Search': [
-    {
-      label: 'Ends With Pattern',
-      query: '^.*ون$',
-      description: 'Find verses ending with "ون" using regex patterns.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false, isRegex: true }
-    },
-    {
-      label: 'Contains Pattern',
-      query: 'الله.*الرحمن',
-      description: 'Find "الله" followed by "الرحمن" with any text in between.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false, isRegex: true }
-    },
-  ],
-  'Boolean Search': [
-    {
-      label: 'AND Operator',
-      query: 'الله AND الرحمن',
-      description: 'Both terms must appear in the verse.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false, isBoolean: true }
-    },
-    {
-      label: 'OR Operator',
-      query: 'الرحمن OR الرحيم',
-      description: 'Either term can appear in the verse.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false, isBoolean: true }
-    },
-    {
-      label: 'NOT Operator',
-      query: 'الله NOT الرحمن',
-      description: 'First term must appear, second term must not.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false, isBoolean: true }
-    },
-    {
-      label: 'Complex Logic',
-      query: 'الله AND (الرحمن OR الرحيم)',
-      description: 'Combine operators with parentheses for complex queries.',
-      options: { lemma: false, root: false, fuzzy: false, semantic: false, isBoolean: true }
-    },
-  ],
-  'Semantic Search': [
-    {
-      label: 'Concept Search',
-      query: 'إنسان',
-      description: 'Find verses with related concepts (بشر, ناس, بني آدم, etc.).',
-      options: { lemma: false, root: false, fuzzy: false, semantic: true }
-    },
-  ],
-  'Fuzzy Search': [
-    {
-      label: 'Fuzzy Fallback',
-      query: 'الله',
-      description: 'When no exact/lemma/root matches found, use approximate matching as fallback.',
-      options: { lemma: false, root: false, fuzzy: true, semantic: false }
-    },
-  ],
 }
 
 export default function DebugPage() {
@@ -155,8 +35,6 @@ export default function DebugPage() {
   
   // UI state
   const [showHelp, setShowHelp] = useState(false)
-  const [activeCategory, setActiveCategory] = useState<string>('Basic Search')
-  const [showExamples, setShowExamples] = useState(true)
 
   const handleSearch = async () => {
     if (!query.trim()) return
@@ -218,16 +96,6 @@ export default function DebugPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const loadExample = (example: SearchExample) => {
-    setQuery(example.query)
-    setLemma(example.options.lemma ?? false)
-    setRoot(example.options.root ?? false)
-    setFuzzy(example.options.fuzzy ?? false)
-    setSemantic(example.options.semantic ?? false)
-    setIsRegex(example.options.isRegex ?? false)
-    setIsBoolean(example.options.isBoolean ?? false)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
