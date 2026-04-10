@@ -13,9 +13,18 @@ export default defineConfig(({ mode }) => {
   const authEndpoint  = env[`${prefix}_AUTH_ENDPOINT`]    ?? ''
   const contentTarget = env[`${prefix}_CONTENT_ENDPOINT`] ?? ''
 
-  const authUrl    = new URL(authEndpoint)
-  const authTarget = authUrl.origin   // e.g. https://oauth2.quran.foundation
-  const authPath   = authUrl.pathname // e.g. /oauth2/token
+  // Only parse URL if authEndpoint is provided
+  let authTarget = ''
+  let authPath = ''
+  if (authEndpoint) {
+    try {
+      const authUrl = new URL(authEndpoint)
+      authTarget = authUrl.origin   // e.g. https://oauth2.quran.foundation
+      authPath = authUrl.pathname   // e.g. /oauth2/token
+    } catch (e) {
+      console.warn(`[vite] Invalid AUTH_ENDPOINT: ${authEndpoint}`)
+    }
+  }
 
   console.log(`[vite] APP_ENV=${env.APP_ENV ?? 'prod'} → using ${prefix} credentials`)
 
