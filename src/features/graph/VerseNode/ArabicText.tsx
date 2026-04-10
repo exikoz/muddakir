@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { Verse } from '../../../types/quran'
+import type { VerseEdge } from '../../../types/graph'
 import { searchWord, getHighlightRanges } from '../../../services/quranSearch'
 import { fetchVerse } from '../../../services/quranApi'
 import { useStore } from '../../../store'
@@ -23,13 +24,13 @@ const HIGHLIGHT_COLORS: Record<string, string> = {
 function ArabicText({ verse, activeWordIndex, sourceNodeId, matchedTokens, tokenTypes }: Props) {
   const searchOptions = useStore(s => s.searchOptions)
   const addNode = useStore(s => s.addNode)
+  const addEdge = useStore(s => s.addEdge)
   const setDiscoveryResults = useStore(s => s.setDiscoveryResults)
   const setDiscoveryOpen = useStore(s => s.setDiscoveryOpen)
   const setCurrentSearchTerm = useStore(s => s.setCurrentSearchTerm)
   const setLastSearchSourceId = useStore(s => s.setLastSearchSourceId)
   const updateNodeData = useStore(s => s.updateNodeData)
   const nodes = useStore(s => s.nodes)
-  const onConnect = useStore(s => s.onConnect)
 
   async function handleWordClick(wordIndex: number) {
     const word = verse.words[wordIndex]
@@ -84,12 +85,16 @@ function ArabicText({ verse, activeWordIndex, sourceNodeId, matchedTokens, token
         addNode(newNode)
 
         // Create edge from source to new node with match type
-        onConnect({
+        const newEdge: VerseEdge = {
+          id: `${sourceNodeId}-${newNodeId}`,
           source: sourceNodeId,
           sourceHandle: 'right-src',
           target: newNodeId,
           targetHandle: 'left-tgt',
-        })
+          type: 'verse',
+          data: { matchType: result.matchType },
+        }
+        addEdge(newEdge)
       }
 
       // Show overflow in drawer

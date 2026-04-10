@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 import { Plus, Check, Trophy, Tag } from 'lucide-react'
 import type { SearchResult } from '../../types/quran'
+import type { VerseEdge } from '../../types/graph'
 import { getHighlightRanges } from '../../services/quranSearch'
 import { fetchVerse } from '../../services/quranApi'
 import { useStore } from '../../store'
@@ -27,9 +28,9 @@ const HIGHLIGHT_COLORS: Record<string, string> = {
 
 function DiscoveryItem({ result }: Props) {
   const addNode = useStore(s => s.addNode)
+  const addEdge = useStore(s => s.addEdge)
   const nodes = useStore(s => s.nodes)
   const lastSearchSourceId = useStore(s => s.lastSearchSourceId)
-  const onConnect = useStore(s => s.onConnect)
 
   const isAdded = nodes.some(n => n.data.verse.verse_key === result.verse_key)
 
@@ -94,12 +95,16 @@ function DiscoveryItem({ result }: Props) {
 
     // Create edge if source exists
     if (lastSearchSourceId) {
-      onConnect({
+      const newEdge: VerseEdge = {
+        id: `${lastSearchSourceId}-${newNodeId}`,
         source: lastSearchSourceId,
         sourceHandle: 'right-src',
         target: newNodeId,
         targetHandle: 'left-tgt',
-      })
+        type: 'verse',
+        data: { matchType: result.matchType },
+      }
+      addEdge(newEdge)
     }
   }
 

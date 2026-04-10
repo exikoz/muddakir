@@ -20,6 +20,7 @@ interface GraphState {
   
   // Node management
   addNode: (node: VerseNode) => void
+  addEdge: (edge: VerseEdge) => void
   deleteNode: (id: string) => void
   updateNodeData: (id: string, data: Partial<VerseNode['data']>) => void
   
@@ -86,6 +87,10 @@ export const useStore = create<GraphState>((set, get) => ({
   addNode: (node) => {
     set({ nodes: [...get().nodes, node] })
     get().pushHistory()
+  },
+  
+  addEdge: (edge) => {
+    set({ edges: [...get().edges, edge] })
   },
   
   deleteNode: (id) => {
