@@ -1,7 +1,26 @@
-import { ReactFlow, Background, Controls } from '@xyflow/react'
+import { useRef, useEffect } from 'react'
+import { ReactFlow, Background, Controls, useReactFlow, type ReactFlowInstance } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useStore } from '../../store'
 import { NODE_TYPES, EDGE_TYPES } from '../../app/flow-config'
+
+function GraphCanvasInner() {
+  const reactFlowInstance = useReactFlow()
+  const instanceRef = useRef<ReactFlowInstance | null>(null)
+
+  useEffect(() => {
+    instanceRef.current = reactFlowInstance
+    // Store the instance globally for access from other components
+    ;(window as any).__reactFlowInstance = reactFlowInstance
+  }, [reactFlowInstance])
+
+  return (
+    <>
+      <Background color="#cbd5e1" gap={24} size={1} />
+      <Controls />
+    </>
+  )
+}
 
 export default function GraphCanvas() {
   const nodes = useStore(s => s.nodes)
@@ -22,8 +41,7 @@ export default function GraphCanvas() {
       fitView
       className="flow-canvas"
     >
-      <Background color="#cbd5e1" gap={24} size={1} />
-      <Controls />
+      <GraphCanvasInner />
     </ReactFlow>
   )
 }

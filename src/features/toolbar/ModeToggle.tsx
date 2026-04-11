@@ -30,11 +30,29 @@ export default function ModeToggle() {
   }, [])
 
   const activeKeys = OPTION_CONFIG.filter(o => searchOptions[o.key])
-  const label = activeKeys.length === 0 ? 'EXACT' : activeKeys.map(o => o.label).join(' + ')
+  const label = activeKeys.length === 0 ? 'EXACT' : activeKeys[0].label.toUpperCase()
   const dotColor = activeKeys.length === 0 ? 'bg-emerald-500' : activeKeys[0].dot
 
-  function toggle(key: keyof SearchOptions) {
-    setSearchOptions({ ...searchOptions, [key]: !searchOptions[key] })
+  function selectMode(key: keyof SearchOptions) {
+    // Radio button behavior: turn off all others, turn on selected
+    setSearchOptions({
+      lemma: key === 'lemma',
+      root: key === 'root',
+      fuzzy: key === 'fuzzy',
+      semantic: key === 'semantic',
+    })
+    setOpen(false)
+  }
+  
+  function selectExact() {
+    // Turn off all options for exact match
+    setSearchOptions({
+      lemma: false,
+      root: false,
+      fuzzy: false,
+      semantic: false,
+    })
+    setOpen(false)
   }
 
   return (
@@ -42,7 +60,7 @@ export default function ModeToggle() {
       <button
         onClick={() => setOpen(v => !v)}
         className="h-9 px-3 rounded-full shadow-sm border text-xs font-bold transition-all flex items-center gap-1.5 bg-white/80 text-slate-700 border-slate-200 hover:border-slate-300"
-        title="Search options"
+        title="Search mode"
       >
         <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
         <span className="max-w-[120px] truncate">{label}</span>
@@ -51,12 +69,27 @@ export default function ModeToggle() {
 
       {open && (
         <div className="absolute top-11 left-0 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 min-w-[160px] z-50 flex flex-col gap-0.5">
+          {/* Exact match option */}
+          <button
+            onClick={selectExact}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
+              activeKeys.length === 0 
+                ? 'text-emerald-700 bg-emerald-50 border border-emerald-300' 
+                : 'text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full shrink-0 ${activeKeys.length === 0 ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+            Exact
+            {activeKeys.length === 0 && <span className="ml-auto text-[10px] opacity-60">ON</span>}
+          </button>
+          
+          {/* Other search modes */}
           {OPTION_CONFIG.map(({ key, label, dot, active }) => {
             const isOn = !!searchOptions[key]
             return (
               <button
                 key={key}
-                onClick={() => toggle(key)}
+                onClick={() => selectMode(key)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${isOn ? active : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <span className={`w-2 h-2 rounded-full shrink-0 ${isOn ? dot : 'bg-slate-300'}`} />
@@ -65,9 +98,10 @@ export default function ModeToggle() {
               </button>
             )
           })}
+          
           <div className="border-t border-slate-100 mt-1 pt-1">
             <p className="text-[10px] text-slate-400 px-3 py-1 leading-tight">
-              No options = exact match only
+              Select one search mode at a time
             </p>
           </div>
         </div>

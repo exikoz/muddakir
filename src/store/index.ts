@@ -9,8 +9,13 @@ import {
 } from '@xyflow/react'
 import type { VerseNode, VerseEdge, Snapshot } from '../types/graph'
 import type { SearchOptions, SearchResult } from '../types/quran'
+import { VerseExplorer } from '../core/verseExplorer'
+import type { ExplorationNode } from '../core/verseExplorer'
 
 interface GraphState {
+  // Core explorer (framework-agnostic business logic)
+  explorer: VerseExplorer
+  
   // ReactFlow state
   nodes: VerseNode[]
   edges: VerseEdge[]
@@ -18,11 +23,16 @@ interface GraphState {
   onEdgesChange: OnEdgesChange<VerseEdge>
   onConnect: (connection: Connection) => void
   
-  // Node management
-  addNode: (node: VerseNode) => void
-  addEdge: (edge: VerseEdge) => void
+  // High-level actions (delegate to explorer)
+  addVerseNode: (verseKey: string, parentId?: string) => Promise<void>
+  searchFromWord: (nodeId: string, wordIndex: number) => Promise<void>
   deleteNode: (id: string) => void
+  
+  // Low-level ReactFlow operations (internal)
+  _addReactFlowNode: (node: VerseNode) => void
+  _addReactFlowEdge: (edge: VerseEdge) => void
   updateNodeData: (id: string, data: Partial<VerseNode['data']>) => void
+  focusNode: (verseKey: string) => string | null
   
   // Search state
   searchOptions: SearchOptions
@@ -32,11 +42,7 @@ interface GraphState {
   isDiscoveryOpen: boolean
   discoveryResults: SearchResult[]
   currentSearchTerm: string
-  lastSearchSourceId: string | null
   setDiscoveryOpen: (open: boolean) => void
-  setDiscoveryResults: (results: SearchResult[]) => void
-  setCurrentSearchTerm: (term: string) => void
-  setLastSearchSourceId: (id: string | null) => void
   
   // History (for undo/redo)
   history: Snapshot[]
@@ -48,13 +54,61 @@ interface GraphState {
   canRedo: boolean
 }
 
+// Helper: Convert ExplorationNode to ReactFlow VerseNode
+function toReactFlowNode(
+  explorationNode: ExplorationNode, 
+  existingNodes: VerseNode[],
+  existingEdges: VerseEdge[]
+): VerseNode {
+  let position = { x: 400, y: 300 } // Default center position
+  
+  if (explorationNode.parentId) {
+    // Position relative to parent - spread children vertically with proper spacing
+    const parent = existingNodes.find(n => n.id === explorationNode.parentId)
+    if (parent) {
+      // Count how many children this parent already has by checking edges
+      const existingChildrenOfParent = existingEdges.filter(e => e.source === explorationNode.parentId)
+      
+      const childIndex = existingChildrenOfParent.length
+      const verticalSpacing = 350 // Increased spacing between child nodes (was 200)
+      
+      // For 3 children, center them around parent:
+      // Child 0: parent.y - 350
+      // Child 1: parent.y
+      // Child 2: parent.y + 350
+      const startOffset = -verticalSpacing // Start one spacing above parent
+      
+      position = {
+        x: parent.position.x + 600, // Increased horizontal distance from parent (was 500)
+        y: parent.position.y + startOffset + (childIndex * verticalSpacing)
+      }
+    }
+  }
+  
+  return {
+    id: explorationNode.id,
+    type: 'verse',
+    position,
+    data: {
+      verse: explorationNode.verse,
+      activeWordIndex: explorationNode.activeWordIndex,
+      activeWordMatchType: explorationNode.matchType,
+      matchedTokens: explorationNode.matchedTokens,
+      tokenTypes: explorationNode.tokenTypes,
+    }
+  }
+}
+
 export const useStore = create<GraphState>((set, get) => ({
+  // Core explorer instance
+  explorer: new VerseExplorer(),
+  
   // Initial state
   nodes: [],
   edges: [],
   
   searchOptions: {
-    lemma: false,
+    lemma: true,   // ✅ Default to lemma search only
     root: false,
     fuzzy: false,
     semantic: false,
@@ -63,7 +117,6 @@ export const useStore = create<GraphState>((set, get) => ({
   isDiscoveryOpen: false,
   discoveryResults: [],
   currentSearchTerm: '',
-  lastSearchSourceId: null,
   
   history: [],
   historyIndex: -1,
@@ -83,21 +136,182 @@ export const useStore = create<GraphState>((set, get) => ({
     set({ edges: addEdge(connection, get().edges) })
   },
   
-  // Node management
-  addNode: (node) => {
+  // High-level actions (use explorer)
+  addVerseNode: async (verseKey, parentId) => {
+    const { explorer } = get()
+    
+    // Check if already exists - if so, focus on it
+    if (explorer.hasVerse(verseKey)) {
+      const existing = explorer.getNodeByVerseKey(verseKey)
+      if (existing) {
+        // Focus on existing node
+        const reactFlowInstance = (window as any).__reactFlowInstance
+        if (reactFlowInstance) {
+          reactFlowInstance.fitView({
+            nodes: [{ id: existing.id }],
+            duration: 800,
+            padding: 0.5,
+          })
+        }
+      }
+      return
+    }
+    
+    // Add to explorer
+    const explorationNode = await explorer.addVerse(verseKey, parentId)
+    if (!explorationNode) return
+    
+    // Convert to ReactFlow format
+    const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
+    get()._addReactFlowNode(reactFlowNode)
+    
+    // Create edge if has parent
+    if (parentId) {
+      const edge: VerseEdge = {
+        id: `${parentId}-${explorationNode.id}`,
+        source: parentId,
+        sourceHandle: 'right-src',
+        target: explorationNode.id,
+        targetHandle: 'left-tgt',
+        type: 'verse',
+        data: { matchType: explorationNode.matchType },
+      }
+      get()._addReactFlowEdge(edge)
+    }
+    
+    // Center on the new node if it's a root node (no parent)
+    if (!parentId) {
+      setTimeout(() => {
+        const reactFlowInstance = (window as any).__reactFlowInstance
+        if (reactFlowInstance) {
+          reactFlowInstance.fitView({
+            nodes: [{ id: explorationNode.id }],
+            duration: 500,
+            padding: 0.5,
+            maxZoom: 1, // Keep current zoom level
+            minZoom: 1,
+          })
+        }
+      }, 50) // Small delay to ensure node is rendered
+    }
+  },
+  
+  searchFromWord: async (nodeId, wordIndex) => {
+    const { explorer, searchOptions } = get()
+    
+    // Perform search using explorer
+    const result = await explorer.searchFromWord(nodeId, wordIndex, searchOptions, 3)
+    
+    // Handle no results case
+    if (result.nodesToAdd.length === 0 && result.resultsForDiscovery.length === 0) {
+      // Update node to show "no results" state
+      get().updateNodeData(nodeId, {
+        activeWordIndex: wordIndex,
+        activeWordMatchType: 'none', // Special marker for no results
+      })
+      
+      // Show a brief message (could be a toast notification in the future)
+      console.log(`[Store] No results found for word at index ${wordIndex}`)
+      
+      return
+    }
+    
+    // Add nodes to ReactFlow with proper spacing
+    result.nodesToAdd.forEach((explorationNode, index) => {
+      const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
+      get()._addReactFlowNode(reactFlowNode)
+      
+      // Create edge
+      const edge: VerseEdge = {
+        id: `${nodeId}-${explorationNode.id}`,
+        source: nodeId,
+        sourceHandle: 'right-src',
+        target: explorationNode.id,
+        targetHandle: 'left-tgt',
+        type: 'verse',
+        data: { matchType: explorationNode.matchType },
+      }
+      get()._addReactFlowEdge(edge)
+    })
+    
+    // Update parent node data
+    const parentNode = explorer.getNode(nodeId)
+    if (parentNode) {
+      get().updateNodeData(nodeId, {
+        activeWordIndex: parentNode.activeWordIndex,
+        activeWordMatchType: parentNode.matchType,
+      })
+    }
+    
+    // Update discovery panel
+    set({
+      discoveryResults: result.resultsForDiscovery,
+      isDiscoveryOpen: result.shouldOpenDiscovery,
+      currentSearchTerm: explorer.getCurrentSearchTerm(),
+    })
+    
+    // Fit view to show parent and all new children
+    if (result.nodesToAdd.length > 0) {
+      setTimeout(() => {
+        const reactFlowInstance = (window as any).__reactFlowInstance
+        if (reactFlowInstance) {
+          const nodeIds = [nodeId, ...result.nodesToAdd.map(n => n.id)]
+          reactFlowInstance.fitView({
+            nodes: nodeIds.map(id => ({ id })),
+            duration: 500,
+            padding: 0.3,
+          })
+        }
+      }, 100)
+    }
+  },
+  
+  // Low-level ReactFlow operations
+  _addReactFlowNode: (node) => {
     set({ nodes: [...get().nodes, node] })
     get().pushHistory()
   },
   
-  addEdge: (edge) => {
+  _addReactFlowEdge: (edge) => {
     set({ edges: [...get().edges, edge] })
   },
   
   deleteNode: (id) => {
+    const { explorer } = get()
+    
+    // Check if this is a root node (no parent)
+    const nodeToDelete = explorer.getNode(id)
+    const isRootNode = nodeToDelete && !nodeToDelete.parentId
+    
+    // Delete from explorer (handles all business logic)
+    const result = explorer.deleteNode(id)
+    
+    // Update ReactFlow state
     set({
-      nodes: get().nodes.filter(n => n.id !== id),
-      edges: get().edges.filter(e => e.source !== id && e.target !== id),
+      nodes: get().nodes.filter(n => !result.deletedIds.includes(n.id)),
+      edges: get().edges.filter(e => 
+        !result.deletedIds.includes(e.source) && 
+        !result.deletedIds.includes(e.target)
+      ),
     })
+    
+    // Clear highlights on affected nodes
+    result.nodesToClearHighlights.forEach(nodeId => {
+      get().updateNodeData(nodeId, {
+        activeWordIndex: undefined,
+        activeWordMatchType: undefined,
+      })
+    })
+    
+    // Close discovery panel if needed OR if deleting a root node
+    if (result.shouldCloseDiscovery || isRootNode) {
+      set({
+        discoveryResults: [],
+        isDiscoveryOpen: false,
+        currentSearchTerm: '',
+      })
+    }
+    
     get().pushHistory()
   },
   
@@ -109,14 +323,16 @@ export const useStore = create<GraphState>((set, get) => ({
     })
   },
   
+  focusNode: (verseKey) => {
+    const node = get().nodes.find(n => n.data.verse.verse_key === verseKey)
+    return node?.id || null
+  },
+  
   // Search
   setSearchOptions: (options) => set({ searchOptions: options }),
   
   // Discovery drawer
   setDiscoveryOpen: (open) => set({ isDiscoveryOpen: open }),
-  setDiscoveryResults: (results) => set({ discoveryResults: results }),
-  setCurrentSearchTerm: (term) => set({ currentSearchTerm: term }),
-  setLastSearchSourceId: (id) => set({ lastSearchSourceId: id }),
   
   // History
   pushHistory: () => {

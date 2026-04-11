@@ -1,9 +1,7 @@
 import { memo, useMemo } from 'react'
 import { Plus, Check, Trophy, Tag } from 'lucide-react'
 import type { SearchResult } from '../../types/quran'
-import type { VerseEdge } from '../../types/graph'
 import { getHighlightRanges } from '../../services/quranSearch'
-import { fetchVerse } from '../../services/quranApi'
 import { useStore } from '../../store'
 
 interface Props {
@@ -27,10 +25,9 @@ const HIGHLIGHT_COLORS: Record<string, string> = {
 }
 
 function DiscoveryItem({ result }: Props) {
-  const addNode = useStore(s => s.addNode)
-  const addEdge = useStore(s => s.addEdge)
+  const addVerseNode = useStore(s => s.addVerseNode)
+  const explorer = useStore(s => s.explorer)
   const nodes = useStore(s => s.nodes)
-  const lastSearchSourceId = useStore(s => s.lastSearchSourceId)
 
   const isAdded = nodes.some(n => n.data.verse.verse_key === result.verse_key)
 
@@ -70,42 +67,8 @@ function DiscoveryItem({ result }: Props) {
   }, [result])
 
   async function handleAdd() {
-    const verse = await fetchVerse(result.verse_key)
-    if (!verse) return
-
-    // Find source node for positioning
-    const sourceNode = nodes.find(n => n.id === lastSearchSourceId)
-    const baseX = sourceNode?.position.x ?? 200
-    const baseY = sourceNode?.position.y ?? 200
-
-    const newNodeId = `verse-${result.verse_key}-${Date.now()}`
-    const newNode = {
-      id: newNodeId,
-      type: 'verse' as const,
-      position: { x: baseX + 400, y: baseY + (nodes.length * 30) },
-      data: { 
-        verse,
-        activeWordMatchType: result.matchType,
-        matchedTokens: result.matchedTokens,
-        tokenTypes: result.tokenTypes,
-      },
-    }
-
-    addNode(newNode)
-
-    // Create edge if source exists
-    if (lastSearchSourceId) {
-      const newEdge: VerseEdge = {
-        id: `${lastSearchSourceId}-${newNodeId}`,
-        source: lastSearchSourceId,
-        sourceHandle: 'right-src',
-        target: newNodeId,
-        targetHandle: 'left-tgt',
-        type: 'verse',
-        data: { matchType: result.matchType },
-      }
-      addEdge(newEdge)
-    }
+    const lastSearchSourceId = explorer.getLastSearchSourceId()
+    await addVerseNode(result.verse_key, lastSearchSourceId || undefined)
   }
 
   return (

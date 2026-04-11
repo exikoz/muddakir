@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { Search } from 'lucide-react'
-import { fetchVerse } from '../../services/quranApi'
 import { useStore } from '../../store'
 
 export default function SeedInput() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const addNode = useStore(s => s.addNode)
-  const nodes = useStore(s => s.nodes)
+  const addVerseNode = useStore(s => s.addVerseNode)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -16,21 +14,7 @@ export default function SeedInput() {
 
     setLoading(true)
     try {
-      const verse = await fetchVerse(verseKey)
-      if (!verse) {
-        alert(`Verse ${verseKey} not found`)
-        return
-      }
-
-      const offset = nodes.length * 30
-      const newNode = {
-        id: `verse-${verseKey}-${Date.now()}`,
-        type: 'verse' as const,
-        position: { x: 200 + offset, y: 200 + offset },
-        data: { verse },
-      }
-
-      addNode(newNode)
+      await addVerseNode(verseKey)
       setInput('')
     } catch (err) {
       console.error('[SeedInput] error:', err)
