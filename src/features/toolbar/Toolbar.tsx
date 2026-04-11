@@ -1,6 +1,7 @@
 import SeedInput from './SeedInput'
 import ModeToggle from './ModeToggle'
 import DiscoveryToggle from './DiscoveryToggle'
+import MushafToggle from './MushafToggle'
 
 export default function Toolbar() {
   return (
@@ -9,6 +10,7 @@ export default function Toolbar() {
         <ModeToggle />
         <SeedInput />
         <DiscoveryToggle />
+        <MushafToggle />
       </div>
     </div>
   )

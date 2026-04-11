@@ -82,7 +82,7 @@ describe('VerseExplorer', () => {
       const node = await explorer.addVerse('112:1')
       
       // Search - should not add 1:1 or 2:255 if they appear in results
-      const result = await explorer.searchFromWord(
+      await explorer.searchFromWord(
         node!.id,
         1,
         { lemma: true, root: true, fuzzy: true, semantic: false }

@@ -8,9 +8,10 @@ import {
   type Connection,
 } from '@xyflow/react'
 import type { VerseNode, VerseEdge, Snapshot } from '../types/graph'
-import type { SearchOptions, SearchResult } from '../types/quran'
+import type { SearchOptions, SearchResult, Verse } from '../types/quran'
 import { VerseExplorer } from '../core/verseExplorer'
 import type { ExplorationNode } from '../core/verseExplorer'
+import { fetchChapterVerses } from '../services/quranApi'
 
 interface GraphState {
   // Core explorer (framework-agnostic business logic)
@@ -52,6 +53,23 @@ interface GraphState {
   redo: () => void
   canUndo: boolean
   canRedo: boolean
+  
+  // Mushaf panel state
+  isMushafOpen: boolean
+  mushafChapter: number
+  mushafVerses: Verse[]
+  mushafLoading: boolean
+  mushafHasPrev: boolean
+  mushafHasMore: boolean
+  mushafHighlightVerse: string | null
+  mushafFirstPage: number
+  mushafLastPage: number
+  setMushafOpen: (open: boolean) => void
+  openMushaf: (chapter?: number) => Promise<void>
+  openMushafToVerse: (verseKey: string) => Promise<void>
+  loadMushafChapter: (chapter: number) => Promise<void>
+  loadMushafMore: () => Promise<void>
+  loadMushafPrev: () => Promise<void>
 }
 
 // Helper: Convert ExplorationNode to ReactFlow VerseNode
@@ -81,6 +99,30 @@ function toReactFlowNode(
       position = {
         x: parent.position.x + 600, // Increased horizontal distance from parent (was 500)
         y: parent.position.y + startOffset + (childIndex * verticalSpacing)
+      }
+    }
+  } else {
+    // Root node - find empty space
+    // Get all existing root nodes (nodes without parents)
+    const rootNodes = existingNodes.filter(n => {
+      // A node is a root if it has no incoming edges
+      const hasIncomingEdges = existingEdges.some(e => e.target === n.id)
+      return !hasIncomingEdges
+    })
+    
+    if (rootNodes.length === 0) {
+      // First root node - center position
+      position = { x: 400, y: 300 }
+    } else {
+      // Find the rightmost root node and position to its right
+      const rightmostRoot = rootNodes.reduce((max, node) => 
+        node.position.x > max.position.x ? node : max
+      , rootNodes[0])
+      
+      // Position new root to the right with spacing
+      position = {
+        x: rightmostRoot.position.x + 700, // Horizontal spacing between root nodes
+        y: 300 // Keep same vertical level
       }
     }
   }
@@ -122,6 +164,17 @@ export const useStore = create<GraphState>((set, get) => ({
   historyIndex: -1,
   canUndo: false,
   canRedo: false,
+  
+  // Mushaf initial state
+  isMushafOpen: false,
+  mushafChapter: 1,
+  mushafVerses: [],
+  mushafLoading: false,
+  mushafHasPrev: false,
+  mushafHasMore: false,
+  mushafHighlightVerse: null,
+  mushafFirstPage: 1,
+  mushafLastPage: 1,
   
   // ReactFlow handlers
   onNodesChange: (changes) => {
@@ -217,7 +270,7 @@ export const useStore = create<GraphState>((set, get) => ({
     }
     
     // Add nodes to ReactFlow with proper spacing
-    result.nodesToAdd.forEach((explorationNode, index) => {
+    result.nodesToAdd.forEach((explorationNode) => {
       const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
       get()._addReactFlowNode(reactFlowNode)
       
@@ -376,5 +429,132 @@ export const useStore = create<GraphState>((set, get) => ({
       canUndo: true,
       canRedo: newIndex < history.length - 1,
     })
+  },
+  
+  // Mushaf actions
+  setMushafOpen: (open) => set({ isMushafOpen: open }),
+  
+  openMushaf: async (chapter) => {
+    const currentChapter = chapter ?? get().mushafChapter
+    set({ isMushafOpen: true })
+    
+    // Only load if chapter changed or no verses loaded
+    if (currentChapter !== get().mushafChapter || get().mushafVerses.length === 0) {
+      await get().loadMushafChapter(currentChapter)
+    }
+  },
+  
+  openMushafToVerse: async (verseKey) => {
+    const [surahStr, ayahStr] = verseKey.split(':')
+    const surah = parseInt(surahStr, 10)
+    const ayah = parseInt(ayahStr, 10)
+    
+    set({ isMushafOpen: true, mushafHighlightVerse: null })
+    
+    // If already on this chapter and verse is loaded, just highlight and scroll
+    if (surah === get().mushafChapter) {
+      const existingVerse = get().mushafVerses.find(v => v.verse_key === verseKey)
+      if (existingVerse) {
+        set({ mushafHighlightVerse: verseKey })
+        return
+      }
+    }
+    
+    // Calculate which page contains this verse (50 verses per page)
+    const targetPage = Math.ceil(ayah / 50)
+    
+    set({
+      mushafChapter: surah,
+      mushafVerses: [],
+      mushafHasPrev: targetPage > 1,
+      mushafFirstPage: targetPage,
+      mushafLastPage: targetPage,
+      mushafLoading: true,
+    })
+    
+    const { verses, hasMore } = await fetchChapterVerses(surah, targetPage)
+    set({
+      mushafVerses: verses,
+      mushafHasMore: hasMore,
+      mushafLoading: false,
+      mushafHighlightVerse: verseKey,
+    })
+    
+    // Prefetch adjacent pages for smooth navigation
+    const prefetchPromises = []
+    if (targetPage > 1) {
+      prefetchPromises.push(fetchChapterVerses(surah, targetPage - 1).catch(() => {}))
+    }
+    if (hasMore) {
+      prefetchPromises.push(fetchChapterVerses(surah, targetPage + 1).catch(() => {}))
+    }
+    if (prefetchPromises.length > 0) {
+      Promise.all(prefetchPromises).catch(() => {}) // Silent prefetch
+    }
+  },
+  
+  loadMushafChapter: async (chapter) => {
+    set({
+      mushafChapter: chapter,
+      mushafVerses: [],
+      mushafLoading: true,
+      mushafHasPrev: false,
+      mushafFirstPage: 1,
+      mushafLastPage: 1,
+    })
+    
+    const { verses, hasMore } = await fetchChapterVerses(chapter, 1)
+    set({
+      mushafVerses: verses,
+      mushafHasMore: hasMore,
+      mushafLoading: false,
+    })
+    
+    // Prefetch next page for smooth scrolling
+    if (hasMore) {
+      fetchChapterVerses(chapter, 2).catch(() => {}) // Silent prefetch
+    }
+  },
+  
+  loadMushafMore: async () => {
+    if (get().mushafLoading || !get().mushafHasMore) return
+    
+    set({ mushafLoading: true })
+    const nextPage = get().mushafLastPage + 1
+    const chapter = get().mushafChapter
+    const { verses, hasMore } = await fetchChapterVerses(chapter, nextPage)
+    
+    set({
+      mushafVerses: [...get().mushafVerses, ...verses],
+      mushafHasMore: hasMore,
+      mushafLastPage: nextPage,
+      mushafLoading: false,
+    })
+    
+    // Prefetch next page
+    if (hasMore) {
+      fetchChapterVerses(chapter, nextPage + 1).catch(() => {})
+    }
+  },
+  
+  loadMushafPrev: async () => {
+    if (get().mushafLoading || !get().mushafHasPrev) return
+    
+    set({ mushafLoading: true })
+    const prevPage = get().mushafFirstPage - 1
+    const chapter = get().mushafChapter
+    const { verses } = await fetchChapterVerses(chapter, prevPage)
+    
+    set({
+      mushafVerses: [...verses, ...get().mushafVerses],
+      mushafHasPrev: prevPage > 1,
+      mushafFirstPage: prevPage,
+      mushafLoading: false,
+    })
+    
+    // Prefetch previous page
+    if (prevPage > 1) {
+      fetchChapterVerses(chapter, prevPage - 1).catch(() => {})
+    }
   },
 }))

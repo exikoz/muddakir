@@ -1,0 +1,133 @@
+import { X, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
+import { useStore } from '../../store'
+import { SURAH_NAMES } from './surahNames'
+import { VerseRow } from './VerseRow'
+
+export function MushafPanel() {
+  const isMushafOpen = useStore(s => s.isMushafOpen)
+  const mushafChapter = useStore(s => s.mushafChapter)
+  const mushafVerses = useStore(s => s.mushafVerses)
+  const mushafLoading = useStore(s => s.mushafLoading)
+  const mushafHasPrev = useStore(s => s.mushafHasPrev)
+  const mushafHasMore = useStore(s => s.mushafHasMore)
+  const mushafHighlightVerse = useStore(s => s.mushafHighlightVerse)
+  const setMushafOpen = useStore(s => s.setMushafOpen)
+  const loadMushafChapter = useStore(s => s.loadMushafChapter)
+  const loadMushafMore = useStore(s => s.loadMushafMore)
+  const loadMushafPrev = useStore(s => s.loadMushafPrev)
+  const addVerseNode = useStore(s => s.addVerseNode)
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget
+    // Load more when near bottom
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 200 && mushafHasMore && !mushafLoading) {
+      loadMushafMore()
+    }
+  }
+
+  const handleOpenInExplorer = (verseKey: string) => {
+    addVerseNode(verseKey)
+    // Optionally close the mushaf panel after adding
+    // setMushafOpen(false)
+  }
+
+  return (
+    <div
+      className={`fixed inset-y-0 left-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+        isMushafOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+    >
+      {/* Header */}
+      <div className="p-4 border-b border-slate-100 bg-slate-50 space-y-3 shrink-0">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <BookOpen size={18} className="text-emerald-600" />
+            <div>
+              <h2 className="font-semibold text-slate-800 leading-tight">
+                {SURAH_NAMES[mushafChapter] ?? `Surah ${mushafChapter}`}
+              </h2>
+              <p className="text-xs text-slate-400">Surah {mushafChapter} of 114</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setMushafOpen(false)}
+            className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+          >
+            <X size={18} className="text-slate-500" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => mushafChapter > 1 && loadMushafChapter(mushafChapter - 1)}
+            disabled={mushafChapter <= 1}
+            className="p-1.5 rounded-full hover:bg-slate-200 disabled:opacity-30 transition-colors"
+          >
+            <ChevronLeft size={16} className="text-slate-600" />
+          </button>
+
+          <select
+            value={mushafChapter}
+            onChange={(e) => loadMushafChapter(Number(e.target.value))}
+            className="flex-1 text-sm border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
+          >
+            {Array.from({ length: 114 }, (_, i) => i + 1).map(n => (
+              <option key={n} value={n}>
+                {n}. {SURAH_NAMES[n]}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => mushafChapter < 114 && loadMushafChapter(mushafChapter + 1)}
+            disabled={mushafChapter >= 114}
+            className="p-1.5 rounded-full hover:bg-slate-200 disabled:opacity-30 transition-colors"
+          >
+            <ChevronRight size={16} className="text-slate-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Verse list */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3" onScroll={handleScroll}>
+        {mushafLoading && mushafVerses.length === 0 ? (
+          <div className="flex items-center justify-center py-20 text-slate-400">
+            <div className="text-center space-y-2">
+              <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm">Loading verses...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {mushafHasPrev && (
+              <button
+                onClick={loadMushafPrev}
+                disabled={mushafLoading}
+                className="w-full py-2 text-xs text-slate-400 hover:text-emerald-600 font-medium border border-dashed border-slate-200 rounded-xl hover:border-emerald-300 transition-colors disabled:opacity-40"
+              >
+                {mushafLoading ? 'Loading...' : '↑ Load earlier verses'}
+              </button>
+            )}
+            {mushafVerses.map(verse => (
+              <VerseRow
+                key={verse.verse_key}
+                verse={verse}
+                isHighlighted={verse.verse_key === mushafHighlightVerse}
+                onOpenInExplorer={handleOpenInExplorer}
+              />
+            ))}
+            {mushafLoading && (
+              <div className="flex justify-center py-4">
+                <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            {!mushafHasMore && mushafVerses.length > 0 && (
+              <p className="text-center text-xs text-slate-300 py-4">End of Surah</p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

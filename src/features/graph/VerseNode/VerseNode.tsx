@@ -59,6 +59,24 @@ function VerseNode({ id, data }: NodeProps<any>) {
             {verse.translation}
           </p>
         )}
+        
+        {/* Mushaf Link */}
+        <div className="border-t border-slate-50 pt-2 mt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              const openMushafToVerse = (window as any).__mushafOpener
+              if (openMushafToVerse) openMushafToVerse(verse.verse_key)
+            }}
+            className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"
+            title="Open in Mushaf"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+            </svg>
+            Read in Mushaf
+          </button>
+        </div>
       </div>
 
       <Handle

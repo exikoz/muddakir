@@ -13,14 +13,14 @@
 
 import { searchWord } from '../services/quranSearch'
 import { fetchVerse } from '../services/quranApi'
-import type { SearchOptions, SearchResult, Verse } from '../types/quran'
+import type { SearchOptions, SearchResult, Verse, MatchType } from '../types/quran'
 
 export interface ExplorationNode {
   id: string
   verse: Verse
   parentId?: string
   searchTerm?: string
-  matchType?: string
+  matchType?: MatchType
   activeWordIndex?: number
   matchedTokens?: string[]
   tokenTypes?: Record<string, string>
