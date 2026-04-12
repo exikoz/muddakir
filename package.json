@@ -12,7 +12,9 @@
   "dependencies": {
     "@quranjs/api": "^2.2.0",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/dagre": "^0.7.54",
     "@xyflow/react": "^12.10.2",
+    "dagre": "^0.8.5",
     "lucide-react": "^1.8.0",
     "quran-search-engine": "^0.3.2",
     "react": "^19.2.4",

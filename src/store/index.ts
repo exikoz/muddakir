@@ -11,7 +11,8 @@ import type { VerseNode, VerseEdge, Snapshot } from '../types/graph'
 import type { SearchOptions, SearchResult, Verse } from '../types/quran'
 import { VerseExplorer } from '../core/verseExplorer'
 import type { ExplorationNode } from '../core/verseExplorer'
-import { fetchChapterVerses } from '../services/quranApi'
+import { fetchChapterVerses, fetchVerse } from '../services/quranApi'
+import { getLayoutedElements } from '../lib/autoLayout'
 
 interface GraphState {
   // Core explorer (framework-agnostic business logic)
@@ -28,10 +29,12 @@ interface GraphState {
   addVerseNode: (verseKey: string, parentId?: string) => Promise<void>
   searchFromWord: (nodeId: string, wordIndex: number) => Promise<void>
   deleteNode: (id: string) => void
+  addSequentialVerse: (nodeId: string, direction: 'prev' | 'next') => Promise<void>
   
   // Low-level ReactFlow operations (internal)
   _addReactFlowNode: (node: VerseNode) => void
   _addReactFlowEdge: (edge: VerseEdge) => void
+  _applyAutoLayout: () => void
   updateNodeData: (id: string, data: Partial<VerseNode['data']>) => void
   focusNode: (verseKey: string) => string | null
   
@@ -44,6 +47,10 @@ interface GraphState {
   discoveryResults: SearchResult[]
   currentSearchTerm: string
   setDiscoveryOpen: (open: boolean) => void
+  
+  // Debug settings
+  useAutoLayout: boolean
+  setUseAutoLayout: (use: boolean) => void
   
   // History (for undo/redo)
   history: Snapshot[]
@@ -74,7 +81,7 @@ interface GraphState {
 
 // Helper: Convert ExplorationNode to ReactFlow VerseNode
 function toReactFlowNode(
-  explorationNode: ExplorationNode, 
+  explorationNode: ExplorationNode,
   existingNodes: VerseNode[],
   existingEdges: VerseEdge[]
 ): VerseNode {
@@ -88,41 +95,31 @@ function toReactFlowNode(
       const existingChildrenOfParent = existingEdges.filter(e => e.source === explorationNode.parentId)
       
       const childIndex = existingChildrenOfParent.length
-      const verticalSpacing = 350 // Increased spacing between child nodes (was 200)
-      
-      // For 3 children, center them around parent:
-      // Child 0: parent.y - 350
-      // Child 1: parent.y
-      // Child 2: parent.y + 350
-      const startOffset = -verticalSpacing // Start one spacing above parent
+      const verticalSpacing = 350
+      const startOffset = -verticalSpacing
       
       position = {
-        x: parent.position.x + 600, // Increased horizontal distance from parent (was 500)
+        x: parent.position.x + 600,
         y: parent.position.y + startOffset + (childIndex * verticalSpacing)
       }
     }
   } else {
     // Root node - find empty space
-    // Get all existing root nodes (nodes without parents)
     const rootNodes = existingNodes.filter(n => {
-      // A node is a root if it has no incoming edges
       const hasIncomingEdges = existingEdges.some(e => e.target === n.id)
       return !hasIncomingEdges
     })
     
     if (rootNodes.length === 0) {
-      // First root node - center position
       position = { x: 400, y: 300 }
     } else {
-      // Find the rightmost root node and position to its right
       const rightmostRoot = rootNodes.reduce((max, node) => 
         node.position.x > max.position.x ? node : max
       , rootNodes[0])
       
-      // Position new root to the right with spacing
       position = {
-        x: rightmostRoot.position.x + 700, // Horizontal spacing between root nodes
-        y: 300 // Keep same vertical level
+        x: rightmostRoot.position.x + 700,
+        y: 300
       }
     }
   }
@@ -159,6 +156,8 @@ export const useStore = create<GraphState>((set, get) => ({
   isDiscoveryOpen: false,
   discoveryResults: [],
   currentSearchTerm: '',
+  
+  useAutoLayout: false, // Default OFF
   
   history: [],
   historyIndex: -1,
@@ -227,9 +226,14 @@ export const useStore = create<GraphState>((set, get) => ({
         target: explorationNode.id,
         targetHandle: 'left-tgt',
         type: 'verse',
-        data: { matchType: explorationNode.matchType },
+        data: { matchType: explorationNode.matchType, edgeType: 'search' },
       }
       get()._addReactFlowEdge(edge)
+    }
+    
+    // Apply auto-layout (only if enabled)
+    if (get().useAutoLayout) {
+      get()._applyAutoLayout()
     }
     
     // Center on the new node if it's a root node (no parent)
@@ -241,11 +245,11 @@ export const useStore = create<GraphState>((set, get) => ({
             nodes: [{ id: explorationNode.id }],
             duration: 500,
             padding: 0.5,
-            maxZoom: 1, // Keep current zoom level
+            maxZoom: 1,
             minZoom: 1,
           })
         }
-      }, 50) // Small delay to ensure node is rendered
+      }, 50)
     }
   },
   
@@ -282,10 +286,15 @@ export const useStore = create<GraphState>((set, get) => ({
         target: explorationNode.id,
         targetHandle: 'left-tgt',
         type: 'verse',
-        data: { matchType: explorationNode.matchType },
+        data: { matchType: explorationNode.matchType, edgeType: 'search' },
       }
       get()._addReactFlowEdge(edge)
     })
+    
+    // Apply auto-layout after adding all nodes (only if enabled)
+    if (result.nodesToAdd.length > 0 && get().useAutoLayout) {
+      get()._applyAutoLayout()
+    }
     
     // Update parent node data
     const parentNode = explorer.getNode(nodeId)
@@ -329,6 +338,13 @@ export const useStore = create<GraphState>((set, get) => ({
     set({ edges: [...get().edges, edge] })
   },
   
+  _applyAutoLayout: () => {
+    const { nodes, edges } = get()
+    const { nodes: layoutedNodes } = getLayoutedElements(nodes, edges, 'LR')
+    // Cast back to VerseNode[] since getLayoutedElements preserves node structure
+    set({ nodes: layoutedNodes as VerseNode[] })
+  },
+  
   deleteNode: (id) => {
     const { explorer } = get()
     
@@ -368,6 +384,95 @@ export const useStore = create<GraphState>((set, get) => ({
     get().pushHistory()
   },
   
+  addSequentialVerse: async (nodeId, direction) => {
+    const node = get().nodes.find(n => n.id === nodeId)
+    if (!node) return
+    
+    const currentVerseKey = node.data.verse.verse_key
+    const [surahStr, ayahStr] = currentVerseKey.split(':')
+    const surah = parseInt(surahStr, 10)
+    const ayah = parseInt(ayahStr, 10)
+    
+    // Calculate target verse
+    let targetVerseKey: string
+    if (direction === 'prev') {
+      if (ayah <= 1) return // Can't go before first verse
+      targetVerseKey = `${surah}:${ayah - 1}`
+    } else {
+      // For 'next', we'll try to fetch and handle if it doesn't exist
+      targetVerseKey = `${surah}:${ayah + 1}`
+    }
+    
+    // Check if verse already exists
+    const existing = get().nodes.find(n => n.data.verse.verse_key === targetVerseKey)
+    if (existing) {
+      // Focus on existing node
+      const reactFlowInstance = (window as any).__reactFlowInstance
+      if (reactFlowInstance) {
+        reactFlowInstance.fitView({
+          nodes: [{ id: existing.id }],
+          duration: 800,
+          padding: 0.5,
+        })
+      }
+      return
+    }
+    
+    // Fetch the verse
+    const verse = await fetchVerse(targetVerseKey)
+    if (!verse) return // Verse doesn't exist (end of surah)
+    
+    // Create new node
+    const newNodeId = `verse-${targetVerseKey}-${Date.now()}`
+    const position = direction === 'prev'
+      ? { x: node.position.x, y: node.position.y - 400 }
+      : { x: node.position.x, y: node.position.y + 400 }
+    
+    const newNode: VerseNode = {
+      id: newNodeId,
+      type: 'verse',
+      position,
+      data: {
+        verse,
+      }
+    }
+    
+    get()._addReactFlowNode(newNode)
+    
+    // Create sequential edge
+    const edge: VerseEdge = {
+      id: `${nodeId}-${newNodeId}-${direction}`,
+      source: direction === 'prev' ? newNodeId : nodeId,
+      sourceHandle: 'bottom-src',
+      target: direction === 'prev' ? nodeId : newNodeId,
+      targetHandle: 'top-tgt',
+      type: 'verse',
+      data: { 
+        edgeType: direction === 'prev' ? 'sequential-prev' : 'sequential-next',
+        label: direction === 'prev' ? `← ${targetVerseKey}` : `${targetVerseKey} →`
+      },
+    }
+    
+    get()._addReactFlowEdge(edge)
+    
+    // Apply auto-layout if enabled
+    if (get().useAutoLayout) {
+      get()._applyAutoLayout()
+    }
+    
+    // Focus on the new node
+    setTimeout(() => {
+      const reactFlowInstance = (window as any).__reactFlowInstance
+      if (reactFlowInstance) {
+        reactFlowInstance.fitView({
+          nodes: [{ id: nodeId }, { id: newNodeId }],
+          duration: 500,
+          padding: 0.3,
+        })
+      }
+    }, 100)
+  },
+  
   updateNodeData: (id, data) => {
     set({
       nodes: get().nodes.map(n =>
@@ -386,6 +491,9 @@ export const useStore = create<GraphState>((set, get) => ({
   
   // Discovery drawer
   setDiscoveryOpen: (open) => set({ isDiscoveryOpen: open }),
+  
+  // Debug settings
+  setUseAutoLayout: (use) => set({ useAutoLayout: use }),
   
   // History
   pushHistory: () => {

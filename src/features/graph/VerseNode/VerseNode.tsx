@@ -1,14 +1,39 @@
 import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { VerseNodeData } from '../../../types/graph'
+import { useStore } from '../../../store'
 import ArabicText from './ArabicText'
 import NodeActions from './NodeActions'
 
 function VerseNode({ id, data }: NodeProps<any>) {
   const { verse, activeWordIndex, matchedTokens, tokenTypes } = data as VerseNodeData
+  const addSequentialVerse = useStore(state => state.addSequentialVerse)
+  const edges = useStore(state => state.edges)
+  
+  // Check if we already have prev/next verses connected
+  const hasPrevVerse = edges.some(e => 
+    e.target === id && e.data?.edgeType === 'sequential-prev'
+  )
+  const hasNextVerse = edges.some(e => 
+    e.source === id && e.data?.edgeType === 'sequential-next'
+  )
+  
+  const handlePrevVerse = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    addSequentialVerse(id as string, 'prev')
+  }
+  
+  const handleNextVerse = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    addSequentialVerse(id as string, 'next')
+  }
+  
+  // Check if we're at verse 1 (can't go before)
+  const [, ayahStr] = verse.verse_key.split(':')
+  const isFirstVerse = parseInt(ayahStr, 10) === 1
 
   return (
-    <div className="min-w-[300px] max-w-[500px] bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl group">
+    <div className="min-w-[300px] max-w-[500px] bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl group flex flex-col">
       {/* Handles - completely invisible, no dots */}
       <Handle
         id="top-src"
@@ -35,15 +60,29 @@ function VerseNode({ id, data }: NodeProps<any>) {
         className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
       />
 
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex justify-between items-start mb-4 border-b border-slate-50 pb-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Verse {verse.verse_key}
-          </span>
-          <NodeActions nodeId={id as string} />
-        </div>
+      {/* Top Bar - Navigation and Tools */}
+      <div className="border-b border-slate-50 px-4 py-2 flex items-center justify-between">
+        {!hasPrevVerse && !isFirstVerse ? (
+          <button
+            onClick={handlePrevVerse}
+            className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
+            title="Load previous verse"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m18 15-6-6-6 6"/>
+            </svg>
+            <span>Previous</span>
+          </button>
+        ) : (
+          <div />
+        )}
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          Verse {verse.verse_key}
+        </span>
+        <NodeActions nodeId={id as string} />
+      </div>
 
+      <div className="p-6 flex-1">
         {/* Arabic Text */}
         <ArabicText 
           verse={verse} 
@@ -59,24 +98,39 @@ function VerseNode({ id, data }: NodeProps<any>) {
             {verse.translation}
           </p>
         )}
+      </div>
         
-        {/* Mushaf Link */}
-        <div className="border-t border-slate-50 pt-2 mt-2">
+      {/* Bottom Bar - Next Button and Mushaf Link */}
+      <div className="border-t border-slate-50 px-4 py-2 flex items-center justify-between">
+        {!hasNextVerse ? (
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              const openMushafToVerse = (window as any).__mushafOpener
-              if (openMushafToVerse) openMushafToVerse(verse.verse_key)
-            }}
-            className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"
-            title="Open in Mushaf"
+            onClick={handleNextVerse}
+            className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
+            title="Load next verse"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+            <span>Next</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m6 9 6 6 6-6"/>
             </svg>
-            Read in Mushaf
           </button>
-        </div>
+        ) : (
+          <div />
+        )}
+        
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            const openMushafToVerse = (window as any).__mushafOpener
+            if (openMushafToVerse) openMushafToVerse(verse.verse_key)
+          }}
+          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"
+          title="Open in Mushaf"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+          </svg>
+          Read in Mushaf
+        </button>
       </div>
 
       <Handle
