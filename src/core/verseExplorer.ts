@@ -15,6 +15,17 @@ import { searchWord } from '../services/quranSearch'
 import { fetchVerse } from '../services/quranApi'
 import type { SearchOptions, SearchResult, Verse, MatchType } from '../types/quran'
 
+/**
+ * Determine the active search mode from SearchOptions
+ */
+function getActiveSearchMode(searchOptions: SearchOptions): MatchType {
+  if (searchOptions.lemma) return 'lemma'
+  if (searchOptions.root) return 'root'
+  if (searchOptions.fuzzy) return 'fuzzy'
+  if (searchOptions.semantic) return 'semantic'
+  return 'exact'
+}
+
 export interface ExplorationNode {
   id: string
   verse: Verse
@@ -158,6 +169,10 @@ export class VerseExplorer {
       }
     }
 
+    // Determine the active search mode being used
+    const activeMode = getActiveSearchMode(searchOptions)
+    console.log(`[VerseExplorer] Active search mode: ${activeMode}`)
+
     // Sort by score
     const sorted = [...results].sort((a, b) => b.matchScore - a.matchScore)
 
@@ -184,7 +199,7 @@ export class VerseExplorer {
         verse,
         parentId: nodeId,
         searchTerm: query,
-        matchType: result.matchType,
+        matchType: result.matchType, // Use the engine's actual match type for this result
         matchedTokens: result.matchedTokens,
         tokenTypes: result.tokenTypes,
       }
@@ -193,9 +208,10 @@ export class VerseExplorer {
       nodesToAdd.push(newNode)
     }
 
-    // Update parent node with active word
+    // Update parent node with active word — use the active search mode for the clicked word
+    // (the parent is the source node, its color reflects what mode was used to search)
     node.activeWordIndex = wordIndex
-    node.matchType = sorted[0]?.matchType
+    node.matchType = activeMode
 
     // Store search context
     this.lastSearchSourceId = nodeId

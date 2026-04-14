@@ -9,6 +9,7 @@ import {
   loadWordMap,
   buildInvertedIndex,
   loadSemanticData,
+  normalizeArabic,
   getHighlightRanges as libGetHighlightRanges,
 } from 'quran-search-engine'
 import type {
@@ -22,8 +23,20 @@ import type { SearchOptions, SearchResult } from '../types/quran'
 
 export { libGetHighlightRanges as getHighlightRanges }
 
+/**
+ * Get the active search mode from SearchOptions
+ * This is the single source of truth for determining which mode is active
+ */
+export function getActiveSearchMode(options: SearchOptions): string {
+  if (options.lemma) return 'lemma'
+  if (options.root) return 'root'
+  if (options.fuzzy) return 'fuzzy'
+  if (options.semantic) return 'semantic'
+  return 'exact'
+}
+
 // ── Singleton state ──────────────────────────────────────────────────────────
-let quranData: QuranText[] | null = null
+let quranData: Map<number, QuranText> | null = null
 let morphologyMap: Map<number, MorphologyAya> | null = null
 let wordMap: WordMap | null = null
 let invertedIndex: InvertedIndex | null = null
@@ -73,9 +86,11 @@ async function ensureLoaded(): Promise<void> {
       return data
     })(),
   ]).then(([qd, mm, wm, sm]) => {
-    quranData = Array.isArray(qd) ? qd : Array.from(qd.values())
+    quranData = qd // keep the original Map<gid, QuranText> — never convert
     morphologyMap = mm
-    wordMap = wm
+    wordMap = new Map(
+      [...wm].map(([k, v]) => [k, { ...v, root: v.root ? normalizeArabic(v.root) : v.root }])
+    )
     semanticMap = sm
     
     console.time('⏱️ buildInvertedIndex()')
@@ -96,13 +111,8 @@ async function ensureLoaded(): Promise<void> {
 }
 
 function buildContext(): SearchContext<QuranText> {
-  // Convert array to Map if needed for the search context
-  const quranMap = Array.isArray(quranData) 
-    ? new Map<number, QuranText>(quranData.map((verse, index) => [index + 1, verse]))
-    : quranData!
-  
   return {
-    quranData: quranMap as Map<number, QuranText>,
+    quranData: quranData!,
     morphologyMap: morphologyMap!,
     wordMap: wordMap!,
     invertedIndex: invertedIndex ?? undefined,
@@ -198,6 +208,64 @@ export async function searchWord(
   }
 }
 
+/**
+ * Regex-based search — used for adjacent multi-word queries.
+ * Builds a pattern like `word1\s+word2\s+word3` and passes isRegex: true.
+ * Words are normalized before building the pattern.
+ */
+export async function searchRegex(
+  pattern: string,
+  limit = 50,
+): Promise<SearchResult[]> {
+  const startTime = performance.now()
+
+  try {
+    await ensureLoaded()
+
+    if (isDev) {
+      console.group(`🔍 [quranSearch] Regex: "${pattern}"`)
+      console.time('Search Duration')
+    }
+
+    const response = search(pattern, buildContext(), {
+      lemma: false,
+      root: false,
+      fuzzy: false,
+      isRegex: true,
+    }, { page: 1, limit })
+
+    const duration = performance.now() - startTime
+
+    const results = response.results.map(r => ({
+      verse_key:     `${r.sura_id}:${r.aya_id}`,
+      matchScore:    r.matchScore ?? 0,
+      matchType:     (r.matchType ?? 'none') as SearchResult['matchType'],
+      matchedTokens: r.matchedTokens ?? [],
+      tokenTypes:    r.tokenTypes as Record<string, string> | undefined,
+      text:          r.uthmani,
+    }))
+
+    logResults(response.results, duration)
+
+    return results
+  } catch (error) {
+    logError(error, pattern)
+    throw error
+  }
+}
+
+/**
+ * Build a regex pattern for adjacent word matching.
+ * Normalizes each word and joins with \s+ to match words that appear
+ * next to each other (with any whitespace between them).
+ */
+export function buildAdjacentPattern(words: string[]): string {
+  return words
+    .map(w => normalizeArabic(w))
+    .filter(w => w.length > 0)
+    .join('\\s+')
+}
+
 /** Get full raw search response with all details */
 export async function searchRaw(
   query: string,
@@ -217,7 +285,7 @@ export function getDataStatus() {
     methods: {
       quranData: {
         loaded: !!quranData,
-        count: quranData?.length ?? 0,
+        count: quranData?.size ?? 0,
         name: 'loadQuranData()'
       },
       morphology: {

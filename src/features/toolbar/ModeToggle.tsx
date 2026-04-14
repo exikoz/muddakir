@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useStore } from '../../store'
 import type { SearchOptions } from '../../types/quran'
+import { MODE_COLORS } from '../../lib/modeColors'
 
 const OPTION_CONFIG: {
   key: keyof SearchOptions
@@ -9,10 +10,10 @@ const OPTION_CONFIG: {
   dot: string
   active: string
 }[] = [
-  { key: 'lemma',    label: 'Lemma',    dot: 'bg-amber-500',   active: 'text-amber-700 bg-amber-50 border-amber-300' },
-  { key: 'root',     label: 'Root',     dot: 'bg-violet-500',  active: 'text-violet-700 bg-violet-50 border-violet-300' },
-  { key: 'fuzzy',    label: 'Fuzzy',    dot: 'bg-orange-400',  active: 'text-orange-700 bg-orange-50 border-orange-300' },
-  { key: 'semantic', label: 'Semantic', dot: 'bg-teal-500',    active: 'text-teal-700 bg-teal-50 border-teal-300' },
+  { key: 'lemma',    label: MODE_COLORS.lemma.name,    dot: MODE_COLORS.lemma.dot,    active: MODE_COLORS.lemma.active },
+  { key: 'root',     label: MODE_COLORS.root.name,     dot: MODE_COLORS.root.dot,     active: MODE_COLORS.root.active },
+  { key: 'fuzzy',    label: MODE_COLORS.fuzzy.name,    dot: MODE_COLORS.fuzzy.dot,    active: MODE_COLORS.fuzzy.active },
+  { key: 'semantic', label: MODE_COLORS.semantic.name, dot: MODE_COLORS.semantic.dot, active: MODE_COLORS.semantic.active },
 ]
 
 export default function ModeToggle() {
@@ -30,8 +31,8 @@ export default function ModeToggle() {
   }, [])
 
   const activeKeys = OPTION_CONFIG.filter(o => searchOptions[o.key])
-  const label = activeKeys.length === 0 ? 'EXACT' : activeKeys[0].label.toUpperCase()
-  const dotColor = activeKeys.length === 0 ? 'bg-emerald-500' : activeKeys[0].dot
+  const label = activeKeys.length === 0 ? MODE_COLORS.exact.name.toUpperCase() : activeKeys[0].label.toUpperCase()
+  const dotColor = activeKeys.length === 0 ? MODE_COLORS.exact.dot : activeKeys[0].dot
 
   function selectMode(key: keyof SearchOptions) {
     // Radio button behavior: turn off all others, turn on selected
@@ -74,12 +75,12 @@ export default function ModeToggle() {
             onClick={selectExact}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
               activeKeys.length === 0 
-                ? 'text-emerald-700 bg-emerald-50 border border-emerald-300' 
+                ? MODE_COLORS.exact.active + ' border'
                 : 'text-slate-500 hover:bg-slate-50'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full shrink-0 ${activeKeys.length === 0 ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-            Exact
+            <span className={`w-2 h-2 rounded-full shrink-0 ${activeKeys.length === 0 ? MODE_COLORS.exact.dot : 'bg-slate-300'}`} />
+            {MODE_COLORS.exact.name}
             {activeKeys.length === 0 && <span className="ml-auto text-[10px] opacity-60">ON</span>}
           </button>
           

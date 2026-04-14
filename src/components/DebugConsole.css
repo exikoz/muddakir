@@ -268,9 +268,40 @@
 .debug-main {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: scroll;
   padding: 1.5rem;
   gap: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.15) transparent;
+}
+
+.debug-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.debug-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.debug-main::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 3px;
+}
+
+.debug-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .debug-main {
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
+  }
+  .debug-main::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+  }
+  .debug-main::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+  }
 }
 
 /* Search Bar */
@@ -565,14 +596,14 @@
 .stat-lemma { background: #dbeafe; color: #1e40af; }
 .stat-root { background: #fed7aa; color: #9a3412; }
 .stat-fuzzy { background: #fef3c7; color: #92400e; }
-.stat-semantic { background: #f3e8ff; color: #6b21a8; }
+.stat-semantic { background: #cffafe; color: #155e75; }
 
 @media (prefers-color-scheme: dark) {
   .stat-exact { background: rgba(34, 197, 94, 0.2); color: #86efac; }
   .stat-lemma { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
   .stat-root { background: rgba(249, 115, 22, 0.2); color: #fdba74; }
   .stat-fuzzy { background: rgba(234, 179, 8, 0.2); color: #fde047; }
-  .stat-semantic { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; }
+  .stat-semantic { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
 }
 
 /* Results */
@@ -668,7 +699,7 @@
 .badge-lemma { background: #dbeafe; color: #1e40af; }
 .badge-root { background: #fed7aa; color: #9a3412; }
 .badge-fuzzy { background: #fef3c7; color: #92400e; }
-.badge-semantic { background: #f3e8ff; color: #6b21a8; }
+.badge-semantic { background: #cffafe; color: #155e75; }
 .badge-none { background: #f3f4f6; color: #6b7280; }
 
 @media (prefers-color-scheme: dark) {
@@ -676,7 +707,7 @@
   .badge-lemma { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
   .badge-root { background: rgba(249, 115, 22, 0.2); color: #fdba74; }
   .badge-fuzzy { background: rgba(234, 179, 8, 0.2); color: #fde047; }
-  .badge-semantic { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; }
+  .badge-semantic { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
   .badge-none { background: rgba(156, 163, 175, 0.2); color: #d1d5db; }
 }
 
@@ -728,14 +759,14 @@
 .hl-lemma { background: rgba(59, 130, 246, 0.2); color: #1e40af; }
 .hl-root { background: rgba(249, 115, 22, 0.2); color: #9a3412; }
 .hl-fuzzy { background: rgba(234, 179, 8, 0.2); color: #92400e; }
-.hl-semantic { background: rgba(168, 85, 247, 0.2); color: #6b21a8; }
+.hl-semantic { background: rgba(6, 182, 212, 0.2); color: #155e75; }
 
 @media (prefers-color-scheme: dark) {
   .hl-exact { background: rgba(34, 197, 94, 0.3); color: #86efac; }
   .hl-lemma { background: rgba(59, 130, 246, 0.3); color: #93c5fd; }
   .hl-root { background: rgba(249, 115, 22, 0.3); color: #fdba74; }
   .hl-fuzzy { background: rgba(234, 179, 8, 0.3); color: #fde047; }
-  .hl-semantic { background: rgba(168, 85, 247, 0.3); color: #d8b4fe; }
+  .hl-semantic { background: rgba(6, 182, 212, 0.3); color: #67e8f9; }
 }
 
 /* Normalization Results */
@@ -823,7 +854,6 @@
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  overflow: hidden;
 }
 
 @media (prefers-color-scheme: dark) {

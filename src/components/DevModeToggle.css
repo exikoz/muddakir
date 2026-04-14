@@ -28,3 +28,33 @@
 .dev-mode-toggle:active {
   transform: scale(0.95);
 }
+
+.ui-debug-toggle {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 5rem;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-debug-toggle:hover {
+  transform: scale(1.1);
+  border-color: #f59e0b;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.ui-debug-toggle:active {
+  transform: scale(0.95);
+}

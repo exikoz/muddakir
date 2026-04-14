@@ -2,15 +2,7 @@ import { memo } from 'react'
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
 import type { MatchType } from '../../../types/quran'
 import type { VerseEdgeData } from '../../../types/graph'
-
-const EDGE_COLORS: Record<MatchType, string> = {
-  exact:    '#10b981', // emerald-500
-  lemma:    '#3b82f6', // blue-500
-  root:     '#8b5cf6', // violet-500
-  fuzzy:    '#f59e0b', // amber-500
-  semantic: '#14b8a6', // teal-500
-  none:     '#94a3b8', // slate-400
-}
+import { getEdgeColor } from '../../../lib/modeColors'
 
 const SEQUENTIAL_COLORS = {
   prev: '#14b8a6', // teal-500
@@ -24,9 +16,10 @@ function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
   
   // Sequential edges use different styling
   const isSequential = edgeType === 'sequential-prev' || edgeType === 'sequential-next'
+  const isSearch = edgeType === 'search'
   const color = isSequential 
     ? (edgeType === 'sequential-prev' ? SEQUENTIAL_COLORS.prev : SEQUENTIAL_COLORS.next)
-    : EDGE_COLORS[matchType]
+    : getEdgeColor(matchType) // Use dynamic color based on match type
   
   // Use smooth step path for all edges
   const [edgePath, labelX, labelY] = getSmoothStepPath({ 
@@ -39,6 +32,8 @@ function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
     borderRadius: 16 
   })
 
+  const searchTerm = edgeData?.searchTerm
+
   return (
     <>
       <BaseEdge
@@ -49,7 +44,30 @@ function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
           strokeWidth: isSequential ? 3 : 2,
           strokeDasharray: isSequential ? '10 5' : 'none', // Dashed line for sequential
         }}
+        data-edge-type={edgeType}
+        data-match-type={matchType}
       />
+      {/* Search edge label — shows the clicked word */}
+      {isSearch && searchTerm && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              pointerEvents: 'all',
+            }}
+            className="nodrag nopan"
+          >
+            <div
+              className="font-arabic text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm bg-white border border-slate-200 text-slate-700"
+              dir="rtl"
+            >
+              {searchTerm}
+            </div>
+          </div>
+        </EdgeLabelRenderer>
+      )}
+      {/* Sequential edge label */}
       {isSequential && edgeData?.label && (
         <EdgeLabelRenderer>
           <div
