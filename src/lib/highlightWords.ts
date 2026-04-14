@@ -3,7 +3,7 @@
  *
  * Three strategies:
  * 1. Exact match: matchedTokens from engine → removeTashkeel comparison
- * 2. Lemma/root/fuzzy fallback: searchQuery → removeTashkeel + includes
+ * 2. Lemma/root/fuzzy fallback: searchQuery → suffixMatch (endsWith)
  * 3. Regex: searchQuery → normalizeArabic + concatenated string + offset mapping
  *
  * Used by both graph nodes (ArabicText) and the Discovery panel (DiscoveryItem).
@@ -12,6 +12,24 @@ import { removeTashkeel, normalizeArabic } from 'quran-search-engine'
 import type { Word, MatchType } from '../types/quran'
 
 const DEBUG = import.meta.env.DEV
+
+/**
+ * Check if a verse word matches the search query, accounting for Arabic prefixes.
+ *
+ * Arabic prefixes (و، ف، ب، ل، ال، وال، بال، فال، etc.) attach at the START.
+ * The base word is always the ENDING of the prefixed form.
+ * endsWith() matches the base word regardless of which side has the prefix.
+ *
+ * includes() either misses matches or creates false positives on short words
+ * (e.g. "وسليمان".includes("ما") → true because ما appears inside سلي'ما'ن).
+ */
+function suffixMatch(wordText: string, queryText: string): boolean {
+  const w = removeTashkeel(wordText).trim()
+  const q = removeTashkeel(queryText).trim()
+  if (w.length === 0 || q.length === 0) return false
+  if (w.length >= q.length) return w.endsWith(q)
+  return q.endsWith(w)
+}
 
 /**
  * Main entry point. Dispatches to the right strategy based on available data.
@@ -85,9 +103,9 @@ function getHighlights_ExactTokens(
 
 /**
  * Strategy 2: Lemma/root/fuzzy fallback.
- * No tokens from engine — check if each word CONTAINS the search query.
- * Direction: strippedWord.includes(strippedQuery) only, never reverse.
- * This catches prefixed forms (ولسليمان contains سليمان).
+ * No tokens from engine — use suffixMatch (endsWith) to handle Arabic prefixes.
+ * The shorter string must be a suffix of the longer one, which correctly handles
+ * both directions: prefixed query → bare word, and bare query → prefixed word.
  */
 function getHighlightPositions_LemmaA(
   words: Word[],
@@ -105,9 +123,9 @@ function getHighlightPositions_LemmaA(
 
   words.forEach((word, index) => {
     if (word.char_type_name === 'end') return
-    const strippedWord = removeTashkeel(word.text).trim()
-    const matched = strippedWord.includes(strippedQuery)
+    const matched = suffixMatch(word.text, searchQuery)
     if (DEBUG) {
+      const strippedWord = removeTashkeel(word.text).trim()
       console.log(`  [${index}] "${word.text}" → "${strippedWord}" ${matched ? '✅' : '—'}`)
     }
     if (matched) {
