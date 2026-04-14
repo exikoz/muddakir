@@ -241,6 +241,7 @@ export const useStore = create<GraphState>((set, get) => ({
       explorationNode.matchedTokens = searchMeta.matchedTokens
       explorationNode.tokenTypes = searchMeta.tokenTypes
       explorationNode.matchType = searchMeta.matchType
+      explorationNode.searchTerm = explorer.getCurrentSearchTerm()
     }
     
     // Convert to ReactFlow format
