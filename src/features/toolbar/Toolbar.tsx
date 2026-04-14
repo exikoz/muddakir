@@ -5,6 +5,7 @@ import DiscoveryToggle from './DiscoveryToggle'
 import MushafToggle from './MushafToggle'
 import MultiWordToggle from './MultiWordToggle'
 import WorkspaceToggle from './WorkspaceToggle'
+import UndoRedo from './UndoRedo'
 
 export default function Toolbar() {
   return (
@@ -14,6 +15,7 @@ export default function Toolbar() {
         <MultiWordToggle />
         <SeedInput />
         <TextSearch />
+        <UndoRedo />
         <DiscoveryToggle />
         <MushafToggle />
         <WorkspaceToggle />
