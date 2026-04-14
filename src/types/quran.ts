@@ -17,7 +17,7 @@ export interface Verse {
   words: Word[]
 }
 
-export type MatchType = 'exact' | 'lemma' | 'root' | 'fuzzy' | 'semantic' | 'none'
+export type MatchType = 'exact' | 'lemma' | 'root' | 'fuzzy' | 'semantic' | 'regex' | 'none'
 
 export interface SearchResult {
   verse_key: string

@@ -6,7 +6,7 @@ import ArabicText from './ArabicText'
 import NodeActions from './NodeActions'
 
 function VerseNode({ id, data }: NodeProps<any>) {
-  const { verse, activeWordIndex, matchedTokens, tokenTypes } = data as VerseNodeData
+  const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery } = data as VerseNodeData
   const addSequentialVerse = useStore(state => state.addSequentialVerse)
   const edges = useStore(state => state.edges)
   
@@ -88,8 +88,11 @@ function VerseNode({ id, data }: NodeProps<any>) {
           verse={verse} 
           sourceNodeId={id as string} 
           activeWordIndex={activeWordIndex}
+          activeWordMatchType={activeWordMatchType}
           matchedTokens={matchedTokens}
           tokenTypes={tokenTypes}
+          matchType={data.matchType as any}
+          searchQuery={searchQuery}
         />
 
         {/* Translation */}

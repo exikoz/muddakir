@@ -12,6 +12,7 @@ import type { SearchOptions, SearchResult, Verse } from '../types/quran'
 import { VerseExplorer } from '../core/verseExplorer'
 import type { ExplorationNode } from '../core/verseExplorer'
 import { fetchChapterVerses, fetchVerse } from '../services/quranApi'
+import { searchWord, searchRegex, buildAdjacentPattern } from '../services/quranSearch'
 import { getLayoutedElements } from '../lib/autoLayout'
 
 interface GraphState {
@@ -26,7 +27,7 @@ interface GraphState {
   onConnect: (connection: Connection) => void
   
   // High-level actions (delegate to explorer)
-  addVerseNode: (verseKey: string, parentId?: string) => Promise<void>
+  addVerseNode: (verseKey: string, parentId?: string, searchMeta?: { matchedTokens?: string[]; tokenTypes?: Record<string, string>; matchType?: import('../types/quran').MatchType }) => Promise<void>
   searchFromWord: (nodeId: string, wordIndex: number) => Promise<void>
   deleteNode: (id: string) => void
   addSequentialVerse: (nodeId: string, direction: 'prev' | 'next') => Promise<void>
@@ -42,11 +43,25 @@ interface GraphState {
   searchOptions: SearchOptions
   setSearchOptions: (options: SearchOptions) => void
   
+  // Multi-word search mode
+  multiWordMode: boolean
+  adjacentMode: boolean
+  setMultiWordMode: (on: boolean) => void
+  setAdjacentMode: (on: boolean) => void
+  selectedWords: { nodeId: string; wordIndex: number; text: string }[]
+  addSelectedWord: (nodeId: string, wordIndex: number, text: string) => void
+  removeSelectedWord: (wordIndex: number) => void
+  clearSelectedWords: () => void
+  executeMultiWordSearch: () => Promise<void>
+  
   // Discovery drawer state
   isDiscoveryOpen: boolean
   discoveryResults: SearchResult[]
   currentSearchTerm: string
+  discoverySearchMode: string
+  discoveryLoading: boolean
   setDiscoveryOpen: (open: boolean) => void
+  searchDiscovery: (query: string) => Promise<void>
   
   // Debug settings
   useAutoLayout: boolean
@@ -132,8 +147,10 @@ function toReactFlowNode(
       verse: explorationNode.verse,
       activeWordIndex: explorationNode.activeWordIndex,
       activeWordMatchType: explorationNode.matchType,
+      matchType: explorationNode.matchType, // frozen: mode active when this node was created
       matchedTokens: explorationNode.matchedTokens,
       tokenTypes: explorationNode.tokenTypes,
+      searchQuery: explorationNode.searchTerm,
     }
   }
 }
@@ -147,15 +164,21 @@ export const useStore = create<GraphState>((set, get) => ({
   edges: [],
   
   searchOptions: {
-    lemma: true,   // ✅ Default to lemma search only
+    lemma: true,
     root: false,
     fuzzy: false,
     semantic: false,
   },
   
+  multiWordMode: false,
+  adjacentMode: false,
+  selectedWords: [],
+  
   isDiscoveryOpen: false,
   discoveryResults: [],
   currentSearchTerm: '',
+  discoverySearchMode: '',
+  discoveryLoading: false,
   
   useAutoLayout: false, // Default OFF
   
@@ -189,7 +212,7 @@ export const useStore = create<GraphState>((set, get) => ({
   },
   
   // High-level actions (use explorer)
-  addVerseNode: async (verseKey, parentId) => {
+  addVerseNode: async (verseKey, parentId, searchMeta) => {
     const { explorer } = get()
     
     // Check if already exists - if so, focus on it
@@ -213,6 +236,13 @@ export const useStore = create<GraphState>((set, get) => ({
     const explorationNode = await explorer.addVerse(verseKey, parentId)
     if (!explorationNode) return
     
+    // Apply search metadata from discovery result if provided
+    if (searchMeta) {
+      explorationNode.matchedTokens = searchMeta.matchedTokens
+      explorationNode.tokenTypes = searchMeta.tokenTypes
+      explorationNode.matchType = searchMeta.matchType
+    }
+    
     // Convert to ReactFlow format
     const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
     get()._addReactFlowNode(reactFlowNode)
@@ -226,7 +256,7 @@ export const useStore = create<GraphState>((set, get) => ({
         target: explorationNode.id,
         targetHandle: 'left-tgt',
         type: 'verse',
-        data: { matchType: explorationNode.matchType, edgeType: 'search' },
+        data: { matchType: explorationNode.matchType, edgeType: 'search', searchTerm: explorer.getCurrentSearchTerm() },
       }
       get()._addReactFlowEdge(edge)
     }
@@ -274,11 +304,16 @@ export const useStore = create<GraphState>((set, get) => ({
     }
     
     // Add nodes to ReactFlow with proper spacing
+    // Edge color should reflect the search mode used, not the per-result engine classification
+    const parentNode = explorer.getNode(nodeId)
+    const searchMode = parentNode?.matchType // activeMode — set on the parent by the explorer
+    const searchTerm = explorer.getCurrentSearchTerm()
+
     result.nodesToAdd.forEach((explorationNode) => {
       const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
       get()._addReactFlowNode(reactFlowNode)
       
-      // Create edge
+      // Create edge — use the search mode for edge color, not the result's matchType
       const edge: VerseEdge = {
         id: `${nodeId}-${explorationNode.id}`,
         source: nodeId,
@@ -286,7 +321,7 @@ export const useStore = create<GraphState>((set, get) => ({
         target: explorationNode.id,
         targetHandle: 'left-tgt',
         type: 'verse',
-        data: { matchType: explorationNode.matchType, edgeType: 'search' },
+        data: { matchType: searchMode, edgeType: 'search', searchTerm },
       }
       get()._addReactFlowEdge(edge)
     })
@@ -297,7 +332,6 @@ export const useStore = create<GraphState>((set, get) => ({
     }
     
     // Update parent node data
-    const parentNode = explorer.getNode(nodeId)
     if (parentNode) {
       get().updateNodeData(nodeId, {
         activeWordIndex: parentNode.activeWordIndex,
@@ -310,6 +344,11 @@ export const useStore = create<GraphState>((set, get) => ({
       discoveryResults: result.resultsForDiscovery,
       isDiscoveryOpen: result.shouldOpenDiscovery,
       currentSearchTerm: explorer.getCurrentSearchTerm(),
+      discoverySearchMode: searchOptions.lemma ? 'Lemma' 
+        : searchOptions.root ? 'Root'
+        : searchOptions.fuzzy ? 'Fuzzy'
+        : searchOptions.semantic ? 'Semantic'
+        : 'Exact',
     })
     
     // Fit view to show parent and all new children
@@ -489,8 +528,207 @@ export const useStore = create<GraphState>((set, get) => ({
   // Search
   setSearchOptions: (options) => set({ searchOptions: options }),
   
+  // Multi-word search mode
+  setMultiWordMode: (on) => set({ multiWordMode: on, selectedWords: [], adjacentMode: false }),
+  setAdjacentMode: (on) => set({ adjacentMode: on }),
+  
+  addSelectedWord: (nodeId, wordIndex, text) => {
+    const { selectedWords } = get()
+    // Don't add duplicates
+    if (selectedWords.some(w => w.nodeId === nodeId && w.wordIndex === wordIndex)) return
+    set({ selectedWords: [...selectedWords, { nodeId, wordIndex, text }] })
+  },
+  
+  removeSelectedWord: (index) => {
+    set({ selectedWords: get().selectedWords.filter((_, i) => i !== index) })
+  },
+  
+  clearSelectedWords: () => set({ selectedWords: [] }),
+  
+  executeMultiWordSearch: async () => {
+    const { selectedWords, searchOptions, adjacentMode, explorer } = get()
+    if (selectedWords.length === 0) return
+    
+    // Use the first selected word's node as the source
+    const sourceNodeId = selectedWords[0].nodeId
+    const wordTexts = selectedWords.map(w => w.text)
+    
+    // Build query based on mode
+    // Adjacent: regex pattern word1\s+word2 — finds words next to each other
+    // Free: space-joined words — AND logic, words can be anywhere in the verse
+    const displayQuery = wordTexts.join(' ')
+    
+    // Check if source node already has children
+    if (explorer.hasChildren(sourceNodeId)) {
+      console.log('[Store] Source node already has children, skipping multi-word search')
+      return
+    }
+    
+    set({ discoveryLoading: true })
+    
+    try {
+      let results: import('../types/quran').SearchResult[]
+      
+      if (adjacentMode) {
+        // Regex search for adjacent words
+        const pattern = buildAdjacentPattern(wordTexts)
+        console.log(`[Store] Adjacent search pattern: "${pattern}"`)
+        results = await searchRegex(pattern, 50)
+      } else {
+        // Free multi-word search (AND logic)
+        results = await searchWord(displayQuery, searchOptions, 50)
+      }
+      
+      if (results.length === 0) {
+        get().updateNodeData(sourceNodeId, {
+          activeWordMatchType: 'none',
+        })
+        set({ discoveryLoading: false, selectedWords: [] })
+        return
+      }
+      
+      const activeMode = searchOptions.lemma ? 'lemma' 
+        : searchOptions.root ? 'root'
+        : searchOptions.fuzzy ? 'fuzzy'
+        : searchOptions.semantic ? 'semantic'
+        : 'exact' as const
+      
+      const sorted = [...results].sort((a, b) => b.matchScore - a.matchScore)
+      const existingVerseKeys = new Set(get().nodes.map(n => n.data.verse.verse_key))
+      const newResults = sorted.filter(r => !existingVerseKeys.has(r.verse_key))
+      
+      const toAdd = newResults.slice(0, 3)
+      const overflow = newResults.slice(3)
+      
+      // Add top results as nodes
+      for (const result of toAdd) {
+        const verse = await fetchVerse(result.verse_key)
+        if (!verse) continue
+        
+        const explorationNode = await explorer.addVerse(result.verse_key, sourceNodeId)
+        if (!explorationNode) continue
+        
+        explorationNode.matchedTokens = result.matchedTokens
+        explorationNode.tokenTypes = result.tokenTypes
+        explorationNode.matchType = result.matchType
+        explorationNode.searchTerm = displayQuery
+        
+        const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
+        get()._addReactFlowNode(reactFlowNode)
+        
+        const edge: VerseEdge = {
+          id: `${sourceNodeId}-${explorationNode.id}`,
+          source: sourceNodeId,
+          sourceHandle: 'right-src',
+          target: explorationNode.id,
+          targetHandle: 'left-tgt',
+          type: 'verse',
+          data: { matchType: activeMode, edgeType: 'search', searchTerm: displayQuery },
+        }
+        get()._addReactFlowEdge(edge)
+      }
+      
+      // Update parent node
+      const parentNode = explorer.getNode(sourceNodeId)
+      if (parentNode) {
+        parentNode.matchType = activeMode
+        get().updateNodeData(sourceNodeId, {
+          activeWordMatchType: activeMode,
+        })
+      }
+      
+      // Update explorer search context
+      ;(explorer as any).lastSearchSourceId = sourceNodeId
+      ;(explorer as any).currentSearchTerm = displayQuery
+      
+      // Apply auto-layout if enabled
+      if (toAdd.length > 0 && get().useAutoLayout) {
+        get()._applyAutoLayout()
+      }
+      
+      // Update discovery panel
+      const allOverflow = [...overflow, ...sorted.filter(r => existingVerseKeys.has(r.verse_key))]
+      set({
+        discoveryResults: allOverflow,
+        isDiscoveryOpen: allOverflow.length > 0,
+        currentSearchTerm: displayQuery,
+        discoverySearchMode: activeMode === 'lemma' ? 'Lemma'
+          : activeMode === 'root' ? 'Root'
+          : activeMode === 'fuzzy' ? 'Fuzzy'
+          : activeMode === 'semantic' ? 'Semantic'
+          : 'Exact',
+        discoveryLoading: false,
+        selectedWords: [],
+      })
+      
+      // Fit view
+      if (toAdd.length > 0) {
+        setTimeout(() => {
+          const reactFlowInstance = (window as any).__reactFlowInstance
+          if (reactFlowInstance) {
+            reactFlowInstance.fitView({
+              nodes: [{ id: sourceNodeId }],
+              duration: 500,
+              padding: 0.3,
+            })
+          }
+        }, 100)
+      }
+    } catch (err) {
+      console.error('[Store] Multi-word search error:', err)
+      set({ discoveryLoading: false })
+    }
+  },
+  
   // Discovery drawer
   setDiscoveryOpen: (open) => set({ isDiscoveryOpen: open }),
+  
+  searchDiscovery: async (query) => {
+    const trimmed = query.trim()
+    if (!trimmed) return
+    
+    const { searchOptions, explorer } = get()
+    
+    // Determine the active mode label
+    const activeMode = searchOptions.lemma ? 'Lemma' 
+      : searchOptions.root ? 'Root'
+      : searchOptions.fuzzy ? 'Fuzzy'
+      : searchOptions.semantic ? 'Semantic'
+      : 'Exact'
+    
+    set({ discoveryLoading: true, currentSearchTerm: trimmed, discoverySearchMode: activeMode })
+    
+    try {
+      const results = await searchWord(trimmed, searchOptions, 50)
+      
+      // Filter out verses already on the graph
+      const existingVerseKeys = new Set(get().nodes.map(n => n.data.verse.verse_key))
+      const filtered = results.filter(r => !existingVerseKeys.has(r.verse_key))
+      
+      // Update the explorer's search term so addVerseNode can use it
+      ;(explorer as any).currentSearchTerm = trimmed
+      
+      // Update edges that came from the last search source to reflect the new search term
+      const lastSourceId = explorer.getLastSearchSourceId()
+      if (lastSourceId) {
+        set({
+          edges: get().edges.map(e =>
+            e.source === lastSourceId && e.data?.edgeType === 'search'
+              ? { ...e, data: { ...e.data, searchTerm: trimmed } }
+              : e
+          ),
+        })
+      }
+      
+      set({
+        discoveryResults: filtered,
+        discoveryLoading: false,
+      })
+    } catch (err) {
+      console.error('[Store] Discovery search error:', err)
+      set({ discoveryLoading: false })
+    }
+  },
   
   // Debug settings
   setUseAutoLayout: (use) => set({ useAutoLayout: use }),

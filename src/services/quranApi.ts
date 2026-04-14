@@ -57,7 +57,7 @@ export async function fetchVerse(verseKey: string): Promise<Verse | null> {
 
   try {
     const path = `/api/v4/verses/by_key/${verseKey}?words=true` +
-      `&word_fields=text_imlaei,text_imlaei_simple,root_name,lemma_name` +
+      `&word_fields=text_imlaei,root_name,lemma_name` +
       `&fields=text_imlaei&translation_fields=text` +
       `&translations=${TRANSLATION_ID}` +
       `&word_translation=true&word_transliteration=true`
@@ -72,8 +72,8 @@ export async function fetchVerse(verseKey: string): Promise<Verse | null> {
     const words = (v.words ?? []).map((w: any) => ({
       id:              w.id ?? w.position,
       position:        w.position,
-      text:            w.text_imlaei ?? w.text_imlaei_simple ?? '',
-      text_simple:     w.text_imlaei_simple ?? w.text_imlaei ?? '',
+      text:            w.text_imlaei ?? '',
+      text_simple:     w.text_imlaei ?? '',
       char_type_name:  w.char_type_name ?? 'word',
       transliteration: w.transliteration?.text,
       translation:     w.translation?.text,
@@ -115,7 +115,7 @@ export async function fetchChapterVerses(
 
   try {
     const path = `/api/v4/verses/by_chapter/${chapterNumber}?words=true` +
-      `&word_fields=text_imlaei,text_imlaei_simple,root_name,lemma_name` +
+      `&word_fields=text_imlaei,root_name,lemma_name` +
       `&fields=text_imlaei&translation_fields=text` +
       `&translations=${TRANSLATION_ID}` +
       `&word_translation=true&word_transliteration=true` +
@@ -129,8 +129,8 @@ export async function fetchChapterVerses(
       const words = (v.words ?? []).map((w: any) => ({
         id:              w.id ?? w.position,
         position:        w.position,
-        text:            w.text_imlaei ?? w.text_imlaei_simple ?? '',
-        text_simple:     w.text_imlaei_simple ?? w.text_imlaei ?? '',
+        text:            w.text_imlaei ?? '',
+        text_simple:     w.text_imlaei ?? '',
         char_type_name:  w.char_type_name ?? 'word',
         transliteration: w.transliteration?.text,
         translation:     w.translation?.text,
