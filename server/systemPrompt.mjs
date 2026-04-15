@@ -8,10 +8,17 @@
 /**
  * Build the system prompt, optionally including user-provided context verses.
  * @param {{ verseKey: string, text: string, translation: string }[]} [contextItems]
+ * @param {string} [language='en'] — ISO language code for response language
  * @returns {string}
  */
-export function buildSystemPrompt(contextItems) {
+export function buildSystemPrompt(contextItems, language = 'en') {
+  const langInstruction = language === 'en'
+    ? 'Respond in English.'
+    : `Respond entirely in the language with code "${language}". All commentary, explanations, and descriptions must be in that language. Verse keys like [2:255] stay in numeric format. The verification receipt at the end should also be in that language.`
+
   let prompt = `You are a Quran research assistant embedded in a study tool called Tadabbar.
+
+LANGUAGE: ${langInstruction}
 
 GROUNDING RULES (MANDATORY — violations will be rejected):
 1. Before answering any question related to the Quran, you MUST call the \`fetch_grounding_rules\` tool to retrieve the current session's \`grounding_nonce\`.

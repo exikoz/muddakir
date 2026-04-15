@@ -21,6 +21,7 @@ export interface InsightRequest {
   query: string
   modelId: AIScopeModelId
   context?: Array<{ verseKey: string; text: string; translation: string }>
+  language?: string
 }
 
 export interface InsightResponse {
@@ -58,6 +59,7 @@ export async function generateInsight(request: InsightRequest): Promise<InsightR
         query: request.query,
         modelId: request.modelId,
         context: request.context,
+        language: request.language ?? 'en',
       }),
     })
 

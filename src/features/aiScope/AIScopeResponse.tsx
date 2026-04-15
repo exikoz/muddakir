@@ -10,7 +10,8 @@ interface Props {
 }
 
 export default function AIScopeResponse({ content }: Props) {
-  const { t } = useTranslation('aiScope')
+  const { t, i18n } = useTranslation('aiScope')
+  const contentDir = i18n.dir()
   const addVerseNode = useStore(s => s.addVerseNode)
   const nodes = useStore(s => s.nodes)
   const [addingAll, setAddingAll] = useState(false)
@@ -29,11 +30,11 @@ export default function AIScopeResponse({ content }: Props) {
 
   // If parsing produced no structured blocks, render as plain text
   if (blocks.length === 0) {
-    return <p className="text-sm text-slate-700 leading-relaxed">{content}</p>
+    return <p className="text-sm text-slate-700 leading-relaxed" dir={contentDir}>{content}</p>
   }
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0" dir={contentDir}>
       {blocks.map((block, i) => {
         if (block.type === 'text') {
           // Split into paragraphs on double newlines

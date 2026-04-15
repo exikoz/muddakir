@@ -15,6 +15,7 @@ import type {
   MCPToolCallLog,
 } from '../types/aiScope'
 import { generateInsight } from '../services/aiScopeService'
+import i18n from '../i18n/config'
 
 interface AIScopeState {
   // Panel visibility
@@ -96,6 +97,7 @@ export const useAIScopeStore = create<AIScopeState>((set, get) => ({
         context: contextItems.length > 0
           ? contextItems.map(c => ({ verseKey: c.verseKey, text: c.text, translation: c.translation }))
           : undefined,
+        language: i18n.language,
       })
 
       // 3. Add assistant response with tool call logs

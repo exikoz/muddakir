@@ -113,7 +113,7 @@ const NONCE_REQUIRED_TOOLS = new Set([
 // ── Main query endpoint ─────────────────────────────────────────────────────
 
 app.post('/api/query', async (req, res) => {
-  const { query, modelId = 'gemini-2.5-flash', context } = req.body
+  const { query, modelId = 'gemini-2.5-flash', context, language = 'en' } = req.body
 
   if (!query || typeof query !== 'string') {
     return res.status(400).json({ error: 'Missing "query" in request body' })
@@ -139,7 +139,7 @@ app.post('/api/query', async (req, res) => {
 
     // ── Step 2: Build Gemini model with MCP tools ───────────────────────
     const geminiTools = await getGeminiTools()
-    const systemPrompt = buildSystemPrompt(context)
+    const systemPrompt = buildSystemPrompt(context, language)
 
     const model = genAI.getGenerativeModel({
       model: modelId,

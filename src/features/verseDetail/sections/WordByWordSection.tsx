@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 
 export default function WordByWordSection() {
-  const { t } = useTranslation('verseDetail')
+  const { t, i18n } = useTranslation('verseDetail')
+  const contentDir = i18n.dir()
   const verse = useVerseDetailStore(s => s.verse)
   const wordExplanations = useVerseDetailStore(s => s.wordExplanations)
   const wordExplanationLoading = useVerseDetailStore(s => s.wordExplanationLoading)
@@ -102,7 +103,7 @@ export default function WordByWordSection() {
                       )}
 
                       {explanation && (
-                        <div className="text-xs text-slate-600 leading-relaxed space-y-1.5">
+                        <div className="text-xs text-slate-600 leading-relaxed space-y-1.5" dir={contentDir}>
                           {explanation.split(/\n{2,}|\n/).filter(Boolean).map((line, i) => {
                             const trimmed = line.trim()
                             if (trimmed.startsWith('✅') && /Verification Token/i.test(trimmed)) {

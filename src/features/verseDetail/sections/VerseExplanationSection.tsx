@@ -9,7 +9,8 @@ import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 
 export default function VerseExplanationSection() {
-  const { t } = useTranslation('verseDetail')
+  const { t, i18n } = useTranslation('verseDetail')
+  const contentDir = i18n.dir()
   const verse = useVerseDetailStore(s => s.verse)
   const explanations = useVerseDetailStore(s => s.verseExplanations)
   const loading = useVerseDetailStore(s => s.verseExplanationLoading)
@@ -56,7 +57,7 @@ export default function VerseExplanationSection() {
             <Sparkles size={10} className="text-emerald-500" />
             <span className="text-[10px] font-semibold text-slate-400">{t('ai_explanation')}</span>
           </div>
-          <div className="text-sm text-slate-700 leading-relaxed space-y-2">
+          <div className="text-sm text-slate-700 leading-relaxed space-y-2" dir={contentDir}>
             {explanation.split(/\n{2,}|\n/).filter(Boolean).map((para, i) => {
               const trimmed = para.trim()
               if (trimmed.startsWith('✅') && /Verification Token/i.test(trimmed)) {

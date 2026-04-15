@@ -7,6 +7,7 @@ import type { Verse } from '../types/quran'
 import { generateInsight } from '../services/aiScopeService'
 import { useAIScopeStore } from './aiScopeStore'
 import { VERSE_EXPLANATION_PROMPT, WORD_EXPLANATION_PROMPT } from '../features/verseDetail/detailConfig'
+import i18n from '../i18n/config'
 
 interface VerseDetailState {
   isOpen: boolean
@@ -55,12 +56,13 @@ export const useVerseDetailStore = create<VerseDetailState>((set, get) => ({
 
     try {
       const modelId = useAIScopeStore.getState().selectedModel
-      const prompt = VERSE_EXPLANATION_PROMPT(verse.verse_key, verse.text_arabic, verse.translation)
+      const prompt = VERSE_EXPLANATION_PROMPT(verse.verse_key, verse.text_arabic, verse.translation, i18n.language)
 
       const response = await generateInsight({
         query: prompt,
         modelId,
         context: [{ verseKey: verse.verse_key, text: verse.text_arabic, translation: verse.translation }],
+        language: i18n.language,
       })
 
       // Strip any markdown that slipped through
@@ -108,12 +110,14 @@ export const useVerseDetailStore = create<VerseDetailState>((set, get) => ({
         verse.verse_key,
         verse.text_arabic,
         verse.translation,
+        i18n.language,
       )
 
       const response = await generateInsight({
         query: prompt,
         modelId,
         context: [{ verseKey: verse.verse_key, text: verse.text_arabic, translation: verse.translation }],
+        language: i18n.language,
       })
 
       const clean = response.content

@@ -38,10 +38,17 @@ export const TRANSLATION_IDS = TRANSLATIONS.map(t => t.id).join(',')
 
 // ── AI Prompt Templates ─────────────────────────────────────────────────────
 
-export const VERSE_EXPLANATION_PROMPT = (verseKey: string, arabicText: string, translation: string) =>
+const langDirective = (lang: string) =>
+  lang === 'en'
+    ? 'Respond in English.'
+    : `Respond entirely in the language with code "${lang}". All commentary and explanations must be in that language.`
+
+export const VERSE_EXPLANATION_PROMPT = (verseKey: string, arabicText: string, translation: string, language = 'en') =>
   `Explain verse ${verseKey} briefly.
 Arabic: ${arabicText}
 Translation: ${translation}
+
+${langDirective(language)}
 
 Write exactly 2 short sentences: one on what the verse is about, one on its key lesson. Separate them with a blank line.
 
@@ -54,10 +61,13 @@ export const WORD_EXPLANATION_PROMPT = (
   verseKey: string,
   arabicText: string,
   translation: string,
+  language = 'en',
 ) =>
   `Explain the word "${wordText}" (${transliteration}, "${wordTranslation}") in verse ${verseKey}.
 Verse: ${arabicText}
 Translation: ${translation}
+
+${langDirective(language)}
 
 Write exactly 3 short lines separated by blank lines:
 Line 1: Root letters and core meaning.
