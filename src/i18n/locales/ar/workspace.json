@@ -1,0 +1,18 @@
+{
+  "title": "مساحات العمل",
+  "save_current": "حفظ مساحة العمل الحالية",
+  "name_placeholder": "اسم مساحة العمل…",
+  "new_blank": "جديد فارغ",
+  "import": "استيراد",
+  "delete_confirm": "حذف مساحة العمل هذه؟ لا يمكن التراجع عن هذا.",
+  "no_workspaces": "لا توجد مساحات عمل محفوظة بعد.",
+  "no_workspaces_hint": "اكتب اسمًا أعلاه وانقر + للحفظ.",
+  "nodes_count": "{{count}} عقدة",
+  "rename": "إعادة تسمية",
+  "export_json": "تصدير كـ JSON",
+  "delete": "حذف",
+  "error_save": "فشل في حفظ مساحة العمل",
+  "error_save_short": "فشل في الحفظ",
+  "error_load": "فشل في تحميل مساحة العمل",
+  "error_import": "فشل في الاستيراد"
+}

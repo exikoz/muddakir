@@ -1,0 +1,12 @@
+{
+  "title": "الاكتشاف العميق",
+  "searching": "جارٍ البحث...",
+  "results_found": "{{count}} آية ذات صلة",
+  "search_placeholder": "ابحث عن كلمة...",
+  "results_from": "نتائج من",
+  "search_suffix": "بحث",
+  "for_term": "عن",
+  "no_results": "لا توجد نتائج إضافية بناءً على بحثك الأخير.",
+  "add_to_map": "أضف إلى الخريطة",
+  "failed_to_load": "فشل في تحميل الآية"
+}

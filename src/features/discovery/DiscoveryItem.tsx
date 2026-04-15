@@ -1,5 +1,6 @@
 import { memo, useState, useEffect } from 'react'
 import { Plus, Check, Trophy, Tag, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { SearchResult, Verse } from '../../types/quran'
 import { useStore } from '../../store'
 import { getBadgeClasses, getMatchHighlightClasses } from '../../lib/modeColors'
@@ -11,6 +12,7 @@ interface Props {
 }
 
 function DiscoveryItem({ result }: Props) {
+  const { t } = useTranslation('discovery')
   const addVerseNode = useStore(s => s.addVerseNode)
   const explorer = useStore(s => s.explorer)
   const nodes = useStore(s => s.nodes)
@@ -85,7 +87,7 @@ function DiscoveryItem({ result }: Props) {
             )
           })
         ) : (
-          <span className="text-slate-400 text-sm">Failed to load verse</span>
+          <span className="text-slate-400 text-sm">{t('failed_to_load')}</span>
         )}
       </p>
 
@@ -98,7 +100,7 @@ function DiscoveryItem({ result }: Props) {
           <button
             onClick={handleAdd}
             className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors shadow-sm"
-            title="Add to Map"
+            title={t('add_to_map')}
           >
             <Plus size={18} />
           </button>

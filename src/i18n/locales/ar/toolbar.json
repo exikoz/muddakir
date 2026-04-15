@@ -1,0 +1,22 @@
+{
+  "verse_placeholder": "آية (2:255)",
+  "go": "انتقل",
+  "word_placeholder": "كلمة (رحمة)",
+  "find": "بحث",
+  "multi": "متعدد",
+  "adj": "متجاور",
+  "free": "حر",
+  "one_mode_at_a_time": "وضع واحد في كل مرة",
+  "undo_title": "تراجع (Ctrl+Z)",
+  "redo_title": "إعادة (Ctrl+Shift+Z)",
+  "advanced_title": "متقدم — أدوات المطور",
+  "ui_customizer": "مخصص الواجهة",
+  "debug_console": "وحدة التصحيح",
+  "ai_scope_title": "نطاق الذكاء — بحث مدعوم بالذكاء الاصطناعي",
+  "discovery_results_title": "{{count}} نتيجة في الاكتشاف",
+  "no_discovery_results": "لا توجد نتائج اكتشاف",
+  "toggle_mushaf": "تبديل لوحة المصحف",
+  "workspaces": "مساحات العمل",
+  "clear_selection": "مسح التحديد",
+  "failed_to_fetch_verse": "فشل في جلب الآية"
+}

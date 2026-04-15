@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { ChevronRight, Sparkles, Loader2, ArrowRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 
 export default function WordByWordSection() {
+  const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const wordExplanations = useVerseDetailStore(s => s.wordExplanations)
   const wordExplanationLoading = useVerseDetailStore(s => s.wordExplanationLoading)
@@ -43,7 +45,7 @@ export default function WordByWordSection() {
       <div className="px-4 pt-3 pb-3">
           {/* Instructional hint — always visible in teal */}
           <p className="text-[11px] text-emerald-600 mb-2.5 flex items-center gap-1 font-medium">
-            ✦ Tap any word — AI explains using verified Quran.com data
+            {t('tap_word_hint')}
           </p>
 
           <div className="space-y-0.5">
@@ -95,7 +97,7 @@ export default function WordByWordSection() {
                       {isLoading && !explanation && (
                         <div className="flex items-center gap-2 text-slate-400 text-xs py-1">
                           <Loader2 size={10} className="animate-spin" />
-                          Analyzing…
+                          {t('analyzing')}
                         </div>
                       )}
 
@@ -122,7 +124,7 @@ export default function WordByWordSection() {
                             type="text"
                             value={askInput}
                             onChange={e => setAskInput(e.target.value)}
-                            placeholder={`Ask more about "${word.text}"...`}
+                            placeholder={t('ask_more_about_word', { word: word.text })}
                             className="flex-1 text-[10px] text-slate-600 placeholder:text-slate-400 bg-transparent outline-none"
                             dir="ltr"
                           />

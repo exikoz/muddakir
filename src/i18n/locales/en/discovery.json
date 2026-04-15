@@ -1,0 +1,12 @@
+{
+  "title": "Deep Discovery",
+  "searching": "Searching...",
+  "results_found": "{{count}} related verses found",
+  "search_placeholder": "Search for a word...",
+  "results_from": "Results from",
+  "search_suffix": "search",
+  "for_term": "for",
+  "no_results": "No extra results to display based on your last search.",
+  "add_to_map": "Add to Map",
+  "failed_to_load": "Failed to load verse"
+}

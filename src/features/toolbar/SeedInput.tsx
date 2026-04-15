@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { MapPin } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 
 export default function SeedInput() {
+  const { t } = useTranslation('toolbar')
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const addVerseNode = useStore(s => s.addVerseNode)
@@ -18,7 +20,7 @@ export default function SeedInput() {
       setInput('')
     } catch (err) {
       console.error('[SeedInput] error:', err)
-      alert('Failed to fetch verse')
+      alert(t('failed_to_fetch_verse'))
     } finally {
       setLoading(false)
     }
@@ -29,22 +31,22 @@ export default function SeedInput() {
       onSubmit={handleSubmit}
       className="flex items-center h-8 bg-slate-50 rounded-lg border border-slate-200 transition-all focus-within:border-slate-400 focus-within:bg-white"
     >
-      <div className="pl-2 text-slate-400">
+      <div className="pl-2 rtl:pl-0 rtl:pr-2 text-slate-400">
         <MapPin size={13} />
       </div>
       <input
         type="text"
         value={input}
         onChange={e => setInput(e.target.value)}
-        placeholder="Verse (2:255)"
+        placeholder={t('verse_placeholder')}
         className="bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 w-24 text-xs px-1.5"
       />
       <button
         type="submit"
         disabled={loading}
-        className="h-full px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l border-slate-200"
+        className="h-full px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l rtl:border-l-0 rtl:border-r border-slate-200"
       >
-        {loading ? '…' : 'Go'}
+        {loading ? '…' : t('go')}
       </button>
     </form>
   )

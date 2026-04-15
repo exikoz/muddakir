@@ -1,16 +1,18 @@
 import { useSyncExternalStore } from 'react'
 import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { getLogSnapshot, subscribeToLogs, clearLogs } from '../../services/aiScopeService'
 import { AI_SCOPE_MODELS } from '../../types/aiScope'
 
 export default function MCPDebugPanel() {
+  const { t } = useTranslation('aiScope')
   const logs = useSyncExternalStore(subscribeToLogs, getLogSnapshot)
 
   return (
     <div className="border-b border-slate-100 bg-amber-50/40 max-h-48 overflow-y-auto shrink-0">
       <div className="flex items-center justify-between px-3 py-1.5 sticky top-0 bg-amber-50/80 backdrop-blur-sm">
         <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">
-          MCP Logs ({logs.length})
+          {t('mcp_logs')} ({logs.length})
         </span>
         {logs.length > 0 && (
           <button
@@ -23,7 +25,7 @@ export default function MCPDebugPanel() {
       </div>
 
       {logs.length === 0 ? (
-        <p className="px-3 py-2 text-[10px] text-slate-400">No MCP tool calls yet.</p>
+        <p className="px-3 py-2 text-[10px] text-slate-400">{t('no_mcp_logs')}</p>
       ) : (
         <div className="px-3 pb-2 space-y-1">
           {logs.map(log => (

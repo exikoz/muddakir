@@ -1,9 +1,11 @@
 import { X, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 import { SURAH_NAMES } from './surahNames'
 import { VerseRow } from './VerseRow'
 
 export function MushafPanel() {
+  const { t } = useTranslation('mushaf')
   const isMushafOpen = useStore(s => s.isMushafOpen)
   const mushafChapter = useStore(s => s.mushafChapter)
   const mushafVerses = useStore(s => s.mushafVerses)
@@ -33,8 +35,8 @@ export function MushafPanel() {
 
   return (
     <div
-      className={`fixed inset-y-0 left-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
-        isMushafOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`fixed inset-y-0 left-0 rtl:left-auto rtl:right-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+        isMushafOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
       }`}
     >
       {/* Header */}
@@ -46,7 +48,7 @@ export function MushafPanel() {
               <h2 className="font-semibold text-slate-800 leading-tight">
                 {SURAH_NAMES[mushafChapter] ?? `Surah ${mushafChapter}`}
               </h2>
-              <p className="text-xs text-slate-400">Surah {mushafChapter} of 114</p>
+              <p className="text-xs text-slate-400">{t('surah_of_total', { number: mushafChapter })}</p>
             </div>
           </div>
           <button
@@ -95,7 +97,7 @@ export function MushafPanel() {
           <div className="flex items-center justify-center py-20 text-slate-400">
             <div className="text-center space-y-2">
               <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-sm">Loading verses...</p>
+              <p className="text-sm">{t('loading_verses')}</p>
             </div>
           </div>
         ) : (
@@ -106,7 +108,7 @@ export function MushafPanel() {
                 disabled={mushafLoading}
                 className="w-full py-2 text-xs text-slate-400 hover:text-emerald-600 font-medium border border-dashed border-slate-200 rounded-xl hover:border-emerald-300 transition-colors disabled:opacity-40"
               >
-                {mushafLoading ? 'Loading...' : '↑ Load earlier verses'}
+                {mushafLoading ? t('loading') : t('load_earlier')}
               </button>
             )}
             {mushafVerses.map(verse => (
@@ -123,7 +125,7 @@ export function MushafPanel() {
               </div>
             )}
             {!mushafHasMore && mushafVerses.length > 0 && (
-              <p className="text-center text-xs text-slate-300 py-4">End of Surah</p>
+              <p className="text-center text-xs text-slate-300 py-4">{t('end_of_surah')}</p>
             )}
           </>
         )}

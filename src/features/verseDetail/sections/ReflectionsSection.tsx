@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Heart, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { fetchReflections } from '../../../services/verseDetailApi'
 import { REFLECTION_PREVIEW_LENGTH } from '../detailConfig'
@@ -8,6 +9,7 @@ import type { ReflectionPost } from '../types'
 const POST_TYPE_LABELS: Record<number, string> = { 1: 'Reflection', 2: 'Lesson' }
 
 export default function ReflectionsSection() {
+  const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const [posts, setPosts] = useState<ReflectionPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,7 +47,7 @@ export default function ReflectionsSection() {
     <div className="border-b border-slate-100">
       <div className="px-4 py-2.5">
         <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-          Reflections
+          {t('reflections')}
         </span>
       </div>
 
@@ -53,7 +55,7 @@ export default function ReflectionsSection() {
         {loading && (
           <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
             <Loader2 size={12} className="animate-spin" />
-            Loading reflections…
+            {t('loading_reflections')}
           </div>
         )}
 
@@ -81,10 +83,10 @@ export default function ReflectionsSection() {
                   onClick={() => toggleExpand(post.id)}
                   className="text-[10px] text-emerald-600 font-medium mt-1"
                 >
-                  {isExpanded ? 'Show less' : 'Read more'}
+                  {isExpanded ? t('show_less') : t('read_more')}
                 </button>
               )}
-              <p className="text-[9px] text-slate-300 mt-1.5">via Quran Reflect</p>
+              <p className="text-[9px] text-slate-300 mt-1.5">{t('via_quran_reflect')}</p>
             </div>
           )
         })}

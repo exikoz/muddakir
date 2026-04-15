@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { Wrench, Sliders, Terminal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import UIDebugCustomizer from '../../components/UIDebugCustomizer'
 import DebugConsole from '../../components/DebugConsole'
 
 export default function AdvancedToggle() {
+  const { t } = useTranslation('toolbar')
   const [menuOpen, setMenuOpen] = useState(false)
   const [customizerOpen, setCustomizerOpen] = useState(false)
   const [consoleOpen, setConsoleOpen] = useState(false)
@@ -31,13 +33,13 @@ export default function AdvancedToggle() {
             ? 'bg-amber-50 text-amber-600 border-amber-300'
             : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:text-slate-600 hover:border-slate-300'
         }`}
-        title="Advanced — Developer tools"
+        title={t('advanced_title')}
       >
         <Wrench size={14} />
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-50">
+        <div className="absolute right-0 rtl:right-auto rtl:left-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-50">
           <button
             onClick={() => {
               setCustomizerOpen(v => !v)
@@ -50,7 +52,7 @@ export default function AdvancedToggle() {
             }`}
           >
             <Sliders size={13} />
-            <span>UI Customizer</span>
+            <span>{t('ui_customizer')}</span>
           </button>
           <button
             onClick={() => {
@@ -64,7 +66,7 @@ export default function AdvancedToggle() {
             }`}
           >
             <Terminal size={13} />
-            <span>Debug Console</span>
+            <span>{t('debug_console')}</span>
           </button>
         </div>
       )}

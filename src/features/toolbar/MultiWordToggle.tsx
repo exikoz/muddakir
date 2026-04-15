@@ -1,7 +1,9 @@
 import { Layers, Search, X, Link, Unlink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 
 export default function MultiWordToggle() {
+  const { t } = useTranslation('toolbar')
   const multiWordMode = useStore(s => s.multiWordMode)
   const adjacentMode = useStore(s => s.adjacentMode)
   const setMultiWordMode = useStore(s => s.setMultiWordMode)
@@ -23,7 +25,7 @@ export default function MultiWordToggle() {
         title={multiWordMode ? 'Multi-word search ON — click words to select, then search' : 'Enable multi-word search'}
       >
         <Layers size={13} />
-        <span>Multi</span>
+        <span>{t('multi')}</span>
       </button>
 
       {/* Adjacent/Free toggle — only visible when multi-word is on */}
@@ -41,7 +43,7 @@ export default function MultiWordToggle() {
           }
         >
           {adjacentMode ? <Link size={13} /> : <Unlink size={13} />}
-          <span>{adjacentMode ? 'Adj' : 'Free'}</span>
+          <span>{adjacentMode ? t('adj') : t('free')}</span>
         </button>
       )}
 
@@ -73,7 +75,7 @@ export default function MultiWordToggle() {
           <button
             onClick={clearSelectedWords}
             className="h-8 w-8 rounded-lg border flex items-center justify-center bg-slate-50 text-slate-400 border-slate-200 hover:text-red-500 hover:border-red-300 transition-all"
-            title="Clear selection"
+            title={t('clear_selection')}
           >
             <X size={13} />
           </button>

@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { useTranslation } from 'react-i18next'
 import type { VerseNodeData } from '../../../types/graph'
 import { useStore } from '../../../store'
 import ArabicText from './ArabicText'
@@ -7,6 +8,7 @@ import NodeActions from './NodeActions'
 import MiniPlayer from '../../audio/MiniPlayer'
 
 function VerseNode({ id, data }: NodeProps<any>) {
+  const { t } = useTranslation('graph')
   const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery } = data as VerseNodeData
   const addSequentialVerse = useStore(state => state.addSequentialVerse)
   const edges = useStore(state => state.edges)
@@ -67,18 +69,18 @@ function VerseNode({ id, data }: NodeProps<any>) {
           <button
             onClick={handlePrevVerse}
             className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
-            title="Load previous verse"
+            title={t('load_previous')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="m18 15-6-6-6 6"/>
             </svg>
-            <span>Previous</span>
+            <span>{t('previous')}</span>
           </button>
         ) : (
           <div />
         )}
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          Verse {verse.verse_key}
+          {t('verse', { key: verse.verse_key })}
         </span>
         <NodeActions nodeId={id as string} verse={verse} />
       </div>
@@ -111,9 +113,9 @@ function VerseNode({ id, data }: NodeProps<any>) {
             <button
               onClick={handleNextVerse}
               className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
-              title="Load next verse"
+              title={t('load_next')}
             >
-              <span>Next</span>
+              <span>{t('next')}</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m6 9 6 6 6-6"/>
               </svg>
@@ -131,12 +133,12 @@ function VerseNode({ id, data }: NodeProps<any>) {
             if (openMushafToVerse) openMushafToVerse(verse.verse_key)
           }}
           className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"
-          title="Open in Mushaf"
+          title={t('open_in_mushaf')}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
           </svg>
-          Read in Mushaf
+          {t('read_in_mushaf')}
         </button>
       </div>
 

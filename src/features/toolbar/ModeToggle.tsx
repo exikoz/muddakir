@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 import type { SearchOptions } from '../../types/quran'
 import { MODE_COLORS } from '../../lib/modeColors'
@@ -17,6 +18,7 @@ const OPTION_CONFIG: {
 ]
 
 export default function ModeToggle() {
+  const { t } = useTranslation('toolbar')
   const searchOptions = useStore(s => s.searchOptions)
   const setSearchOptions = useStore(s => s.setSearchOptions)
   const [open, setOpen] = useState(false)
@@ -67,7 +69,7 @@ export default function ModeToggle() {
       </button>
 
       {open && (
-        <div className="absolute top-10 left-0 bg-white rounded-xl shadow-lg border border-slate-100 p-1.5 min-w-[150px] z-50 flex flex-col gap-0.5">
+        <div className="absolute top-10 left-0 rtl:left-auto rtl:right-0 bg-white rounded-xl shadow-lg border border-slate-100 p-1.5 min-w-[150px] z-50 flex flex-col gap-0.5">
           <button
             onClick={selectExact}
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left ${
@@ -98,7 +100,7 @@ export default function ModeToggle() {
 
           <div className="border-t border-slate-100 mt-0.5 pt-0.5">
             <p className="text-[9px] text-slate-400 px-2.5 py-0.5 leading-tight">
-              One mode at a time
+              {t('one_mode_at_a_time')}
             </p>
           </div>
         </div>

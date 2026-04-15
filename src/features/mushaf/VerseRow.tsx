@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ExternalLink, Copy, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { Verse, Word } from '../../types/quran'
 
 interface VerseRowProps {
@@ -9,6 +10,7 @@ interface VerseRowProps {
 }
 
 export function VerseRow({ verse, isHighlighted, onOpenInExplorer }: VerseRowProps) {
+  const { t } = useTranslation('mushaf')
   const ref = useRef<HTMLDivElement>(null)
   const [copied, setCopied] = useState(false)
 
@@ -48,18 +50,18 @@ export function VerseRow({ verse, isHighlighted, onOpenInExplorer }: VerseRowPro
           <button
             onClick={handleCopy}
             className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-emerald-600 font-medium transition-all px-2 py-0.5 rounded-full hover:bg-emerald-50 border border-transparent hover:border-emerald-200"
-            title="Copy verse"
+            title={t('copy')}
           >
             {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-            {copied ? 'Copied!' : 'Copy'}
+            {copied ? t('copied') : t('copy')}
           </button>
           <button
             onClick={() => onOpenInExplorer(verse.verse_key)}
             className="flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-700 font-medium transition-all px-2 py-0.5 rounded-full hover:bg-emerald-50 border border-transparent hover:border-emerald-200"
-            title="Open in Explorer"
+            title={t('open_in_explorer')}
           >
             <ExternalLink size={11} />
-            Explorer
+            {t('explorer')}
           </button>
         </div>
       </div>

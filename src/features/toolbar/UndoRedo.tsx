@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 import { Undo2, Redo2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 
 export default function UndoRedo() {
+  const { t } = useTranslation('toolbar')
   const undo = useStore((s) => s.undo)
   const redo = useStore((s) => s.redo)
   const canUndo = useStore((s) => s.canUndo)
@@ -35,7 +37,7 @@ export default function UndoRedo() {
         onClick={undo}
         disabled={!canUndo}
         className={`${base} ${canUndo ? enabled : disabled}`}
-        title="Undo (Ctrl+Z)"
+        title={t('undo_title')}
       >
         <Undo2 size={14} />
       </button>
@@ -43,7 +45,7 @@ export default function UndoRedo() {
         onClick={redo}
         disabled={!canRedo}
         className={`${base} ${canRedo ? enabled : disabled}`}
-        title="Redo (Ctrl+Shift+Z)"
+        title={t('redo_title')}
       >
         <Redo2 size={14} />
       </button>

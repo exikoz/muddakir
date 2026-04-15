@@ -10,6 +10,7 @@ import {
   Check,
   FolderOpen,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import type { WorkspaceMeta } from '../../types/workspace'
 
@@ -33,6 +34,7 @@ export default function WorkspacePanel() {
   const [editName, setEditName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation('workspace')
 
   if (!isPanelOpen) return null
 
@@ -44,7 +46,7 @@ export default function WorkspacePanel() {
       await createWorkspace(name)
       setNewName('')
     } catch (e) {
-      setError('Failed to save workspace')
+      setError(t('error_save'))
     }
   }
 
@@ -53,7 +55,7 @@ export default function WorkspacePanel() {
     try {
       await saveCurrentWorkspace()
     } catch {
-      setError('Failed to save')
+      setError(t('error_save_short'))
     }
   }
 
@@ -63,7 +65,7 @@ export default function WorkspacePanel() {
     try {
       await switchWorkspace(id)
     } catch {
-      setError('Failed to load workspace')
+      setError(t('error_load'))
     }
   }
 
@@ -75,7 +77,7 @@ export default function WorkspacePanel() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this workspace? This cannot be undone.')) return
+    if (!confirm(t('delete_confirm'))) return
     await removeWorkspace(id)
   }
 
@@ -86,7 +88,7 @@ export default function WorkspacePanel() {
     try {
       await importWorkspace(file)
     } catch (err: any) {
-      setError(err.message || 'Failed to import')
+      setError(err.message || t('error_import'))
     }
     // Reset input so the same file can be re-selected
     e.target.value = ''
@@ -98,12 +100,12 @@ export default function WorkspacePanel() {
   }
 
   return (
-    <div className="absolute top-0 right-0 z-50 h-full w-80 bg-white/95 backdrop-blur-md border-l border-slate-200 shadow-xl flex flex-col">
+    <div className="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-50 h-full w-80 bg-white/95 backdrop-blur-md border-l rtl:border-l-0 rtl:border-r border-slate-200 shadow-xl flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <FolderOpen size={16} />
-          Workspaces
+          {t('title')}
         </div>
         <button
           onClick={() => setPanelOpen(false)}
@@ -123,7 +125,7 @@ export default function WorkspacePanel() {
             className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50"
           >
             <Save size={14} />
-            Save current workspace
+            {t('save_current')}
           </button>
         )}
 
@@ -139,7 +141,7 @@ export default function WorkspacePanel() {
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            placeholder="Workspace name…"
+            placeholder={t('name_placeholder')}
             className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/20"
           />
           <button
@@ -159,7 +161,7 @@ export default function WorkspacePanel() {
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
           >
             <Plus size={12} />
-            New blank
+            {t('new_blank')}
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -167,7 +169,7 @@ export default function WorkspacePanel() {
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
           >
             <Upload size={12} />
-            Import
+            {t('import')}
           </button>
           <input
             ref={fileInputRef}
@@ -190,9 +192,9 @@ export default function WorkspacePanel() {
       <div className="flex-1 overflow-y-auto px-4 py-2">
         {workspaces.length === 0 && (
           <p className="text-xs text-slate-400 text-center py-8">
-            No saved workspaces yet.
+            {t('no_workspaces')}
             <br />
-            Type a name above and click + to save.
+            {t('no_workspaces_hint')}
           </p>
         )}
 
@@ -251,6 +253,7 @@ function WorkspaceItem({
   onExport: () => void
 }) {
   const date = new Date(meta.updatedAt)
+  const { t } = useTranslation('workspace')
   const timeStr = date.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -313,21 +316,21 @@ function WorkspaceItem({
             <button
               onClick={onStartEdit}
               className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-              title="Rename"
+              title={t('rename')}
             >
               <Pencil size={12} />
             </button>
             <button
               onClick={onExport}
               className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-              title="Export as JSON"
+              title={t('export_json')}
             >
               <Download size={12} />
             </button>
             <button
               onClick={onDelete}
               className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-              title="Delete"
+              title={t('delete')}
             >
               <Trash2 size={12} />
             </button>

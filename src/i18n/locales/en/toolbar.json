@@ -1,0 +1,22 @@
+{
+  "verse_placeholder": "Verse (2:255)",
+  "go": "Go",
+  "word_placeholder": "Word (رحمة)",
+  "find": "Find",
+  "multi": "Multi",
+  "adj": "Adj",
+  "free": "Free",
+  "one_mode_at_a_time": "One mode at a time",
+  "undo_title": "Undo (Ctrl+Z)",
+  "redo_title": "Redo (Ctrl+Shift+Z)",
+  "advanced_title": "Advanced — Developer tools",
+  "ui_customizer": "UI Customizer",
+  "debug_console": "Debug Console",
+  "ai_scope_title": "AI Scope — AI-grounded search",
+  "discovery_results_title": "{{count}} results in discovery",
+  "no_discovery_results": "No discovery results",
+  "toggle_mushaf": "Toggle Mushaf Panel",
+  "workspaces": "Workspaces",
+  "clear_selection": "Clear selection",
+  "failed_to_fetch_verse": "Failed to fetch verse"
+}

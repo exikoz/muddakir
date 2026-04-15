@@ -1,7 +1,9 @@
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAIScopeStore } from '../../store/aiScopeStore'
 
 export default function AIScopeContextBar() {
+  const { t } = useTranslation('aiScope')
   const contextItems = useAIScopeStore(s => s.contextItems)
   const removeContextItem = useAIScopeStore(s => s.removeContextItem)
   const clearContext = useAIScopeStore(s => s.clearContext)
@@ -12,13 +14,13 @@ export default function AIScopeContextBar() {
     <div className="px-3 py-2 border-b border-slate-100 bg-purple-50/50 shrink-0">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] font-semibold text-purple-600 uppercase tracking-wider">
-          Context ({contextItems.length})
+          {t('context')} ({contextItems.length})
         </span>
         <button
           onClick={clearContext}
           className="text-[10px] text-slate-400 hover:text-red-500 transition-colors"
         >
-          Clear all
+          {t('clear_all')}
         </button>
       </div>
       <div className="flex flex-wrap gap-1">

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import AudioPlayer from '../../audio/AudioPlayer'
 
@@ -7,6 +8,7 @@ import AudioPlayer from '../../audio/AudioPlayer'
 const COLLAPSE_THRESHOLD = 120
 
 export default function ArabicTextSection() {
+  const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [isLong, setIsLong] = useState(false)
@@ -52,7 +54,7 @@ export default function ArabicTextSection() {
           className="flex items-center gap-1 text-[10px] text-emerald-600 hover:text-emerald-700 font-medium mt-1"
         >
           {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-          {expanded ? 'Show less' : 'Show full verse'}
+          {expanded ? t('show_less') : t('show_full_verse')}
         </button>
       )}
 

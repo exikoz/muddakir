@@ -8,6 +8,7 @@ import WorkspaceToggle from './WorkspaceToggle'
 import UndoRedo from './UndoRedo'
 import AIScopeToggle from './AIScopeToggle'
 import AdvancedToggle from './AdvancedToggle'
+import LanguageToggle from './LanguageToggle'
 
 export default function Toolbar() {
   return (
@@ -34,6 +35,7 @@ export default function Toolbar() {
       <div className="flex items-center gap-1">
         <UndoRedo />
         <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
+        <LanguageToggle />
         <AdvancedToggle />
         <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
         <AIScopeToggle />

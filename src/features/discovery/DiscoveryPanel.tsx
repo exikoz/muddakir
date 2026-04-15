@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { X, Search, Loader2, ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 import { MODE_COLORS } from '../../lib/modeColors'
 import type { SearchOptions } from '../../types/quran'
@@ -14,6 +15,7 @@ const MODE_OPTIONS: { key: keyof SearchOptions | 'exact'; label: string; dot: st
 ]
 
 export default function DiscoveryPanel() {
+  const { t } = useTranslation('discovery')
   const isOpen = useStore(s => s.isDiscoveryOpen)
   const results = useStore(s => s.discoveryResults)
   const currentSearchTerm = useStore(s => s.currentSearchTerm)
@@ -87,13 +89,13 @@ export default function DiscoveryPanel() {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
+    <div className="fixed inset-y-0 right-0 rtl:right-auto rtl:left-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
       <div className="p-4 border-b border-slate-100 bg-slate-50 space-y-3">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="font-semibold text-slate-800">Deep Discovery</h2>
+            <h2 className="font-semibold text-slate-800">{t('title')}</h2>
             <p className="text-xs text-slate-500">
-              {discoveryLoading ? 'Searching...' : `${results.length} related verses found`}
+              {discoveryLoading ? t('searching') : t('results_found', { count: results.length })}
             </p>
           </div>
           <button
@@ -112,16 +114,16 @@ export default function DiscoveryPanel() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search for a word..."
-              className="w-full pl-9 pr-4 py-2 rounded-full border border-emerald-300 bg-white text-slate-700 text-sm font-arabic font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              placeholder={t('search_placeholder')}
+              className="w-full pl-9 rtl:pl-4 rtl:pr-9 pr-4 py-2 rounded-full border border-emerald-300 bg-white text-slate-700 text-sm font-arabic font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               dir="rtl"
             />
             {discoveryLoading ? (
-              <Loader2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin" />
+              <Loader2 size={16} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin" />
             ) : (
               <button
                 type="submit"
-                className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 transition-colors"
+                className="absolute left-2 rtl:left-auto rtl:right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 transition-colors"
               >
                 <Search size={16} className="text-slate-400" />
               </button>
@@ -141,7 +143,7 @@ export default function DiscoveryPanel() {
             </button>
 
             {modeOpen && (
-              <div className="absolute top-11 right-0 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 min-w-[140px] z-50 flex flex-col gap-0.5">
+              <div className="absolute top-11 right-0 rtl:right-auto rtl:left-0 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 min-w-[140px] z-50 flex flex-col gap-0.5">
                 {MODE_OPTIONS.map(({ key, label, dot }) => {
                   const isActive = key === activeKey
                   return (
@@ -166,10 +168,10 @@ export default function DiscoveryPanel() {
         {discoverySearchMode && results.length > 0 && !discoveryLoading && (
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
             <span className={`w-1.5 h-1.5 rounded-full ${MODE_OPTIONS.find(o => o.label === discoverySearchMode)?.dot ?? 'bg-slate-400'}`} />
-            Results from <span className="font-semibold text-slate-700">{discoverySearchMode}</span> search
+            {t('results_from')} <span className="font-semibold text-slate-700">{discoverySearchMode}</span> {t('search_suffix')}
             {currentSearchTerm && (
               <>
-                {' '}for "<span className="font-semibold text-slate-700 font-arabic" dir="rtl">{currentSearchTerm}</span>"
+                {' '}{t('for_term')} "<span className="font-semibold text-slate-700 font-arabic" dir="rtl">{currentSearchTerm}</span>"
               </>
             )}
           </div>
@@ -180,7 +182,7 @@ export default function DiscoveryPanel() {
         {discoveryLoading ? (
           <div className="text-center py-10 text-slate-400">
             <Loader2 size={24} className="mx-auto mb-2 animate-spin text-emerald-500" />
-            <p>Searching...</p>
+            <p>{t('searching')}</p>
           </div>
         ) : (
           <>
@@ -190,7 +192,7 @@ export default function DiscoveryPanel() {
 
             {results.length === 0 && (
               <div className="text-center py-10 text-slate-400">
-                <p>No extra results to display based on your last search.</p>
+                <p>{t('no_results')}</p>
               </div>
             )}
           </>

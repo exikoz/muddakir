@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Plus, Loader2, MapPin } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { parseAIResponse, extractVerseKeys } from './parseAIResponse'
 import AIScopeVerseCard from './AIScopeVerseCard'
 import { useStore } from '../../store'
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function AIScopeResponse({ content }: Props) {
+  const { t } = useTranslation('aiScope')
   const addVerseNode = useStore(s => s.addVerseNode)
   const nodes = useStore(s => s.nodes)
   const [addingAll, setAddingAll] = useState(false)
@@ -55,7 +57,7 @@ export default function AIScopeResponse({ content }: Props) {
           return (
             <div key={i} className="mt-3 pt-2.5 border-t border-slate-100">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                Also referenced
+                {t('also_referenced')}
               </p>
               <div className="space-y-0.5">
                 {block.items.map(item => (
@@ -86,7 +88,7 @@ export default function AIScopeResponse({ content }: Props) {
             className="flex items-center gap-1.5 text-[11px] font-semibold text-purple-600 hover:text-purple-700 px-2 py-1 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-40"
           >
             {addingAll ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
-            {addingAll ? 'Adding…' : `Add all verses to canvas (${allVerseKeys.length})`}
+            {addingAll ? t('adding') : t('add_all_to_canvas', { count: allVerseKeys.length })}
           </button>
         </div>
       )}

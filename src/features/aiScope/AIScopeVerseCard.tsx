@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Check, BookOpen, Loader2, RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { fetchVerse } from '../../services/quranApi'
 import { useStore } from '../../store'
 import type { Verse } from '../../types/quran'
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function AIScopeVerseCard({ verseKey }: Props) {
+  const { t } = useTranslation('aiScope')
   const addVerseNode = useStore(s => s.addVerseNode)
   const nodes = useStore(s => s.nodes)
   const [verse, setVerse] = useState<Verse | null>(null)
@@ -67,7 +69,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
         {isOnCanvas ? (
           <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
             <Check size={12} />
-            Added
+            {t('added')}
           </span>
         ) : (
           <button
@@ -76,7 +78,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
             className="flex items-center gap-1 text-[10px] font-semibold text-purple-600 hover:text-purple-700 px-2 py-0.5 rounded-md hover:bg-purple-50 transition-colors disabled:opacity-40"
           >
             {adding ? <Loader2 size={10} className="animate-spin" /> : <Plus size={12} />}
-            Add to Canvas
+            {t('add_to_canvas')}
           </button>
         )}
       </div>
@@ -87,14 +89,14 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
           <div className="flex items-center justify-center py-4">
             <div className="flex items-center gap-2 text-slate-400 text-xs">
               <Loader2 size={14} className="animate-spin" />
-              Loading verse…
+              {t('loading_verse')}
             </div>
           </div>
         )}
 
         {error && !loading && (
           <div className="flex items-center justify-between py-3">
-            <span className="text-xs text-slate-400">Could not load verse {verseKey}</span>
+            <span className="text-xs text-slate-400">{t('error_load_verse', { key: verseKey })}</span>
             <button
               onClick={handleRetry}
               className="flex items-center gap-1 text-[10px] text-purple-600 hover:text-purple-700 font-medium"
@@ -136,7 +138,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
             className="flex items-center gap-1.5 text-[10px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"
           >
             <BookOpen size={11} />
-            Read in Mushaf
+            {t('read_in_mushaf')}
           </button>
         </div>
       )}

@@ -1,0 +1,11 @@
+{
+  "surah_of_total": "سورة {{number}} من 114",
+  "loading_verses": "جارٍ تحميل الآيات...",
+  "load_earlier": "↑ تحميل آيات سابقة",
+  "loading": "جارٍ التحميل...",
+  "end_of_surah": "نهاية السورة",
+  "copy": "نسخ",
+  "copied": "تم النسخ!",
+  "explorer": "المستكشف",
+  "open_in_explorer": "فتح في المستكشف"
+}

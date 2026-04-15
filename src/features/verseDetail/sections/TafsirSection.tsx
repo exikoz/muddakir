@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Loader2, RefreshCw, ChevronDown } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { fetchTafsir, fetchAvailableTafsirs } from '../../../services/verseDetailApi'
 import { TAFSIR, TAFSIR_PREVIEW_LENGTH } from '../detailConfig'
@@ -13,6 +14,7 @@ function sanitizeHtml(html: string): string {
 }
 
 export default function TafsirSection() {
+  const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const [tafsir, setTafsir] = useState<TafsirData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -88,18 +90,18 @@ export default function TafsirSection() {
       {loading && (
         <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
           <Loader2 size={12} className="animate-spin" />
-          Loading tafsir…
+          {t('loading_tafsir')}
         </div>
       )}
 
       {error && !loading && (
         <div className="flex items-center justify-between py-2">
-          <span className="text-xs text-slate-400">Could not load tafsir</span>
+          <span className="text-xs text-slate-400">{t('error_tafsir')}</span>
           <button
             onClick={() => { setLoading(true); setError(false); fetchTafsir(verse.verse_key, selectedId).then(setTafsir).finally(() => setLoading(false)) }}
             className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium"
           >
-            <RefreshCw size={10} /> Retry
+            <RefreshCw size={10} /> {t('retry')}
           </button>
         </div>
       )}
@@ -112,14 +114,14 @@ export default function TafsirSection() {
               onClick={() => setExpanded(!expanded)}
               className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium mt-1.5"
             >
-              {expanded ? 'Show less' : 'Read full tafsir'}
+              {expanded ? t('show_less') : t('read_full_tafsir')}
             </button>
           )}
         </>
       )}
 
       {!loading && !error && !tafsir && (
-        <p className="text-xs text-slate-400">No tafsir available for this verse with the selected source.</p>
+        <p className="text-xs text-slate-400">{t('no_tafsir')}</p>
       )}
     </div>
   )

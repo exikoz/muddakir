@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Sparkles, User } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { AIScopeMessage } from '../../types/aiScope'
 import { AI_SCOPE_MODELS } from '../../types/aiScope'
 import AIScopeResponse from './AIScopeResponse'
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function AIScopeMessageItem({ message }: Props) {
+  const { t } = useTranslation('aiScope')
   const [showToolCalls, setShowToolCalls] = useState(false)
 
   const isUser = message.role === 'user'
@@ -24,7 +26,7 @@ export default function AIScopeMessageItem({ message }: Props) {
           <Sparkles size={10} className="text-purple-400" />
         )}
         <span className="text-[10px] text-slate-400 font-medium">
-          {isUser ? 'You' : 'AI Scope'}
+          {isUser ? t('you') : t('title')}
         </span>
       </div>
 
@@ -55,7 +57,7 @@ export default function AIScopeMessageItem({ message }: Props) {
           className="flex items-center gap-1 mt-1 text-[10px] text-slate-400 hover:text-amber-600 transition-colors"
         >
           {showToolCalls ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-          {message.toolCalls.length} tool call{message.toolCalls.length > 1 ? 's' : ''}
+          {message.toolCalls.length} {message.toolCalls.length > 1 ? t('tool_calls_plural', { count: message.toolCalls.length }) : t('tool_calls', { count: message.toolCalls.length })}
         </button>
       )}
 

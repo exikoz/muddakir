@@ -1,0 +1,18 @@
+{
+  "title": "Workspaces",
+  "save_current": "Save current workspace",
+  "name_placeholder": "Workspace name…",
+  "new_blank": "New blank",
+  "import": "Import",
+  "delete_confirm": "Delete this workspace? This cannot be undone.",
+  "no_workspaces": "No saved workspaces yet.",
+  "no_workspaces_hint": "Type a name above and click + to save.",
+  "nodes_count": "{{count}} nodes",
+  "rename": "Rename",
+  "export_json": "Export as JSON",
+  "delete": "Delete",
+  "error_save": "Failed to save workspace",
+  "error_save_short": "Failed to save",
+  "error_load": "Failed to load workspace",
+  "error_import": "Failed to import"
+}

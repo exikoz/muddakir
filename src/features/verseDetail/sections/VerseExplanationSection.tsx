@@ -5,9 +5,11 @@
 
 import { useState, useEffect } from 'react'
 import { Sparkles, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 
 export default function VerseExplanationSection() {
+  const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const explanations = useVerseDetailStore(s => s.verseExplanations)
   const loading = useVerseDetailStore(s => s.verseExplanationLoading)
@@ -38,7 +40,7 @@ export default function VerseExplanationSection() {
         <div className="space-y-2 py-4">
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-3">
             <Loader2 size={12} className="animate-spin" />
-            Generating explanation…
+            {t('generating_explanation')}
           </div>
           <div className="space-y-1.5 animate-pulse">
             <div className="h-2.5 bg-slate-200 rounded w-full" />
@@ -52,7 +54,7 @@ export default function VerseExplanationSection() {
         <>
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles size={10} className="text-emerald-500" />
-            <span className="text-[10px] font-semibold text-slate-400">AI Explanation</span>
+            <span className="text-[10px] font-semibold text-slate-400">{t('ai_explanation')}</span>
           </div>
           <div className="text-sm text-slate-700 leading-relaxed space-y-2">
             {explanation.split(/\n{2,}|\n/).filter(Boolean).map((para, i) => {
@@ -75,21 +77,21 @@ export default function VerseExplanationSection() {
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ask more about this verse..."
+                placeholder={t('ask_more_verse')}
                 className="flex-1 text-xs text-slate-600 placeholder:text-slate-400 bg-transparent outline-none"
               />
               <button
                 type="submit"
                 className="text-emerald-500 hover:text-emerald-700 hover:underline transition-colors shrink-0 text-[10px] font-medium"
               >
-                Ask more →
+                {t('ask_more')}
               </button>
             </div>
           </form>
 
           {/* Attribution */}
           <p className="text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-100">
-            Grounded in quran.com — tafsir, translations, and verified text
+            {t('attribution')}
           </p>
         </>
       )}

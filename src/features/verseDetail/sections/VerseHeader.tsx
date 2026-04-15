@@ -1,10 +1,13 @@
-import { ArrowLeft, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { useAIScopeStore } from '../../../store/aiScopeStore'
 import { useStore } from '../../../store'
 import { SURAH_NAMES } from '../../mushaf/surahNames'
 
 export default function VerseHeader() {
+  const { t, i18n } = useTranslation('verseDetail')
+  const isRtl = i18n.dir() === 'rtl'
   const verse = useVerseDetailStore(s => s.verse)
   const previousPanel = useVerseDetailStore(s => s.previousPanel)
   const close = useVerseDetailStore(s => s.close)
@@ -30,8 +33,8 @@ export default function VerseHeader() {
           onClick={handleBack}
           className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
         >
-          <ArrowLeft size={12} />
-          {previousPanel === 'aiScope' ? 'Back to AI Scope' : previousPanel === 'discovery' ? 'Back to Discovery' : 'Close'}
+          {isRtl ? <ArrowRight size={12} /> : <ArrowLeft size={12} />}
+          {previousPanel === 'aiScope' ? t('back_to_ai_scope') : previousPanel === 'discovery' ? t('back_to_discovery') : t('close')}
         </button>
         <button
           onClick={() => close()}

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Loader2, RefreshCw, ChevronDown, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { fetchTranslations, fetchAvailableTranslations } from '../../../services/verseDetailApi'
 import { TRANSLATIONS } from '../detailConfig'
 import type { TranslationData, ResourceItem } from '../types'
 
 export default function TranslationsSection() {
+  const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const [translations, setTranslations] = useState<TranslationData[]>([])
   const [loading, setLoading] = useState(true)
@@ -61,7 +63,7 @@ export default function TranslationsSection() {
           onClick={() => setShowPicker(!showPicker)}
           className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
         >
-          {selectedIds.length} translation{selectedIds.length !== 1 ? 's' : ''} selected
+          {selectedIds.length} {selectedIds.length !== 1 ? t('translations_selected_plural', { count: selectedIds.length }) : t('translations_selected', { count: selectedIds.length })}
           <ChevronDown size={10} className={`transition-transform ${showPicker ? 'rotate-180' : ''}`} />
         </button>
 
@@ -69,7 +71,7 @@ export default function TranslationsSection() {
           <div className="absolute top-6 left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1">
             {englishTranslations.length > 0 && (
               <>
-                <p className="text-[9px] text-slate-400 font-semibold uppercase px-2 pt-1.5 pb-0.5">English</p>
+                <p className="text-[9px] text-slate-400 font-semibold uppercase px-2 pt-1.5 pb-0.5">{t('english')}</p>
                 {englishTranslations.map(t => (
                   <button
                     key={t.id}
@@ -88,7 +90,7 @@ export default function TranslationsSection() {
             )}
             {otherTranslations.length > 0 && (
               <>
-                <p className="text-[9px] text-slate-400 font-semibold uppercase px-2 pt-2 pb-0.5">Other Languages</p>
+                <p className="text-[9px] text-slate-400 font-semibold uppercase px-2 pt-2 pb-0.5">{t('other_languages')}</p>
                 {otherTranslations.map(t => (
                   <button
                     key={t.id}
@@ -115,18 +117,18 @@ export default function TranslationsSection() {
         {loading && (
           <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
             <Loader2 size={12} className="animate-spin" />
-            Loading translations…
+            {t('loading_translations')}
           </div>
         )}
 
         {error && !loading && (
           <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-slate-400">Could not load translations</span>
+            <span className="text-xs text-slate-400">{t('error_translations')}</span>
             <button
               onClick={() => { setLoading(true); setError(false); fetchTranslations(verse.verse_key, selectedIds).then(setTranslations).finally(() => setLoading(false)) }}
               className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium"
             >
-              <RefreshCw size={10} /> Retry
+              <RefreshCw size={10} /> {t('retry')}
             </button>
           </div>
         )}
@@ -139,11 +141,11 @@ export default function TranslationsSection() {
         ))}
 
         {!loading && !error && translations.length === 0 && selectedIds.length > 0 && (
-          <p className="text-xs text-slate-400">No translations available.</p>
+          <p className="text-xs text-slate-400">{t('no_translations')}</p>
         )}
 
         {selectedIds.length === 0 && (
-          <p className="text-xs text-slate-400">Select at least one translation above.</p>
+          <p className="text-xs text-slate-400">{t('select_translation')}</p>
         )}
       </div>
     </div>

@@ -1,7 +1,9 @@
 import { BookOpen } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 
 export default function MushafToggle() {
+  const { t } = useTranslation('toolbar')
   const isMushafOpen = useStore(s => s.isMushafOpen)
   const openMushaf = useStore(s => s.openMushaf)
   const setMushafOpen = useStore(s => s.setMushafOpen)
@@ -22,7 +24,7 @@ export default function MushafToggle() {
           ? 'bg-emerald-50 text-emerald-600 border-emerald-300'
           : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:text-slate-600 hover:border-slate-300'
       }`}
-      title="Toggle Mushaf Panel"
+      title={t('toggle_mushaf')}
     >
       <BookOpen size={14} />
     </button>

@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Play, Pause, Settings } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAudioStore } from './audioStore'
 import { RECITERS } from './audioConfig'
 
@@ -20,6 +21,7 @@ function formatTime(s: number): string {
 }
 
 export default function MiniPlayer({ verseKey }: Props) {
+  const { t } = useTranslation('graph')
   const currentVerseKey = useAudioStore(s => s.currentVerseKey)
   const currentReciterId = useAudioStore(s => s.currentReciterId)
   const isPlaying = useAudioStore(s => s.isPlaying)
@@ -68,10 +70,10 @@ export default function MiniPlayer({ verseKey }: Props) {
       <button
         onClick={handlePlayPause}
         className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all px-2 py-1 rounded-full"
-        title="Play verse"
+        title={t('play_verse')}
       >
         <Play size={11} className="ml-0.5" />
-        <span>Play</span>
+        <span>{t('play')}</span>
       </button>
     )
   }
@@ -108,13 +110,13 @@ export default function MiniPlayer({ verseKey }: Props) {
         <button
           onClick={(e) => { e.stopPropagation(); setShowReciterMenu(!showReciterMenu) }}
           className="p-0.5 text-slate-400 hover:text-slate-600 transition-colors"
-          title="Change reciter"
+          title={t('change_reciter')}
         >
           <Settings size={10} />
         </button>
 
         {showReciterMenu && (
-          <div className="absolute bottom-6 right-0 bg-white rounded-lg shadow-lg border border-slate-100 p-1 min-w-[120px] z-50">
+          <div className="absolute bottom-6 right-0 rtl:right-auto rtl:left-0 bg-white rounded-lg shadow-lg border border-slate-100 p-1 min-w-[120px] z-50">
             {RECITERS.map(r => (
               <button
                 key={r.id}
