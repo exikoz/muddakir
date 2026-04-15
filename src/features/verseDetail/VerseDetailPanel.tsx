@@ -1,31 +1,24 @@
-import { Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { Sparkles, Type, Languages, BookOpen } from 'lucide-react'
 import { useVerseDetailStore } from '../../store/verseDetailStore'
-import { useAIScopeStore } from '../../store/aiScopeStore'
 import VerseHeader from './sections/VerseHeader'
-import ArabicTextSection from './sections/ArabicTextSection'
+import VerseExplanationSection from './sections/VerseExplanationSection'
 import WordByWordSection from './sections/WordByWordSection'
 import TranslationsSection from './sections/TranslationsSection'
 import TafsirSection from './sections/TafsirSection'
-import ReflectionsSection from './sections/ReflectionsSection'
+
+const TABS = [
+  { id: 'words',        label: 'Words',        Icon: Type,      accent: false },
+  { id: 'translations', label: 'Translations', Icon: Languages, accent: false },
+  { id: 'tafsir',       label: 'Tafsir',       Icon: BookOpen,  accent: false },
+  { id: 'explain',      label: '✦ AI Insight', Icon: Sparkles,  accent: true },
+] as const
+
+type TabId = typeof TABS[number]['id']
 
 export default function VerseDetailPanel() {
   const isOpen = useVerseDetailStore(s => s.isOpen)
-  const verse = useVerseDetailStore(s => s.verse)
-  const close = useVerseDetailStore(s => s.close)
-  const addContextItem = useAIScopeStore(s => s.addContextItem)
-  const setAIScopeOpen = useAIScopeStore(s => s.setOpen)
-
-  function handleExploreWithAI() {
-    if (!verse) return
-    addContextItem({
-      verseKey: verse.verse_key,
-      text: verse.text_arabic,
-      translation: verse.translation,
-      addedAt: Date.now(),
-    })
-    close()
-    setAIScopeOpen(true)
-  }
+  const [activeTab, setActiveTab] = useState<TabId>('words')
 
   return (
     <div
@@ -33,27 +26,39 @@ export default function VerseDetailPanel() {
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
+      {/* Header only — no Arabic text, no audio */}
       <VerseHeader />
 
-      <div className="flex-1 overflow-y-auto">
-        <ArabicTextSection />
-        <WordByWordSection />
-        <TranslationsSection />
-        <TafsirSection />
-        <ReflectionsSection />
-
-        {/* Explore Further CTA */}
-        {verse && (
-          <div className="px-4 py-4">
+      {/* Tab bar */}
+      <div className="flex border-b border-slate-200 px-2 shrink-0 bg-white">
+        {TABS.map(tab => {
+          const isActive = activeTab === tab.id
+          return (
             <button
-              onClick={handleExploreWithAI}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-200 bg-purple-50 text-purple-600 text-sm font-medium hover:bg-purple-100 transition-colors"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1 px-2.5 py-2 text-[11px] font-medium transition-colors relative ${
+                isActive
+                  ? tab.accent ? 'text-emerald-600' : 'text-emerald-600'
+                  : tab.accent ? 'text-emerald-400 hover:text-emerald-600' : 'text-slate-400 hover:text-slate-600'
+              }`}
             >
-              <Sparkles size={14} />
-              Explore this verse with AI Scope →
+              <tab.Icon size={11} />
+              {tab.label}
+              {isActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-t" />
+              )}
             </button>
-          </div>
-        )}
+          )
+        })}
+      </div>
+
+      {/* Tab content — scrollable, fills remaining space */}
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === 'explain' && <VerseExplanationSection />}
+        {activeTab === 'words' && <WordByWordSection />}
+        {activeTab === 'translations' && <TranslationsSection />}
+        {activeTab === 'tafsir' && <TafsirSection />}
       </div>
     </div>
   )

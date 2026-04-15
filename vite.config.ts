@@ -63,6 +63,15 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
+        // Muddakir backend — MCP + Gemini orchestration
+        '/api/query': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
+        '/api/health': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
   }

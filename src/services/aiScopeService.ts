@@ -1,37 +1,19 @@
 /**
- * AI Scope Service — Gemini client, structured MCP logging, and response parsing.
+ * AI Scope Service — calls the Muddakir backend which orchestrates
+ * Gemini + MCP tool calling with grounding nonce verification.
  *
- * Responsibilities:
- * 1. Validate and expose the Gemini API key (VITE_GEMINI_API_KEY)
- * 2. Provide generateInsight() for calling Gemini with tool-use grounding
- * 3. Create structured log entries for every MCP tool call
- * 4. Parse MCP search_quran responses into AIScopeVerseResult[]
- * 5. Manage the debug log buffer
+ * The backend handles:
+ * 1. Fetching grounding_nonce from quran.ai MCP
+ * 2. Declaring MCP tools to Gemini as function declarations
+ * 3. Executing the tool-calling loop (nonce injected server-side)
+ * 4. Returning the final grounded response
  */
 
 import type { MCPToolCallLog, AIScopeVerseResult, AIScopeModelId } from '../types/aiScope'
 
-// ── Gemini API key (Vite env) ───────────────────────────────────────────────
+// ── Backend URL ─────────────────────────────────────────────────────────────
 
-function getGeminiApiKey(): string {
-  const key = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
-  if (!key) {
-    throw new Error(
-      '[AI Scope] Missing VITE_GEMINI_API_KEY. ' +
-      'Add it to your .env file: VITE_GEMINI_API_KEY=your_key_here'
-    )
-  }
-  return key
-}
-
-// ── Generation config (shared across models) ───────────────────────────────
-
-const GENERATION_CONFIG = {
-  temperature: 0.1,
-  topP: 0.95,
-  topK: 40,
-  maxOutputTokens: 2048,
-} as const
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:3001'
 
 // ── generateInsight ─────────────────────────────────────────────────────────
 
@@ -45,94 +27,79 @@ export interface InsightResponse {
   content: string
   modelId: AIScopeModelId
   durationMs: number
+  toolCalls: MCPToolCallLog[]
   raw: unknown
 }
 
 /**
- * Call Gemini to generate an AI-grounded insight.
+ * Send a query to the Muddakir backend for grounded AI insight.
  *
- * This function calls the Gemini REST API directly. The model is expected to
- * use tool calls (search_quran via MCP) for grounding — the caller is
- * responsible for orchestrating tool execution and feeding results back.
- *
- * Both models use the same strict generationConfig (temperature: 0.1) to
- * ensure grounded, deterministic tool use.
+ * The backend will:
+ * 1. Fetch grounding_nonce from quran.ai MCP
+ * 2. Send the query to Gemini with MCP tools
+ * 3. Execute tool calls, injecting the nonce
+ * 4. Return the final response with tool call logs
  */
 export async function generateInsight(request: InsightRequest): Promise<InsightResponse> {
-  const apiKey = getGeminiApiKey()
   const startTime = performance.now()
 
-  // Build the prompt with optional context
-  let systemPrompt = `You are a Quran research assistant embedded in a study tool called Tadabbar.
-
-RESPONSE FORMAT RULES:
-- Write clean prose paragraphs. No markdown formatting (no **, *, #, -, numbered lists).
-- When referencing Quranic verses, write the verse key inline in the format [chapter:verse] — for example [25:63] or [2:255]. The UI will render these as interactive verse cards automatically.
-- Present a maximum of 3 key verses as full inline references. For any additional relevant verses beyond the top 3, list them at the end in a compact section starting with "Also referenced:" — one per line, format: [chapter:verse] short description (max 8 words). Example:
-  Also referenced:
-  [7:13] Satan expelled for arrogance
-  [16:23] Allah dislikes the arrogant
-- Do not quote verse text in English or Arabic — the UI fetches and displays the actual verse content automatically from the verse key.
-- Keep responses concise and focused. Aim for 2-4 short paragraphs of commentary with verse references woven in naturally.
-- Never answer from memory alone. Ground every claim in specific verse references.`
-
-  if (request.context && request.context.length > 0) {
-    systemPrompt += '\n\nThe user has added the following verses to their context:\n'
-    for (const ctx of request.context) {
-      systemPrompt += `- ${ctx.verseKey}: "${ctx.translation}"\n`
-    }
-  }
-
-  const body = {
-    contents: [
-      { role: 'user', parts: [{ text: request.query }] },
-    ],
-    systemInstruction: { parts: [{ text: systemPrompt }] },
-    generationConfig: GENERATION_CONFIG,
-  }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${request.modelId}:generateContent?key=${apiKey}`
-
   console.group(`🤖 [AI Scope] generateInsight (${request.modelId})`)
-  console.log('📥 Request:', { query: request.query, modelId: request.modelId, contextCount: request.context?.length ?? 0 })
+  console.log('📥 Request:', {
+    query: request.query,
+    modelId: request.modelId,
+    contextCount: request.context?.length ?? 0,
+  })
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(`${BACKEND_URL}/api/query`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        query: request.query,
+        modelId: request.modelId,
+        context: request.context,
+      }),
     })
 
     if (!res.ok) {
-      const errorText = await res.text()
-      throw new Error(`Gemini API ${res.status}: ${errorText}`)
+      const errorBody = await res.text()
+      throw new Error(`Backend ${res.status}: ${errorBody}`)
     }
 
     const json = await res.json()
     const durationMs = performance.now() - startTime
 
-    // Extract text content from response
-    const candidates = json.candidates ?? []
-    const content = candidates[0]?.content?.parts
-      ?.map((p: any) => p.text)
-      .filter(Boolean)
-      .join('\n') ?? ''
-
-    console.log('📤 Response:', { contentLength: content.length, durationMs: durationMs.toFixed(0) })
+    console.log('📤 Response:', {
+      contentLength: json.content?.length ?? 0,
+      toolCalls: json.toolCalls?.length ?? 0,
+      nonce: json.nonce,
+      durationMs: durationMs.toFixed(0),
+    })
     console.groupEnd()
 
-    // Log this as a tool call for debug visibility
-    logToolCall({
-      timestamp: Date.now(),
-      tool: `generateInsight:${request.modelId}`,
-      input: { query: request.query, modelId: request.modelId, contextCount: request.context?.length ?? 0 },
-      output: { contentLength: content.length, candidateCount: candidates.length },
-      durationMs,
-      status: 'success',
-      modelId: request.modelId,
-    })
+    // Log each tool call from the backend for debug visibility
+    if (json.toolCalls) {
+      for (const tc of json.toolCalls) {
+        logToolCall({
+          timestamp: Date.now(),
+          tool: tc.tool,
+          input: tc.input ?? {},
+          output: tc.output,
+          durationMs: tc.durationMs ?? 0,
+          status: tc.status ?? 'success',
+          error: tc.error,
+          modelId: request.modelId,
+        })
+      }
+    }
 
-    return { content, modelId: request.modelId, durationMs, raw: json }
+    return {
+      content: json.content ?? '',
+      modelId: request.modelId,
+      durationMs,
+      toolCalls: json.toolCalls ?? [],
+      raw: json,
+    }
   } catch (error) {
     const durationMs = performance.now() - startTime
     const errorMsg = error instanceof Error ? error.message : String(error)
@@ -183,7 +150,6 @@ export function logToolCall(entry: Omit<MCPToolCallLog, 'id'>): MCPToolCallLog {
 
   logBuffer = [log, ...logBuffer].slice(0, MAX_LOGS)
 
-  // Structured console output for developer inspection
   const icon = log.status === 'success' ? '✅' : '❌'
   const modelTag = log.modelId ? ` [${log.modelId}]` : ''
   console.group(`${icon} [MCP]${modelTag} ${log.tool} (${log.durationMs.toFixed(0)}ms)`)
@@ -193,9 +159,7 @@ export function logToolCall(entry: Omit<MCPToolCallLog, 'id'>): MCPToolCallLog {
   if (log.error) console.error('⚠️ Error:', log.error)
   console.groupEnd()
 
-  // Notify subscribers
   listeners.forEach(l => l())
-
   return log
 }
 
@@ -207,21 +171,16 @@ export function clearLogs(): void {
 
 /**
  * Parse raw MCP search_quran output into typed verse results.
- * Handles various response shapes gracefully.
  */
 export function parseSearchQuranResponse(raw: unknown): AIScopeVerseResult[] {
   if (!raw) return []
-
-  // Handle array of results
   const items = Array.isArray(raw) ? raw : (raw as any)?.results ?? (raw as any)?.verses ?? []
-
   if (!Array.isArray(items)) return []
 
   return items
     .map((item: any): AIScopeVerseResult | null => {
       const verseKey = item.verse_key ?? item.verseKey ?? item.key ?? item.reference
       if (!verseKey || typeof verseKey !== 'string') return null
-
       return {
         verseKey,
         text: item.text ?? item.text_arabic ?? item.arabic,

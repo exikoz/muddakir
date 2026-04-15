@@ -1,72 +1,147 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronRight, Sparkles, Loader2, ArrowRight } from 'lucide-react'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
-import { useAIScopeStore } from '../../../store/aiScopeStore'
 
 export default function WordByWordSection() {
   const verse = useVerseDetailStore(s => s.verse)
-  const closeDetail = useVerseDetailStore(s => s.close)
-  const addContextItem = useAIScopeStore(s => s.addContextItem)
-  const setAIScopeOpen = useAIScopeStore(s => s.setOpen)
-  const sendQuery = useAIScopeStore(s => s.sendQuery)
-  const [expanded, setExpanded] = useState(true)
+  const wordExplanations = useVerseDetailStore(s => s.wordExplanations)
+  const wordExplanationLoading = useVerseDetailStore(s => s.wordExplanationLoading)
+  const fetchWordExplanation = useVerseDetailStore(s => s.fetchWordExplanation)
+  const askMoreAboutWord = useVerseDetailStore(s => s.askMoreAboutWord)
+
+  const [activeWordPos, setActiveWordPos] = useState<number | null>(null)
+  const [askInput, setAskInput] = useState('')
 
   if (!verse) return null
 
   const words = verse.words.filter(w => w.char_type_name !== 'end')
 
-  function handleWordTap(word: typeof words[0]) {
-    // 1. Add verse to AI Scope context
-    addContextItem({
-      verseKey: verse!.verse_key,
-      text: verse!.text_arabic,
-      translation: verse!.translation,
-      addedAt: Date.now(),
-    })
+  function handleWordTap(position: number) {
+    if (activeWordPos === position) {
+      setActiveWordPos(null)
+      return
+    }
 
-    // 2. Switch to AI Scope
-    closeDetail()
-    setAIScopeOpen(true)
+    setActiveWordPos(position)
+    setAskInput('')
 
-    // 3. Auto-query about this word
-    const query = `Explain the word "${word.text}" (${word.transliteration ?? ''}, meaning: ${word.translation ?? ''}) in verse ${verse!.verse_key}. Cover its morphology, root, and significance in this context.`
-    sendQuery(query)
+    // Fetch if not cached
+    const cacheKey = `${verse!.verse_key}:${position}`
+    if (!wordExplanations[cacheKey]) {
+      fetchWordExplanation(position)
+    }
+  }
+
+  function handleAskMore(e: React.FormEvent, position: number) {
+    e.preventDefault()
+    askMoreAboutWord(position, askInput.trim() || undefined)
+    setAskInput('')
   }
 
   return (
-    <div className="border-b border-slate-100">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors"
-      >
-        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-          Word by Word
-        </span>
-        {expanded ? <ChevronUp size={12} className="text-slate-400" /> : <ChevronDown size={12} className="text-slate-400" />}
-      </button>
+    <div>
+      <div className="px-4 pt-3 pb-3">
+          {/* Instructional hint — always visible in teal */}
+          <p className="text-[11px] text-emerald-600 mb-2.5 flex items-center gap-1 font-medium">
+            ✦ Tap any word — AI explains using verified Quran.com data
+          </p>
 
-      {expanded && (
-        <div className="px-4 pb-3 space-y-0.5">
-          {words.map((word, i) => (
-            <button
-              key={i}
-              onClick={() => handleWordTap(word)}
-              className="w-full flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-emerald-50 transition-colors text-left group"
-              title="Tap to explore this word with AI Scope"
-            >
-              <span className="font-arabic text-lg text-slate-800 w-28 text-right shrink-0 group-hover:text-emerald-700" dir="rtl">
-                {word.text}
-              </span>
-              <span className="text-[11px] text-slate-400 w-24 shrink-0 truncate">
-                {word.transliteration ?? ''}
-              </span>
-              <span className="text-[11px] text-slate-500 flex-1 truncate">
-                {word.translation ?? ''}
-              </span>
-            </button>
-          ))}
+          <div className="space-y-0.5">
+            {words.map((word) => {
+              const isActive = activeWordPos === word.position
+              const cacheKey = `${verse!.verse_key}:${word.position}`
+              const explanation = wordExplanations[cacheKey]
+              const isLoading = wordExplanationLoading === cacheKey
+
+              return (
+                <div key={word.position}>
+                  {/* Word row */}
+                  <button
+                    onClick={() => handleWordTap(word.position)}
+                    className={`w-full flex items-center gap-3 py-2 px-2 rounded-lg transition-colors text-left group cursor-pointer ${
+                      isActive ? 'bg-emerald-50' : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <span
+                      className={`font-arabic text-lg w-28 text-right shrink-0 transition-colors ${
+                        isActive ? 'text-emerald-700' : 'text-slate-800 group-hover:text-emerald-700'
+                      }`}
+                      dir="rtl"
+                    >
+                      {word.text}
+                    </span>
+                    <span className="text-[11px] text-slate-400 w-24 shrink-0 truncate">
+                      {word.transliteration ?? ''}
+                    </span>
+                    <span className="text-[11px] text-slate-500 flex-1 truncate">
+                      {word.translation ?? ''}
+                    </span>
+                    <ChevronRight
+                      size={10}
+                      className={`text-slate-300 shrink-0 transition-transform ${
+                        isActive ? 'rotate-90 text-emerald-500' : 'group-hover:text-slate-400'
+                      }`}
+                    />
+                  </button>
+
+                  {/* Inline expansion */}
+                  {isActive && (
+                    <div className="ml-2 mb-2 border-l-2 border-emerald-400 bg-white rounded-r-lg p-3 shadow-sm">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Sparkles size={10} className="text-purple-400" />
+                        <span className="font-arabic text-base text-slate-800" dir="rtl">{word.text}</span>
+                      </div>
+
+                      {isLoading && !explanation && (
+                        <div className="flex items-center gap-2 text-slate-400 text-xs py-1">
+                          <Loader2 size={10} className="animate-spin" />
+                          Analyzing…
+                        </div>
+                      )}
+
+                      {explanation && (
+                        <div className="text-xs text-slate-600 leading-relaxed space-y-1.5">
+                          {explanation.split(/\n{2,}|\n/).filter(Boolean).map((line, i) => {
+                            const trimmed = line.trim()
+                            if (trimmed.startsWith('✅') && /Verification Token/i.test(trimmed)) {
+                              return (
+                                <p key={i} className="text-[10px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100 leading-relaxed">
+                                  {trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
+                                </p>
+                              )
+                            }
+                            return <p key={i}>{trimmed}</p>
+                          })}
+                        </div>
+                      )}
+
+                      {/* Ask more about this word */}
+                      <form onSubmit={(e) => handleAskMore(e, word.position)} className="mt-2 pt-2 border-t border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={askInput}
+                            onChange={e => setAskInput(e.target.value)}
+                            placeholder={`Ask more about "${word.text}"...`}
+                            className="flex-1 text-[10px] text-slate-600 placeholder:text-slate-400 bg-transparent outline-none"
+                            dir="ltr"
+                          />
+                          <button
+                            type="submit"
+                            className="text-purple-500 hover:text-purple-700 transition-colors shrink-0"
+                            title="Ask in AI Scope"
+                          >
+                            <ArrowRight size={12} />
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
-      )}
     </div>
   )
 }

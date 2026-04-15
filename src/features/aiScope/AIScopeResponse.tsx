@@ -66,6 +66,14 @@ export default function AIScopeResponse({ content }: Props) {
           )
         }
 
+        if (block.type === 'receipt') {
+          return (
+            <p key={i} className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-relaxed">
+              {block.content}
+            </p>
+          )
+        }
+
         return null
       })}
 

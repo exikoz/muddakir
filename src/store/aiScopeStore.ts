@@ -98,8 +98,8 @@ export const useAIScopeStore = create<AIScopeState>((set, get) => ({
           : undefined,
       })
 
-      // 3. Add assistant response
-      get().addAssistantMessage(response.content)
+      // 3. Add assistant response with tool call logs
+      get().addAssistantMessage(response.content, undefined, response.toolCalls)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error'
       console.error('[AI Scope] Query failed:', errorMsg)

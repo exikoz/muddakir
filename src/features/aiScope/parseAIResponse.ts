@@ -12,6 +12,7 @@ export type ResponseBlock =
   | { type: 'text'; content: string }
   | { type: 'verse'; verseKey: string }
   | { type: 'reflist'; items: Array<{ verseKey: string; description: string }> }
+  | { type: 'receipt'; content: string }
 
 /**
  * Expand a verse range like "23:1-2" into individual keys ["23:1", "23:2"].
@@ -65,7 +66,19 @@ export function parseAIResponse(raw: string): ResponseBlock[] {
     }
   }
 
-  // 2. Strip markdown artifacts from main text
+  // 2. Extract verification receipt line before stripping markdown
+  const RECEIPT_PATTERN = /✅\s*\*{0,2}Verification Token:?\*{0,2}.*$/m
+  let receiptText: string | null = null
+  const receiptMatch = mainText.match(RECEIPT_PATTERN)
+  if (receiptMatch) {
+    receiptText = receiptMatch[0]
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .trim()
+    mainText = mainText.replace(RECEIPT_PATTERN, '').trimEnd()
+  }
+
+  // 3. Strip markdown artifacts from main text
   mainText = mainText
     .replace(/\*\*(.*?)\*\*/g, '$1')   // **bold** → bold
     .replace(/\*(.*?)\*/g, '$1')        // *italic* → italic
@@ -73,7 +86,7 @@ export function parseAIResponse(raw: string): ResponseBlock[] {
     .replace(/^[-*]\s+/gm, '')          // - bullets → plain
     .replace(/^\d+\.\s+/gm, '')         // 1. numbered → plain
 
-  // 3. Walk through main text, splitting on verse references
+  // 4. Walk through main text, splitting on verse references
   let lastIndex = 0
   let match: RegExpExecArray | null
 
@@ -105,12 +118,17 @@ export function parseAIResponse(raw: string): ResponseBlock[] {
     blocks.push({ type: 'text', content: remaining })
   }
 
-  // 4. Append the "Also referenced" list if present
+  // 5. Append the "Also referenced" list if present
   if (refListItems.length > 0) {
     blocks.push({ type: 'reflist', items: refListItems })
   }
 
-  // 5. If no blocks were created (no verse refs found), treat as plain text
+  // 6. Append verification receipt if present
+  if (receiptText) {
+    blocks.push({ type: 'receipt', content: receiptText })
+  }
+
+  // 7. If no blocks were created (no verse refs found), treat as plain text
   // but still try to detect bare verse patterns like "25:63" without brackets
   if (blocks.length === 0 && mainText.trim()) {
     blocks.push({ type: 'text', content: mainText.trim() })
