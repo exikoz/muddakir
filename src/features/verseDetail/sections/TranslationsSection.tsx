@@ -56,7 +56,7 @@ export default function TranslationsSection() {
   const otherTranslations = available.filter(t => !t.language.toLowerCase().includes('english'))
 
   return (
-    <div className="px-4 py-3">
+    <div className="px-4 py-3" dir="ltr">
       {/* Selector */}
       <div className="relative mb-3">
         <button
