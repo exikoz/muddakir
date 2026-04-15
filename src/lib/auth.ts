@@ -12,7 +12,7 @@ let tokenFailedUntil = 0
 const TOKEN_BACKOFF_MS = 60_000
 
 async function fetchToken(): Promise<string> {
-  const res = await fetch('/api-proxy/token', {
+  const res = await fetch('/api/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'client_credentials', scope: 'content' }),
@@ -50,12 +50,12 @@ export async function contentFetch(path: string): Promise<Response> {
     'x-client-id': CLIENT_ID ?? '',
   }
 
-  let res = await fetch(`/api-proxy/content${path}`, { headers })
+  let res = await fetch(`/api/content${path}`, { headers })
 
   if (res.status === 401) {
     clearToken()
     headers['x-auth-token'] = await getAccessToken()
-    res = await fetch(`/api-proxy/content${path}`, { headers })
+    res = await fetch(`/api/content${path}`, { headers })
   }
 
   return res

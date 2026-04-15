@@ -13,7 +13,7 @@ import type { MCPToolCallLog, AIScopeVerseResult, AIScopeModelId } from '../type
 
 // ── Backend URL ─────────────────────────────────────────────────────────────
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:3001'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL as string || ''
 
 // ── generateInsight ─────────────────────────────────────────────────────────
 

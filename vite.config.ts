@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         // Token endpoint — injects Basic auth server-side, secret never hits the browser
-        '/api-proxy/token': {
+        '/api/token': {
           target: authTarget,
           changeOrigin: true,
           rewrite: () => authPath,
@@ -52,18 +52,18 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
-        // Content API — strips the /api-proxy prefix and forwards the auth token
-        '/api-proxy/content': {
+        // Content API — strips the /api prefix and forwards the auth token
+        '/api/content': {
           target: contentTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api-proxy/, ''),
+          rewrite: (path) => path.replace(/^\/api/, ''),
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
               proxyReq.setHeader('x-client-id', clientId)
             })
           },
         },
-        // Muddakir backend — MCP + Gemini orchestration
+        // Muddakir backend — MCP + Gemini orchestration (local Express server)
         '/api/query': {
           target: 'http://localhost:3001',
           changeOrigin: true,
