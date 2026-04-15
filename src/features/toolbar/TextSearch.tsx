@@ -20,25 +20,25 @@ export default function TextSearch() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/50"
+      className="flex items-center h-8 bg-slate-50 rounded-lg border border-slate-200 transition-all focus-within:border-emerald-400 focus-within:bg-white"
     >
-      <div className="pl-3 text-emerald-500">
-        {discoveryLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+      <div className="pl-2 text-slate-400">
+        {discoveryLoading ? <Loader2 size={13} className="animate-spin text-emerald-500" /> : <Search size={13} />}
       </div>
       <input
         type="text"
         value={input}
         onChange={e => setInput(e.target.value)}
-        placeholder="Search word (e.g. رحمة)"
-        className="bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 w-36 font-medium text-sm"
+        placeholder="Word (رحمة)"
+        className="bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 w-24 text-xs px-1.5"
         dir="rtl"
       />
       <button
         type="submit"
         disabled={discoveryLoading || !input.trim()}
-        className="bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="h-full px-2.5 text-[11px] font-semibold text-emerald-600 hover:text-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l border-slate-200"
       >
-        {discoveryLoading ? '...' : 'Find'}
+        {discoveryLoading ? '…' : 'Find'}
       </button>
     </form>
   )

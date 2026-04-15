@@ -29,12 +29,14 @@ function AppContent() {
   return (
     <div className="workspace">
       <Toolbar />
-      <GraphCanvas />
-      <DiscoveryPanel />
-      <MushafPanel />
-      <WorkspacePanel />
-      <DevModeToggle />
-      <UIDebugToggle />
+      <div className="workspace-canvas">
+        <GraphCanvas />
+        <DiscoveryPanel />
+        <MushafPanel />
+        <WorkspacePanel />
+        <DevModeToggle />
+        <UIDebugToggle />
+      </div>
     </div>
   )
 }

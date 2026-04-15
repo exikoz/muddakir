@@ -11,18 +11,18 @@ export default function MultiWordToggle() {
   const executeMultiWordSearch = useStore(s => s.executeMultiWordSearch)
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1">
       {/* Multi-word mode toggle */}
       <button
         onClick={() => setMultiWordMode(!multiWordMode)}
-        className={`h-9 px-3 rounded-full shadow-sm border text-xs font-bold transition-all flex items-center gap-1.5 ${
+        className={`h-8 px-2.5 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
           multiWordMode
             ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-            : 'bg-white/80 text-slate-700 border-slate-200 hover:border-slate-300'
+            : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-white'
         }`}
         title={multiWordMode ? 'Multi-word search ON — click words to select, then search' : 'Enable multi-word search'}
       >
-        <Layers size={14} />
+        <Layers size={13} />
         <span>Multi</span>
       </button>
 
@@ -30,33 +30,33 @@ export default function MultiWordToggle() {
       {multiWordMode && (
         <button
           onClick={() => setAdjacentMode(!adjacentMode)}
-          className={`h-9 px-3 rounded-full shadow-sm border text-xs font-bold transition-all flex items-center gap-1.5 ${
+          className={`h-8 px-2.5 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
             adjacentMode
               ? 'bg-amber-50 text-amber-700 border-amber-300'
-              : 'bg-white/80 text-slate-700 border-slate-200 hover:border-slate-300'
+              : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-white'
           }`}
           title={adjacentMode
             ? 'Adjacent mode — words must appear next to each other in order'
             : 'Free mode — words can appear anywhere in the verse'
           }
         >
-          {adjacentMode ? <Link size={14} /> : <Unlink size={14} />}
-          <span>{adjacentMode ? 'Adjacent' : 'Free'}</span>
+          {adjacentMode ? <Link size={13} /> : <Unlink size={13} />}
+          <span>{adjacentMode ? 'Adj' : 'Free'}</span>
         </button>
       )}
 
       {/* Selected words display + search/clear buttons */}
       {multiWordMode && selectedWords.length > 0 && (
         <>
-          <div className="h-9 px-3 rounded-full bg-white/80 border border-slate-200 flex items-center gap-1.5 text-xs font-arabic text-slate-700 max-w-[250px] overflow-hidden" dir="rtl">
+          <div className="h-8 px-2 rounded-lg bg-white border border-slate-200 flex items-center gap-1 text-xs font-arabic text-slate-700 max-w-[200px] overflow-hidden" dir="rtl">
             {selectedWords.map((w, i) => (
               <span key={i} className="flex items-center gap-0.5">
                 {i > 0 && (
-                  <span className={`text-[9px] font-sans font-bold mx-0.5 ${adjacentMode ? 'text-amber-500' : 'text-slate-400'}`}>
+                  <span className={`text-[8px] font-sans font-bold mx-0.5 ${adjacentMode ? 'text-amber-500' : 'text-slate-400'}`}>
                     {adjacentMode ? '→' : '+'}
                   </span>
                 )}
-                <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md text-[11px] font-semibold whitespace-nowrap">
+                <span className="bg-emerald-100 text-emerald-800 px-1 py-px rounded text-[10px] font-semibold whitespace-nowrap">
                   {w.text}
                 </span>
               </span>
@@ -64,18 +64,18 @@ export default function MultiWordToggle() {
           </div>
           <button
             onClick={() => executeMultiWordSearch()}
-            className="h-9 px-3 rounded-full shadow-sm border text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600"
+            className="h-8 px-2.5 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600"
             title={adjacentMode ? 'Search for adjacent words (regex)' : 'Search for all words (AND)'}
           >
-            <Search size={14} />
-            <span>Search ({selectedWords.length})</span>
+            <Search size={13} />
+            <span>{selectedWords.length}</span>
           </button>
           <button
             onClick={clearSelectedWords}
-            className="h-9 w-9 rounded-full shadow-sm border flex items-center justify-center bg-white/80 text-slate-500 border-slate-200 hover:text-red-500 hover:border-red-300 transition-all"
+            className="h-8 w-8 rounded-lg border flex items-center justify-center bg-slate-50 text-slate-400 border-slate-200 hover:text-red-500 hover:border-red-300 transition-all"
             title="Clear selection"
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         </>
       )}

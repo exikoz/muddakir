@@ -9,6 +9,12 @@
   background: #f8fafc;
 }
 
+.workspace-canvas {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
 .flow-canvas {
   flex: 1;
   background: #f8fafc;

@@ -25,19 +25,19 @@ export default function UndoRedo() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, redo])
 
-  const base = 'h-9 w-9 rounded-full shadow-sm border text-xs transition-all flex items-center justify-center'
-  const enabled = 'bg-white/80 text-slate-600 border-slate-200 hover:border-slate-400 hover:text-slate-800'
-  const disabled = 'bg-white/40 text-slate-300 border-slate-100 cursor-not-allowed'
+  const base = 'h-8 w-8 rounded-lg border text-xs transition-all flex items-center justify-center'
+  const enabled = 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-white hover:text-slate-700 hover:border-slate-300'
+  const disabled = 'bg-transparent text-slate-300 border-transparent cursor-not-allowed'
 
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-0.5">
       <button
         onClick={undo}
         disabled={!canUndo}
         className={`${base} ${canUndo ? enabled : disabled}`}
         title="Undo (Ctrl+Z)"
       >
-        <Undo2 size={16} />
+        <Undo2 size={14} />
       </button>
       <button
         onClick={redo}
@@ -45,7 +45,7 @@ export default function UndoRedo() {
         className={`${base} ${canRedo ? enabled : disabled}`}
         title="Redo (Ctrl+Shift+Z)"
       >
-        <Redo2 size={16} />
+        <Redo2 size={14} />
       </button>
     </div>
   )

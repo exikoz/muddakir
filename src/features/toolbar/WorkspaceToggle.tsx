@@ -8,14 +8,14 @@ export default function WorkspaceToggle() {
   return (
     <button
       onClick={() => setPanelOpen(!isPanelOpen)}
-      className={`h-9 w-9 rounded-full shadow-sm border text-xs font-bold transition-all flex items-center justify-center ${
+      className={`h-8 w-8 rounded-lg border transition-all flex items-center justify-center ${
         isPanelOpen
-          ? 'bg-indigo-600 text-white border-indigo-600'
-          : 'bg-white/80 text-slate-600 border-slate-200 hover:border-indigo-400 hover:text-indigo-600'
+          ? 'bg-indigo-50 text-indigo-600 border-indigo-300'
+          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:text-indigo-600 hover:border-slate-300'
       }`}
       title="Workspaces"
     >
-      <FolderOpen size={16} />
+      <FolderOpen size={14} />
     </button>
   )
 }

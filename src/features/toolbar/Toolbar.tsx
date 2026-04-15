@@ -9,13 +9,29 @@ import UndoRedo from './UndoRedo'
 
 export default function Toolbar() {
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
-      <div className="flex gap-2 items-center">
-        <ModeToggle />
-        <MultiWordToggle />
+    <div className="relative z-50 flex items-center h-12 px-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shrink-0 gap-1">
+      {/* Left group: search inputs */}
+      <div className="flex items-center gap-1.5">
         <SeedInput />
         <TextSearch />
+      </div>
+
+      {/* Divider */}
+      <div className="w-px h-5 bg-slate-200 mx-2 shrink-0" />
+
+      {/* Center group: mode & multi-word */}
+      <div className="flex items-center gap-1.5">
+        <ModeToggle />
+        <MultiWordToggle />
+      </div>
+
+      {/* Spacer */}
+      <div className="flex-1 min-w-4" />
+
+      {/* Right group: actions & panel toggles */}
+      <div className="flex items-center gap-1">
         <UndoRedo />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
         <DiscoveryToggle />
         <MushafToggle />
         <WorkspaceToggle />

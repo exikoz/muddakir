@@ -17,15 +17,14 @@ export default function MushafToggle() {
   return (
     <button
       onClick={handleToggle}
-      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+      className={`h-8 w-8 rounded-lg border transition-all flex items-center justify-center ${
         isMushafOpen
-          ? 'bg-emerald-600 text-white shadow-lg'
-          : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'
+          ? 'bg-emerald-50 text-emerald-600 border-emerald-300'
+          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:text-slate-600 hover:border-slate-300'
       }`}
       title="Toggle Mushaf Panel"
     >
-      <BookOpen size={16} />
-      Mushaf
+      <BookOpen size={14} />
     </button>
   )
 }

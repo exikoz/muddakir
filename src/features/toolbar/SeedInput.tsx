@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import { useStore } from '../../store'
 
 export default function SeedInput() {
@@ -27,24 +27,24 @@ export default function SeedInput() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/50"
+      className="flex items-center h-8 bg-slate-50 rounded-lg border border-slate-200 transition-all focus-within:border-slate-400 focus-within:bg-white"
     >
-      <div className="pl-3 text-slate-400">
-        <Search size={16} />
+      <div className="pl-2 text-slate-400">
+        <MapPin size={13} />
       </div>
       <input
         type="text"
         value={input}
         onChange={e => setInput(e.target.value)}
-        placeholder="Enter Verse (e.g., 2:255)"
-        className="bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 w-40 font-medium text-sm"
+        placeholder="Verse (2:255)"
+        className="bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 w-24 text-xs px-1.5"
       />
       <button
         type="submit"
         disabled={loading}
-        className="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="h-full px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l border-slate-200"
       >
-        {loading ? '...' : 'Seed'}
+        {loading ? '…' : 'Go'}
       </button>
     </form>
   )

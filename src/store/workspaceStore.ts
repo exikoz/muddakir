@@ -89,6 +89,14 @@ function restoreState(data: WorkspaceData) {
     currentSearchTerm: data.explorerState.currentSearchTerm,
     isMushafOpen: false,
   })
+
+  // Fit the viewport to the restored nodes after ReactFlow processes the update
+  setTimeout(() => {
+    const rf = (window as any).__reactFlowInstance
+    if (rf && data.nodes.length > 0) {
+      rf.fitView({ duration: 300, padding: 0.2 })
+    }
+  }, 50)
 }
 
 /** Reset the graph store to a blank canvas with a fresh explorer. */
