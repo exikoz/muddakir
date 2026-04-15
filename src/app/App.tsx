@@ -6,6 +6,8 @@ import DiscoveryPanel from '../features/discovery/DiscoveryPanel'
 import { MushafPanel } from '../features/mushaf/MushafPanel'
 import WorkspacePanel from '../features/workspace/WorkspacePanel'
 import AIScopePanel from '../features/aiScope/AIScopePanel'
+import VerseDetailPanel from '../features/verseDetail/VerseDetailPanel'
+import { useAudioPlayer } from '../features/audio/useAudioPlayer'
 import { preload } from '../services/quranSearch'
 import { useStore } from '../store'
 import { useWorkspaceStore } from '../store/workspaceStore'
@@ -17,11 +19,12 @@ function AppContent() {
   const initWorkspaces = useWorkspaceStore(s => s.init)
   
   useWorkspaceKeyboard()
+  // Initialize singleton audio player
+  useAudioPlayer()
   
   useEffect(() => { 
     preload()
     initWorkspaces()
-    // Expose mushaf opener to VerseNode components via window
     ;(window as any).__mushafOpener = openMushafToVerse
   }, [openMushafToVerse, initWorkspaces])
 
@@ -34,6 +37,7 @@ function AppContent() {
         <MushafPanel />
         <WorkspacePanel />
         <AIScopePanel />
+        <VerseDetailPanel />
       </div>
     </div>
   )

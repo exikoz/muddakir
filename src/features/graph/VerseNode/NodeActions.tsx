@@ -1,7 +1,8 @@
 import { memo } from 'react'
-import { X, Sparkles } from 'lucide-react'
+import { X, Sparkles, Info } from 'lucide-react'
 import { useStore } from '../../../store'
 import { useAIScopeStore } from '../../../store/aiScopeStore'
+import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import type { Verse } from '../../../types/quran'
 
 interface Props {
@@ -15,8 +16,11 @@ function NodeActions({ nodeId, verse }: Props) {
   const contextItems = useAIScopeStore(s => s.contextItems)
   const isAIScopeOpen = useAIScopeStore(s => s.isOpen)
   const setAIScopeOpen = useAIScopeStore(s => s.setOpen)
+  const openDetail = useVerseDetailStore(s => s.openDetail)
+  const detailVerse = useVerseDetailStore(s => s.verse)
 
   const isInContext = contextItems.some(c => c.verseKey === verse.verse_key)
+  const isDetailActive = detailVerse?.verse_key === verse.verse_key
 
   function handleAddToAIScope(e: React.MouseEvent) {
     e.stopPropagation()
@@ -29,8 +33,28 @@ function NodeActions({ nodeId, verse }: Props) {
     if (!isAIScopeOpen) setAIScopeOpen(true)
   }
 
+  function handleOpenDetail(e: React.MouseEvent) {
+    e.stopPropagation()
+    // Track which panel was open before so we can restore on back
+    const prev = isAIScopeOpen ? 'aiScope' as const : null
+    // Close other panels to avoid overlap
+    setAIScopeOpen(false)
+    openDetail(verse, prev)
+  }
+
   return (
     <div className="flex items-center gap-1">
+      <button
+        onClick={handleOpenDetail}
+        className={`p-1.5 rounded-full shadow-sm border transition-all ${
+          isDetailActive
+            ? 'bg-emerald-50 text-emerald-500 border-emerald-200 opacity-100'
+            : 'bg-white text-slate-400 border-slate-100 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-emerald-500 hover:bg-emerald-50 hover:border-emerald-200'
+        }`}
+        title="Verse details"
+      >
+        <Info size={12} />
+      </button>
       <button
         onClick={handleAddToAIScope}
         className={`p-1.5 rounded-full shadow-sm border transition-all ${

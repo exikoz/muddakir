@@ -4,6 +4,7 @@ import type { VerseNodeData } from '../../../types/graph'
 import { useStore } from '../../../store'
 import ArabicText from './ArabicText'
 import NodeActions from './NodeActions'
+import MiniPlayer from '../../audio/MiniPlayer'
 
 function VerseNode({ id, data }: NodeProps<any>) {
   const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery } = data as VerseNodeData
@@ -103,22 +104,25 @@ function VerseNode({ id, data }: NodeProps<any>) {
         )}
       </div>
         
-      {/* Bottom Bar - Next Button and Mushaf Link */}
+      {/* Bottom Bar - Next Button, Audio, and Mushaf Link */}
       <div className="border-t border-slate-50 px-4 py-2 flex items-center justify-between">
-        {!hasNextVerse ? (
-          <button
-            onClick={handleNextVerse}
-            className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
-            title="Load next verse"
-          >
-            <span>Next</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m6 9 6 6 6-6"/>
-            </svg>
-          </button>
-        ) : (
-          <div />
-        )}
+        <div className="flex items-center gap-1">
+          {!hasNextVerse ? (
+            <button
+              onClick={handleNextVerse}
+              className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
+              title="Load next verse"
+            >
+              <span>Next</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+          ) : (
+            <div />
+          )}
+          <MiniPlayer verseKey={verse.verse_key} />
+        </div>
         
         <button
           onClick={(e) => {
