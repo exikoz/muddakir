@@ -24,11 +24,13 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 1400px;
-  height: 85vh;
+  max-height: 80vh;
+  height: 80vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: slideUp 0.3s ease;
+  margin: auto;
 }
 
 @media (prefers-color-scheme: dark) {

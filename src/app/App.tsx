@@ -5,8 +5,7 @@ import GraphCanvas from '../features/graph/GraphCanvas'
 import DiscoveryPanel from '../features/discovery/DiscoveryPanel'
 import { MushafPanel } from '../features/mushaf/MushafPanel'
 import WorkspacePanel from '../features/workspace/WorkspacePanel'
-import DevModeToggle from '../components/DevModeToggle'
-import UIDebugToggle from '../components/UIDebugToggle'
+import AIScopePanel from '../features/aiScope/AIScopePanel'
 import { preload } from '../services/quranSearch'
 import { useStore } from '../store'
 import { useWorkspaceStore } from '../store/workspaceStore'
@@ -34,8 +33,7 @@ function AppContent() {
         <DiscoveryPanel />
         <MushafPanel />
         <WorkspacePanel />
-        <DevModeToggle />
-        <UIDebugToggle />
+        <AIScopePanel />
       </div>
     </div>
   )
