@@ -1,19 +1,21 @@
 import { X, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
-import { SURAH_NAMES } from './surahNames'
+import { useSidePanelStore } from '../../store/sidePanelStore'
+import { getSurahName } from './surahNames'
 import { VerseRow } from './VerseRow'
+import SurahSelector from './SurahSelector'
 
 export function MushafPanel() {
-  const { t } = useTranslation('mushaf')
-  const isMushafOpen = useStore(s => s.isMushafOpen)
+  const { t, i18n } = useTranslation('mushaf')
+  const isMushafOpen = useSidePanelStore(s => s.activePanel === 'mushaf')
+  const closePanel = useSidePanelStore(s => s.close)
   const mushafChapter = useStore(s => s.mushafChapter)
   const mushafVerses = useStore(s => s.mushafVerses)
   const mushafLoading = useStore(s => s.mushafLoading)
   const mushafHasPrev = useStore(s => s.mushafHasPrev)
   const mushafHasMore = useStore(s => s.mushafHasMore)
   const mushafHighlightVerse = useStore(s => s.mushafHighlightVerse)
-  const setMushafOpen = useStore(s => s.setMushafOpen)
   const loadMushafChapter = useStore(s => s.loadMushafChapter)
   const loadMushafMore = useStore(s => s.loadMushafMore)
   const loadMushafPrev = useStore(s => s.loadMushafPrev)
@@ -35,7 +37,7 @@ export function MushafPanel() {
 
   return (
     <div
-      className={`fixed inset-y-0 left-0 rtl:left-auto rtl:right-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+      className={`fixed top-12 bottom-0 left-0 rtl:left-auto rtl:right-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
         isMushafOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
       }`}
     >
@@ -46,13 +48,13 @@ export function MushafPanel() {
             <BookOpen size={18} className="text-emerald-600" />
             <div>
               <h2 className="font-semibold text-slate-800 leading-tight">
-                {SURAH_NAMES[mushafChapter] ?? `Surah ${mushafChapter}`}
+                {getSurahName(mushafChapter, i18n.language)}
               </h2>
               <p className="text-xs text-slate-400">{t('surah_of_total', { number: mushafChapter })}</p>
             </div>
           </div>
           <button
-            onClick={() => setMushafOpen(false)}
+            onClick={() => closePanel('mushaf')}
             className="p-2 hover:bg-slate-200 rounded-full transition-colors"
           >
             <X size={18} className="text-slate-500" />
@@ -69,17 +71,7 @@ export function MushafPanel() {
             <ChevronLeft size={16} className="text-slate-600" />
           </button>
 
-          <select
-            value={mushafChapter}
-            onChange={(e) => loadMushafChapter(Number(e.target.value))}
-            className="flex-1 text-sm border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
-          >
-            {Array.from({ length: 114 }, (_, i) => i + 1).map(n => (
-              <option key={n} value={n}>
-                {n}. {SURAH_NAMES[n]}
-              </option>
-            ))}
-          </select>
+          <SurahSelector value={mushafChapter} onChange={loadMushafChapter} />
 
           <button
             onClick={() => mushafChapter < 114 && loadMushafChapter(mushafChapter + 1)}

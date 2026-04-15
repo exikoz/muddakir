@@ -1,29 +1,36 @@
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
-import { useAIScopeStore } from '../../../store/aiScopeStore'
-import { useStore } from '../../../store'
-import { SURAH_NAMES } from '../../mushaf/surahNames'
+import { useSidePanelStore } from '../../../store/sidePanelStore'
+import { getSurahName } from '../../mushaf/surahNames'
 
 export default function VerseHeader() {
   const { t, i18n } = useTranslation('verseDetail')
   const isRtl = i18n.dir() === 'rtl'
   const verse = useVerseDetailStore(s => s.verse)
   const previousPanel = useVerseDetailStore(s => s.previousPanel)
-  const close = useVerseDetailStore(s => s.close)
-  const setAIScopeOpen = useAIScopeStore(s => s.setOpen)
-  const setDiscoveryOpen = useStore(s => s.setDiscoveryOpen)
+  const clearDetail = useVerseDetailStore(s => s.close)
+  const openPanel = useSidePanelStore(s => s.open)
+  const closePanel = useSidePanelStore(s => s.close)
 
   if (!verse) return null
 
   const [chapterStr] = verse.verse_key.split(':')
   const chapter = parseInt(chapterStr, 10)
-  const surahName = SURAH_NAMES[chapter] ?? `Surah ${chapter}`
+  const surahName = getSurahName(chapter, i18n.language)
 
   function handleBack() {
-    close()
-    if (previousPanel === 'aiScope') setAIScopeOpen(true)
-    else if (previousPanel === 'discovery') setDiscoveryOpen(true)
+    clearDetail()
+    if (previousPanel) {
+      openPanel(previousPanel)
+    } else {
+      closePanel()
+    }
+  }
+
+  function handleClose() {
+    clearDetail()
+    closePanel()
   }
 
   return (
@@ -37,7 +44,7 @@ export default function VerseHeader() {
           {previousPanel === 'aiScope' ? t('back_to_ai_scope') : previousPanel === 'discovery' ? t('back_to_discovery') : t('close')}
         </button>
         <button
-          onClick={() => close()}
+          onClick={handleClose}
           className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
         >
           <X size={14} />
