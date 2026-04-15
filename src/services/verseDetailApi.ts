@@ -81,50 +81,16 @@ export async function fetchTafsir(verseKey: string): Promise<TafsirData | null> 
 }
 
 // ── Reflections (Quran Reflect) ─────────────────────────────────────────────
+// The Quran Reflect API is a separate service (quranreflect.com) that is NOT
+// available through the quran.com content proxy. Calling it produces a 404
+// that shows as a console error. We disable the fetch entirely and return
+// empty until a dedicated Quran Reflect proxy is configured.
 
 const reflectionCache = new Map<string, CacheEntry<ReflectionPost[]>>()
 
-export async function fetchReflections(verseKey: string): Promise<ReflectionPost[]> {
-  const cached = reflectionCache.get(verseKey)
-  if (isCacheValid(cached)) return cached.data
-
-  const [chapterStr, verseStr] = verseKey.split(':')
-
-  try {
-    const params = new URLSearchParams({
-      'references[0][chapterId]': chapterStr,
-      'references[0][from]': verseStr,
-      'references[0][to]': verseStr,
-      'verifiedOnly': 'true',
-      'limit': '3',
-    })
-
-    const path = `/api/v4/quran-reflect/posts?${params.toString()}`
-    const res = await contentFetch(path)
-
-    // This endpoint may not be available — gracefully degrade
-    if (!res.ok) {
-      console.warn(`[verseDetailApi] Reflections not available (${res.status})`)
-      return []
-    }
-
-    const json = await res.json()
-    const posts: ReflectionPost[] = (json.posts ?? []).map((p: any) => ({
-      id: p.id,
-      body: p.body ?? '',
-      postTypeId: p.postTypeId ?? 1,
-      authorName: p.author
-        ? `${p.author.firstName ?? ''} ${p.author.lastName ?? ''}`.trim() || p.author.username || 'Anonymous'
-        : 'Anonymous',
-      likeCount: p.likes ?? 0,
-    }))
-
-    reflectionCache.set(verseKey, { data: posts, timestamp: Date.now() })
-    return posts
-  } catch (err) {
-    console.warn('[verseDetailApi] fetchReflections error:', err)
-    return []
-  }
+export async function fetchReflections(_verseKey: string): Promise<ReflectionPost[]> {
+  // Quran Reflect API not available through current proxy — skip the call
+  return []
 }
 
 // ── Audio ────────────────────────────────────────────────────────────────────
@@ -145,9 +111,11 @@ export async function fetchAudioUrl(verseKey: string, recitationId: number): Pro
     const audioFile = json.audio_files?.[0]
     if (!audioFile?.url) return null
 
-    // URL may be relative — prepend CDN base if needed
+    // URL may be relative or protocol-relative — normalize
     let url: string = audioFile.url
-    if (!url.startsWith('http')) {
+    if (url.startsWith('//')) {
+      url = `https:${url}`
+    } else if (!url.startsWith('http')) {
       url = `https://audio.qurancdn.com/${url}`
     }
 

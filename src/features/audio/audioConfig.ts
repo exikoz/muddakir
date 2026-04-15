@@ -14,8 +14,8 @@ export const AUDIO_CDN_BASE = 'https://audio.qurancdn.com/'
 
 export const RECITERS: readonly ReciterConfig[] = [
   { id: 1, name: 'Abdul Basit',  style: 'Mujawwad', recitationId: 1 },
-  { id: 2, name: 'Al-Minshawi',  style: 'Murattal', recitationId: 4 },
-  { id: 3, name: 'Al-Husary',    style: 'Murattal', recitationId: 7 },
+  { id: 2, name: 'Al-Minshawi',  style: 'Murattal', recitationId: 9 },
+  { id: 3, name: 'Al-Husary',    style: 'Murattal', recitationId: 6 },
 ] as const
 
 export const DEFAULT_RECITER_ID = 1
