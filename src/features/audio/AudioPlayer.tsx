@@ -1,9 +1,9 @@
 /**
- * Full audio player — used in the Verse Detail panel.
- * Play/pause, progress bar with seek, time display, reciter selector.
+ * Compact single-row audio player for the Verse Detail panel.
+ * Play/pause, progress bar, time, and reciter selector — all on one line.
  */
 
-import { Play, Pause, Loader2 } from 'lucide-react'
+import { Play, Pause } from 'lucide-react'
 import { useAudioStore } from './audioStore'
 import { RECITERS } from './audioConfig'
 
@@ -34,11 +34,8 @@ export default function AudioPlayer({ verseKey }: Props) {
   const progress = isThisVerse && duration > 0 ? (currentTime / duration) * 100 : 0
 
   function handlePlayPause() {
-    if (isThisPlaying) {
-      pause()
-    } else {
-      playVerse(verseKey, currentReciterId)
-    }
+    if (isThisPlaying) pause()
+    else playVerse(verseKey, currentReciterId)
   }
 
   function handleSeek(e: React.MouseEvent<HTMLDivElement>) {
@@ -48,49 +45,40 @@ export default function AudioPlayer({ verseKey }: Props) {
     seek(ratio * duration)
   }
 
-  function handleReciterChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setReciter(Number(e.target.value))
-  }
-
   return (
-    <div className="flex flex-col gap-2 bg-slate-50 rounded-xl p-3">
-      <div className="flex items-center gap-2.5">
-        {/* Play/Pause */}
-        <button
-          onClick={handlePlayPause}
-          className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors shrink-0"
-        >
-          {isThisPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
-        </button>
+    <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-2.5 py-1.5">
+      {/* Play/Pause */}
+      <button
+        onClick={handlePlayPause}
+        className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors shrink-0"
+      >
+        {isThisPlaying ? <Pause size={10} /> : <Play size={10} className="ml-0.5" />}
+      </button>
 
-        {/* Progress bar + time */}
-        <div className="flex-1 min-w-0">
-          <div
-            className="h-1.5 bg-slate-200 rounded-full cursor-pointer relative"
-            onClick={handleSeek}
-          >
-            <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-100"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-0.5">
-            <span className="text-[9px] text-slate-400">{isThisVerse ? formatTime(currentTime) : '0:00'}</span>
-            <span className="text-[9px] text-slate-400">{isThisVerse ? formatTime(duration) : '0:00'}</span>
-          </div>
-        </div>
+      {/* Progress bar */}
+      <div
+        className="flex-1 h-1 bg-slate-200 rounded-full cursor-pointer relative min-w-0"
+        onClick={handleSeek}
+      >
+        <div
+          className="h-full bg-emerald-500 rounded-full transition-all duration-100"
+          style={{ width: `${progress}%` }}
+        />
       </div>
+
+      {/* Time */}
+      <span className="text-[9px] text-slate-400 shrink-0 w-16 text-center tabular-nums">
+        {isThisVerse ? `${formatTime(currentTime)}/${formatTime(duration)}` : '0:00'}
+      </span>
 
       {/* Reciter selector */}
       <select
         value={currentReciterId}
-        onChange={handleReciterChange}
-        className="text-[10px] text-slate-600 bg-white border border-slate-200 rounded-lg px-2 py-1 outline-none focus:border-emerald-400"
+        onChange={e => setReciter(Number(e.target.value))}
+        className="text-[9px] text-slate-500 bg-white border border-slate-200 rounded px-1 py-0.5 outline-none focus:border-emerald-400 shrink-0 max-w-[90px]"
       >
         {RECITERS.map(r => (
-          <option key={r.id} value={r.recitationId}>
-            {r.name} · {r.style}
-          </option>
+          <option key={r.id} value={r.recitationId}>{r.name}</option>
         ))}
       </select>
     </div>

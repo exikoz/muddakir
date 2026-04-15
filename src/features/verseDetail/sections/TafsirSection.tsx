@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { Loader2, RefreshCw, ChevronDown } from 'lucide-react'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
-import { fetchTafsir } from '../../../services/verseDetailApi'
-import { TAFSIR_PREVIEW_LENGTH } from '../detailConfig'
-import type { TafsirData } from '../types'
+import { fetchTafsir, fetchAvailableTafsirs } from '../../../services/verseDetailApi'
+import { TAFSIR, TAFSIR_PREVIEW_LENGTH } from '../detailConfig'
+import type { TafsirData, ResourceItem } from '../types'
 
 /** Strip HTML tags and decode entities for safe display */
 function sanitizeHtml(html: string): string {
@@ -19,6 +19,17 @@ export default function TafsirSection() {
   const [error, setError] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
+  // Available tafsirs + selected
+  const [available, setAvailable] = useState<ResourceItem[]>([])
+  const [selectedId, setSelectedId] = useState(TAFSIR.id)
+  const [showPicker, setShowPicker] = useState(false)
+
+  // Fetch available tafsirs list once
+  useEffect(() => {
+    fetchAvailableTafsirs().then(setAvailable)
+  }, [])
+
+  // Fetch selected tafsir for the current verse
   useEffect(() => {
     if (!verse) return
     let cancelled = false
@@ -26,16 +37,14 @@ export default function TafsirSection() {
     setError(false)
     setExpanded(false)
 
-    fetchTafsir(verse.verse_key).then(data => {
-      if (cancelled) return
-      setTafsir(data)
-      setLoading(false)
+    fetchTafsir(verse.verse_key, selectedId).then(data => {
+      if (!cancelled) { setTafsir(data); setLoading(false) }
     }).catch(() => {
       if (!cancelled) { setError(true); setLoading(false) }
     })
 
     return () => { cancelled = true }
-  }, [verse?.verse_key])
+  }, [verse?.verse_key, selectedId])
 
   if (!verse) return null
 
@@ -43,53 +52,75 @@ export default function TafsirSection() {
   const isLong = plainText.length > TAFSIR_PREVIEW_LENGTH
   const displayText = expanded || !isLong ? plainText : plainText.slice(0, TAFSIR_PREVIEW_LENGTH) + '…'
 
+  const selectedName = available.find(t => t.id === selectedId)?.name ?? tafsir?.resourceName ?? 'Tafsir'
+
   return (
-    <div className="border-b border-slate-100">
-      <div className="px-4 py-2.5">
-        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-          Tafsir
-        </span>
-      </div>
+    <div className="px-4 py-3">
+      {/* Tafsir selector */}
+      <div className="relative mb-3">
+        <button
+          onClick={() => setShowPicker(!showPicker)}
+          className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
+        >
+          {selectedName}
+          <ChevronDown size={10} className={`transition-transform ${showPicker ? 'rotate-180' : ''}`} />
+        </button>
 
-      <div className="px-4 pb-4">
-        {loading && (
-          <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
-            <Loader2 size={12} className="animate-spin" />
-            Loading tafsir…
-          </div>
-        )}
-
-        {error && !loading && (
-          <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-slate-400">Could not load tafsir</span>
-            <button
-              onClick={() => { setLoading(true); setError(false); fetchTafsir(verse.verse_key).then(setTafsir).finally(() => setLoading(false)) }}
-              className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium"
-            >
-              <RefreshCw size={10} /> Retry
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && tafsir && (
-          <>
-            <p className="text-[10px] font-semibold text-slate-400 mb-1">{tafsir.resourceName}</p>
-            <p className="text-sm text-slate-600 leading-relaxed">{displayText}</p>
-            {isLong && (
+        {showPicker && (
+          <div className="absolute top-6 left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1">
+            {available.map(t => (
               <button
-                onClick={() => setExpanded(!expanded)}
-                className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium mt-1.5"
+                key={t.id}
+                onClick={() => { setSelectedId(t.id); setShowPicker(false) }}
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 transition-colors ${
+                  selectedId === t.id ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600'
+                }`}
               >
-                {expanded ? 'Show less' : 'Read full tafsir'}
+                <span className="truncate">{t.name}</span>
+                <span className="text-[8px] text-slate-400 ml-2 shrink-0">{t.language}</span>
               </button>
-            )}
-          </>
-        )}
-
-        {!loading && !error && !tafsir && (
-          <p className="text-xs text-slate-400">No tafsir available for this verse.</p>
+            ))}
+          </div>
         )}
       </div>
+
+      {/* Content */}
+      {loading && (
+        <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
+          <Loader2 size={12} className="animate-spin" />
+          Loading tafsir…
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="flex items-center justify-between py-2">
+          <span className="text-xs text-slate-400">Could not load tafsir</span>
+          <button
+            onClick={() => { setLoading(true); setError(false); fetchTafsir(verse.verse_key, selectedId).then(setTafsir).finally(() => setLoading(false)) }}
+            className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium"
+          >
+            <RefreshCw size={10} /> Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && tafsir && (
+        <>
+          <p className="text-sm text-slate-600 leading-relaxed">{displayText}</p>
+          {isLong && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium mt-1.5"
+            >
+              {expanded ? 'Show less' : 'Read full tafsir'}
+            </button>
+          )}
+        </>
+      )}
+
+      {!loading && !error && !tafsir && (
+        <p className="text-xs text-slate-400">No tafsir available for this verse with the selected source.</p>
+      )}
     </div>
   )
 }

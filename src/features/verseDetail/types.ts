@@ -20,3 +20,11 @@ export interface ReflectionPost {
   authorName: string
   likeCount: number
 }
+
+
+/** A tafsir or translation resource from the /resources API */
+export interface ResourceItem {
+  id: number
+  name: string
+  language: string
+}
