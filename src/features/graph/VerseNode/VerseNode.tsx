@@ -79,7 +79,7 @@ function VerseNode({ id, data }: NodeProps<any>) {
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Verse {verse.verse_key}
         </span>
-        <NodeActions nodeId={id as string} />
+        <NodeActions nodeId={id as string} verse={verse} />
       </div>
 
       <div className="p-6 flex-1">
