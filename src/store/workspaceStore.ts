@@ -18,6 +18,7 @@ import {
   deleteWorkspace,
 } from '../services/workspaceStorage'
 import { useStore } from './index'
+import { useSidePanelStore } from './sidePanelStore'
 
 // ---------------------------------------------------------------------------
 // Snapshot helpers — bridge between graphStore and WorkspaceData
@@ -89,6 +90,7 @@ function restoreState(data: WorkspaceData) {
     currentSearchTerm: data.explorerState.currentSearchTerm,
     isMushafOpen: false,
   })
+  useSidePanelStore.getState().close()
 
   // Fit the viewport to the restored nodes after ReactFlow processes the update
   setTimeout(() => {
@@ -120,6 +122,7 @@ function resetGraphStore() {
     currentSearchTerm: '',
     isMushafOpen: false,
   })
+  useSidePanelStore.getState().close()
 }
 
 // ---------------------------------------------------------------------------

@@ -12,14 +12,15 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useWorkspaceStore } from '../../store/workspaceStore'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 import type { WorkspaceMeta } from '../../types/workspace'
 
 export default function WorkspacePanel() {
   const workspaces = useWorkspaceStore((s) => s.workspaces)
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId)
   const loading = useWorkspaceStore((s) => s.loading)
-  const isPanelOpen = useWorkspaceStore((s) => s.isPanelOpen)
-  const setPanelOpen = useWorkspaceStore((s) => s.setPanelOpen)
+  const isPanelOpen = useSidePanelStore(s => s.activePanel === 'workspace')
+  const closePanel = useSidePanelStore(s => s.close)
   const createWorkspace = useWorkspaceStore((s) => s.createWorkspace)
   const saveCurrentWorkspace = useWorkspaceStore((s) => s.saveCurrentWorkspace)
   const switchWorkspace = useWorkspaceStore((s) => s.switchWorkspace)
@@ -108,7 +109,7 @@ export default function WorkspacePanel() {
           {t('title')}
         </div>
         <button
-          onClick={() => setPanelOpen(false)}
+          onClick={() => closePanel('workspace')}
           className="text-slate-400 hover:text-slate-600 transition-colors"
         >
           <X size={16} />

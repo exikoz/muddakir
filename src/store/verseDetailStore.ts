@@ -6,6 +6,7 @@ import { create } from 'zustand'
 import type { Verse } from '../types/quran'
 import { generateInsight } from '../services/aiScopeService'
 import { useAIScopeStore } from './aiScopeStore'
+import { useSidePanelStore } from './sidePanelStore'
 import { VERSE_EXPLANATION_PROMPT, WORD_EXPLANATION_PROMPT } from '../features/verseDetail/detailConfig'
 import i18n from '../i18n/config'
 
@@ -43,7 +44,7 @@ export const useVerseDetailStore = create<VerseDetailState>((set, get) => ({
     set({ isOpen: true, verse, previousPanel })
   },
 
-  close: () => set({ isOpen: false, verse: null, previousPanel: null }),
+  close: () => set({ isOpen: false, previousPanel: null }),
 
   fetchVerseExplanation: async () => {
     const { verse, verseExplanations } = get()
@@ -156,8 +157,9 @@ export const useVerseDetailStore = create<VerseDetailState>((set, get) => ({
     })
 
     // Close detail, open AI Scope
-    set({ isOpen: false, verse: null, previousPanel: null })
+    set({ isOpen: false, previousPanel: null })
     aiScope.setOpen(true)
+    useSidePanelStore.getState().open('aiScope')
 
     if (question?.trim()) {
       aiScope.sendQuery(question.trim())
@@ -179,8 +181,9 @@ export const useVerseDetailStore = create<VerseDetailState>((set, get) => ({
       addedAt: Date.now(),
     })
 
-    set({ isOpen: false, verse: null, previousPanel: null })
+    set({ isOpen: false, previousPanel: null })
     aiScope.setOpen(true)
+    useSidePanelStore.getState().open('aiScope')
 
     const q = question?.trim()
       || `Tell me more about the word "${word.text}" (${word.transliteration ?? ''}) in verse ${verse.verse_key}.`

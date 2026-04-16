@@ -14,6 +14,11 @@ export interface VerseNodeData extends Record<string, unknown> {
   searchQuery?: string
 }
 
+export interface NoteNodeData extends Record<string, unknown> {
+  text: string
+  color: string
+}
+
 export interface VerseEdgeData extends Record<string, unknown> {
   matchType?: MatchType
   edgeType?: 'search' | 'sequential-prev' | 'sequential-next'
@@ -23,6 +28,7 @@ export interface VerseEdgeData extends Record<string, unknown> {
 }
 
 export type VerseNode = Node<VerseNodeData, 'verse'>
+export type NoteNode = Node<NoteNodeData, 'note'>
 export type VerseEdge = Edge<VerseEdgeData, 'verse'>
 
 export interface Snapshot {

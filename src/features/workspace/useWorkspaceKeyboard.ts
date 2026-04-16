@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useWorkspaceStore } from '../../store/workspaceStore'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 
 /**
  * Keyboard shortcuts for workspace management:
@@ -8,7 +9,7 @@ import { useWorkspaceStore } from '../../store/workspaceStore'
 export function useWorkspaceKeyboard() {
   const saveCurrentWorkspace = useWorkspaceStore((s) => s.saveCurrentWorkspace)
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId)
-  const setPanelOpen = useWorkspaceStore((s) => s.setPanelOpen)
+  const openPanel = useSidePanelStore((s) => s.open)
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -19,12 +20,12 @@ export function useWorkspaceKeyboard() {
           saveCurrentWorkspace()
         } else {
           // No active workspace — open the panel so user can name & save
-          setPanelOpen(true)
+          openPanel('workspace')
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeWorkspaceId, saveCurrentWorkspace, setPanelOpen])
+  }, [activeWorkspaceId, saveCurrentWorkspace, openPanel])
 }

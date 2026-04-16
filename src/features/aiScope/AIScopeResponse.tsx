@@ -103,7 +103,7 @@ function RefListRow({ verseKey, description }: { verseKey: string; description: 
   const nodes = useStore(s => s.nodes)
   const [adding, setAdding] = useState(false)
 
-  const isOnCanvas = nodes.some(n => n.data.verse.verse_key === verseKey)
+  const isOnCanvas = nodes.some(n => n.type === 'verse' && n.data.verse.verse_key === verseKey)
 
   async function handleAdd() {
     setAdding(true)

@@ -38,6 +38,7 @@ export default function GraphCanvas() {
       onConnect={onConnect}
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
+      minZoom={0.1}
       fitView
       className="flow-canvas"
     >

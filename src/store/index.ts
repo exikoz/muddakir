@@ -14,16 +14,17 @@ import type { ExplorationNode } from '../core/verseExplorer'
 import { fetchChapterVerses, fetchVerse } from '../services/quranApi'
 import { searchWord, searchRegex, buildAdjacentPattern } from '../services/quranSearch'
 import { getLayoutedElements } from '../lib/autoLayout'
+import { useSidePanelStore } from './sidePanelStore'
 
 interface GraphState {
   // Core explorer (framework-agnostic business logic)
   explorer: VerseExplorer
   
   // ReactFlow state
-  nodes: VerseNode[]
-  edges: VerseEdge[]
-  onNodesChange: OnNodesChange<VerseNode>
-  onEdgesChange: OnEdgesChange<VerseEdge>
+  nodes: any[]
+  edges: any[]
+  onNodesChange: OnNodesChange<any>
+  onEdgesChange: OnEdgesChange<any>
   onConnect: (connection: Connection) => void
   
   // High-level actions (delegate to explorer)
@@ -31,10 +32,11 @@ interface GraphState {
   searchFromWord: (nodeId: string, wordIndex: number) => Promise<void>
   deleteNode: (id: string) => void
   addSequentialVerse: (nodeId: string, direction: 'prev' | 'next') => Promise<void>
+  addNoteNode: () => void
   
   // Low-level ReactFlow operations (internal)
-  _addReactFlowNode: (node: VerseNode) => void
-  _addReactFlowEdge: (edge: VerseEdge) => void
+  _addReactFlowNode: (node: any) => void
+  _addReactFlowEdge: (edge: any) => void
   _applyAutoLayout: () => void
   updateNodeData: (id: string, data: Partial<VerseNode['data']>) => void
   focusNode: (verseKey: string) => string | null
@@ -208,7 +210,14 @@ export const useStore = create<GraphState>((set, get) => ({
   },
   
   onConnect: (connection) => {
-    set({ edges: addEdge(connection, get().edges) })
+    const isNoteEdge =
+      connection.source?.startsWith('note-') || connection.target?.startsWith('note-')
+    const edge = {
+      ...connection,
+      id: `e-${connection.source}-${connection.target}-${Date.now()}`,
+      type: isNoteEdge ? ('note' as const) : ('verse' as const),
+    }
+    set({ edges: addEdge(edge, get().edges) })
   },
   
   // High-level actions (use explorer)
@@ -351,6 +360,7 @@ export const useStore = create<GraphState>((set, get) => ({
         : searchOptions.semantic ? 'Semantic'
         : 'Exact',
     })
+    if (result.shouldOpenDiscovery) useSidePanelStore.getState().open('discovery')
     
     // Fit view to show parent and all new children
     if (result.nodesToAdd.length > 0) {
@@ -387,6 +397,16 @@ export const useStore = create<GraphState>((set, get) => ({
   
   deleteNode: (id) => {
     const { explorer } = get()
+
+    // Note nodes aren't tracked by the explorer — just remove from ReactFlow
+    if (id.startsWith('note-')) {
+      set({
+        nodes: get().nodes.filter(n => n.id !== id),
+        edges: get().edges.filter(e => e.source !== id && e.target !== id),
+      })
+      get().pushHistory()
+      return
+    }
     
     // Check if this is a root node (no parent)
     const nodeToDelete = explorer.getNode(id)
@@ -423,10 +443,38 @@ export const useStore = create<GraphState>((set, get) => ({
     
     get().pushHistory()
   },
+
+  addNoteNode: () => {
+    const NOTE_COLORS = ['amber', 'sky', 'rose', 'violet', 'emerald', 'slate']
+    const color = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)]
+
+    // Place near center of current viewport
+    const rf = (window as any).__reactFlowInstance
+    let position = { x: 200, y: 200 }
+    if (rf) {
+      const viewport = rf.getViewport()
+      // Convert screen center to flow coordinates
+      const zoom = viewport.zoom || 1
+      position = {
+        x: (-viewport.x + window.innerWidth / 2) / zoom,
+        y: (-viewport.y + window.innerHeight / 2) / zoom,
+      }
+    }
+
+    const noteNode = {
+      id: `note-${Date.now()}`,
+      type: 'note' as const,
+      position,
+      data: { text: '', color },
+    }
+
+    set({ nodes: [...get().nodes, noteNode as any] })
+    get().pushHistory()
+  },
   
   addSequentialVerse: async (nodeId, direction) => {
     const node = get().nodes.find(n => n.id === nodeId)
-    if (!node) return
+    if (!node || node.type !== 'verse') return
     
     const currentVerseKey = node.data.verse.verse_key
     const [surahStr, ayahStr] = currentVerseKey.split(':')
@@ -444,7 +492,7 @@ export const useStore = create<GraphState>((set, get) => ({
     }
     
     // Check if verse already exists
-    const existing = get().nodes.find(n => n.data.verse.verse_key === targetVerseKey)
+    const existing = get().nodes.find(n => n.type === 'verse' && n.data.verse.verse_key === targetVerseKey)
     if (existing) {
       // Focus on existing node
       const reactFlowInstance = (window as any).__reactFlowInstance
@@ -522,7 +570,7 @@ export const useStore = create<GraphState>((set, get) => ({
   },
   
   focusNode: (verseKey) => {
-    const node = get().nodes.find(n => n.data.verse.verse_key === verseKey)
+    const node = get().nodes.find(n => n.type === 'verse' && n.data.verse.verse_key === verseKey)
     return node?.id || null
   },
   
@@ -595,7 +643,7 @@ export const useStore = create<GraphState>((set, get) => ({
         : 'exact' as const
       
       const sorted = [...results].sort((a, b) => b.matchScore - a.matchScore)
-      const existingVerseKeys = new Set(get().nodes.map(n => n.data.verse.verse_key))
+      const existingVerseKeys = new Set(get().nodes.filter(n => n.type === 'verse').map(n => n.data.verse.verse_key))
       const newResults = sorted.filter(r => !existingVerseKeys.has(r.verse_key))
       
       const toAdd = newResults.slice(0, 3)
@@ -661,6 +709,7 @@ export const useStore = create<GraphState>((set, get) => ({
         discoveryLoading: false,
         selectedWords: [],
       })
+      if (allOverflow.length > 0) useSidePanelStore.getState().open('discovery')
       
       // Fit view
       if (toAdd.length > 0) {
@@ -703,7 +752,7 @@ export const useStore = create<GraphState>((set, get) => ({
       const results = await searchWord(trimmed, searchOptions, 50)
       
       // Filter out verses already on the graph
-      const existingVerseKeys = new Set(get().nodes.map(n => n.data.verse.verse_key))
+      const existingVerseKeys = new Set(get().nodes.filter(n => n.type === 'verse').map(n => n.data.verse.verse_key))
       const filtered = results.filter(r => !existingVerseKeys.has(r.verse_key))
       
       // Update the explorer's search term so addVerseNode can use it
@@ -784,6 +833,7 @@ export const useStore = create<GraphState>((set, get) => ({
   openMushaf: async (chapter) => {
     const currentChapter = chapter ?? get().mushafChapter
     set({ isMushafOpen: true })
+    useSidePanelStore.getState().open('mushaf')
     
     // Only load if chapter changed or no verses loaded
     if (currentChapter !== get().mushafChapter || get().mushafVerses.length === 0) {
@@ -797,6 +847,7 @@ export const useStore = create<GraphState>((set, get) => ({
     const ayah = parseInt(ayahStr, 10)
     
     set({ isMushafOpen: true, mushafHighlightVerse: null })
+    useSidePanelStore.getState().open('mushaf')
     
     // If already on this chapter and verse is loaded, just highlight and scroll
     if (surah === get().mushafChapter) {

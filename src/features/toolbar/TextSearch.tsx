@@ -2,20 +2,21 @@ import { useState } from 'react'
 import { Search, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 
 export default function TextSearch() {
   const { t } = useTranslation('toolbar')
   const [input, setInput] = useState('')
   const discoveryLoading = useStore(s => s.discoveryLoading)
   const searchDiscovery = useStore(s => s.searchDiscovery)
-  const setDiscoveryOpen = useStore(s => s.setDiscoveryOpen)
+  const openPanel = useSidePanelStore(s => s.open)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const trimmed = input.trim()
     if (!trimmed) return
 
-    setDiscoveryOpen(true)
+    openPanel('discovery')
     await searchDiscovery(trimmed)
   }
 

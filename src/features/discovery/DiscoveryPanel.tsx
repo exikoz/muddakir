@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { X, Search, Loader2, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 import { MODE_COLORS } from '../../lib/modeColors'
 import type { SearchOptions } from '../../types/quran'
 import DiscoveryItem from './DiscoveryItem'
@@ -16,12 +17,12 @@ const MODE_OPTIONS: { key: keyof SearchOptions | 'exact'; label: string; dot: st
 
 export default function DiscoveryPanel() {
   const { t } = useTranslation('discovery')
-  const isOpen = useStore(s => s.isDiscoveryOpen)
+  const isOpen = useSidePanelStore(s => s.activePanel === 'discovery')
+  const closePanel = useSidePanelStore(s => s.close)
   const results = useStore(s => s.discoveryResults)
   const currentSearchTerm = useStore(s => s.currentSearchTerm)
   const discoverySearchMode = useStore(s => s.discoverySearchMode)
   const discoveryLoading = useStore(s => s.discoveryLoading)
-  const setDiscoveryOpen = useStore(s => s.setDiscoveryOpen)
   const searchDiscovery = useStore(s => s.searchDiscovery)
   const searchOptions = useStore(s => s.searchOptions)
   const setSearchOptions = useStore(s => s.setSearchOptions)
@@ -89,7 +90,7 @@ export default function DiscoveryPanel() {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-y-0 right-0 rtl:right-auto rtl:left-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
+    <div className="fixed top-12 bottom-0 right-0 rtl:right-auto rtl:left-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
       <div className="p-4 border-b border-slate-100 bg-slate-50 space-y-3">
         <div className="flex justify-between items-center">
           <div>
@@ -99,7 +100,7 @@ export default function DiscoveryPanel() {
             </p>
           </div>
           <button
-            onClick={() => setDiscoveryOpen(false)}
+            onClick={() => closePanel('discovery')}
             className="p-2 hover:bg-slate-200 rounded-full transition-colors"
           >
             <X size={20} className="text-slate-500" />

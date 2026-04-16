@@ -33,7 +33,7 @@ function DiscoveryItem({ result }: Props) {
     return () => { cancelled = true }
   }, [result.verse_key])
 
-  const isAdded = nodes.some(n => n.data.verse.verse_key === result.verse_key)
+  const isAdded = nodes.some(n => n.type === 'verse' && n.data.verse.verse_key === result.verse_key)
   const frozenMatchType = result.matchType
 
   async function handleAdd() {

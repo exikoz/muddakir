@@ -1,18 +1,19 @@
 import { Layers } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 
 export default function DiscoveryToggle() {
   const { t } = useTranslation('toolbar')
-  const isOpen = useStore(s => s.isDiscoveryOpen)
+  const isOpen = useSidePanelStore(s => s.activePanel === 'discovery')
+  const toggle = useSidePanelStore(s => s.toggle)
   const resultsCount = useStore(s => s.discoveryResults.length)
-  const setDiscoveryOpen = useStore(s => s.setDiscoveryOpen)
 
   const hasResults = resultsCount > 0
 
   return (
     <button
-      onClick={() => setDiscoveryOpen(!isOpen)}
+      onClick={() => toggle('discovery')}
       className={`h-8 w-8 rounded-lg border transition-all flex items-center justify-center relative ${
         isOpen
           ? 'bg-emerald-50 text-emerald-600 border-emerald-300'

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAIScopeStore } from '../../store/aiScopeStore'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 import { getLogSnapshot, subscribeToLogs } from '../../services/aiScopeService'
 import { AI_SCOPE_MODELS } from '../../types/aiScope'
 import type { AIScopeModelId } from '../../types/aiScope'
@@ -23,8 +24,8 @@ const MODEL_OPTIONS: { id: AIScopeModelId; label: string }[] = [
 
 export default function AIScopePanel() {
   const { t } = useTranslation('aiScope')
-  const isOpen = useAIScopeStore(s => s.isOpen)
-  const setOpen = useAIScopeStore(s => s.setOpen)
+  const isOpen = useSidePanelStore(s => s.activePanel === 'aiScope')
+  const closePanel = useSidePanelStore(s => s.close)
   const messages = useAIScopeStore(s => s.messages)
   const isLoading = useAIScopeStore(s => s.isLoading)
   const sendQuery = useAIScopeStore(s => s.sendQuery)
@@ -68,7 +69,7 @@ export default function AIScopePanel() {
 
   return (
     <div
-      className={`fixed inset-y-0 right-0 rtl:right-auto rtl:left-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+      className={`fixed top-12 bottom-0 right-0 rtl:right-auto rtl:left-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
         isOpen ? 'translate-x-0' : 'translate-x-full rtl:-translate-x-full'
       }`}
     >
@@ -109,7 +110,7 @@ export default function AIScopePanel() {
               </button>
             )}
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => closePanel('aiScope')}
               className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X size={14} />

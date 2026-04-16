@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useStore } from '../../../store'
 import { useAIScopeStore } from '../../../store/aiScopeStore'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
+import { useSidePanelStore } from '../../../store/sidePanelStore'
 import type { Verse } from '../../../types/quran'
 
 interface Props {
@@ -16,10 +17,10 @@ function NodeActions({ nodeId, verse }: Props) {
   const deleteNode = useStore(s => s.deleteNode)
   const addContextItem = useAIScopeStore(s => s.addContextItem)
   const contextItems = useAIScopeStore(s => s.contextItems)
-  const isAIScopeOpen = useAIScopeStore(s => s.isOpen)
-  const setAIScopeOpen = useAIScopeStore(s => s.setOpen)
   const openDetail = useVerseDetailStore(s => s.openDetail)
   const detailVerse = useVerseDetailStore(s => s.verse)
+  const activePanel = useSidePanelStore(s => s.activePanel)
+  const openPanel = useSidePanelStore(s => s.open)
 
   const isInContext = contextItems.some(c => c.verseKey === verse.verse_key)
   const isDetailActive = detailVerse?.verse_key === verse.verse_key
@@ -32,16 +33,17 @@ function NodeActions({ nodeId, verse }: Props) {
       translation: verse.translation,
       addedAt: Date.now(),
     })
-    if (!isAIScopeOpen) setAIScopeOpen(true)
+    openPanel('aiScope')
   }
 
   function handleOpenDetail(e: React.MouseEvent) {
     e.stopPropagation()
     // Track which panel was open before so we can restore on back
-    const prev = isAIScopeOpen ? 'aiScope' as const : null
-    // Close other panels to avoid overlap
-    setAIScopeOpen(false)
+    const prev = activePanel === 'aiScope' ? 'aiScope' as const
+      : activePanel === 'discovery' ? 'discovery' as const
+      : null
     openDetail(verse, prev)
+    openPanel('verseDetail')
   }
 
   return (

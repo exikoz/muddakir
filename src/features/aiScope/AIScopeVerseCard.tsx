@@ -18,7 +18,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
   const [error, setError] = useState(false)
   const [adding, setAdding] = useState(false)
 
-  const isOnCanvas = nodes.some(n => n.data.verse.verse_key === verseKey)
+  const isOnCanvas = nodes.some(n => n.type === 'verse' && n.data.verse.verse_key === verseKey)
 
   useEffect(() => {
     let cancelled = false

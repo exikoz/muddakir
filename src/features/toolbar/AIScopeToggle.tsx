@@ -1,16 +1,17 @@
 import { Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAIScopeStore } from '../../store/aiScopeStore'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 
 export default function AIScopeToggle() {
   const { t } = useTranslation('toolbar')
-  const isOpen = useAIScopeStore(s => s.isOpen)
-  const toggle = useAIScopeStore(s => s.toggle)
+  const isOpen = useSidePanelStore(s => s.activePanel === 'aiScope')
+  const toggle = useSidePanelStore(s => s.toggle)
   const messageCount = useAIScopeStore(s => s.messages.length)
 
   return (
     <button
-      onClick={toggle}
+      onClick={() => toggle('aiScope')}
       className={`h-8 w-8 rounded-lg border transition-all flex items-center justify-center relative ${
         isOpen
           ? 'bg-purple-50 text-purple-600 border-purple-300'
