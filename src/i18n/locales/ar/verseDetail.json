@@ -32,5 +32,13 @@
   "reflections": "تأملات",
   "loading_reflections": "جارٍ تحميل التأملات…",
   "read_more": "اقرأ المزيد",
-  "via_quran_reflect": "عبر Quran Reflect"
+  "via_quran_reflect": "عبر Quran Reflect",
+  "tab_similar": "متشابهات",
+  "no_similar_phrases": "لا توجد عبارات متشابهة لهذه الآية.",
+  "phrase_stats": "تظهر {{count}} مرة في {{ayahs}} آية عبر {{surahs}} سورة",
+  "phrase_view_all": "عرض الكل ({{count}} آية)",
+  "phrase_collapse": "طي",
+  "phrase_show_more": "عرض {{remaining}} المزيد",
+  "phrase_added": "تمت الإضافة",
+  "phrase_add_to_canvas": "إضافة للوحة"
 }

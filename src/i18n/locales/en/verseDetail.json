@@ -32,5 +32,13 @@
   "reflections": "Reflections",
   "loading_reflections": "Loading reflections…",
   "read_more": "Read more",
-  "via_quran_reflect": "via Quran Reflect"
+  "via_quran_reflect": "via Quran Reflect",
+  "tab_similar": "Similar",
+  "no_similar_phrases": "No similar phrases found for this verse.",
+  "phrase_stats": "Appears {{count}} times in {{ayahs}} ayahs across {{surahs}} surahs",
+  "phrase_view_all": "View all ({{count}} verses)",
+  "phrase_collapse": "Collapse",
+  "phrase_show_more": "Show {{remaining}} more",
+  "phrase_added": "Added",
+  "phrase_add_to_canvas": "Add to canvas"
 }

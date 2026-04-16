@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { Sparkles, Type, Languages, BookOpen } from 'lucide-react'
+import { useState, lazy, Suspense } from 'react'
+import { Sparkles, Type, Languages, BookOpen, Repeat } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useSidePanelStore } from '../../store/sidePanelStore'
 import { useVerseDetailStore } from '../../store/verseDetailStore'
 import VerseHeader from './sections/VerseHeader'
 import VerseExplanationSection from './sections/VerseExplanationSection'
@@ -8,13 +9,16 @@ import WordByWordSection from './sections/WordByWordSection'
 import TranslationsSection from './sections/TranslationsSection'
 import TafsirSection from './sections/TafsirSection'
 
-const TAB_IDS = ['words', 'translations', 'tafsir', 'explain'] as const
+const SimilarPhrasesSection = lazy(() => import('./sections/SimilarPhrasesSection'))
+
+const TAB_IDS = ['words', 'translations', 'tafsir', 'similar', 'explain'] as const
 type TabId = typeof TAB_IDS[number]
 
 const TAB_CONFIG: Record<TabId, { Icon: typeof Type; accent: boolean }> = {
   words:        { Icon: Type,      accent: false },
   translations: { Icon: Languages, accent: false },
   tafsir:       { Icon: BookOpen,  accent: false },
+  similar:      { Icon: Repeat,    accent: false },
   explain:      { Icon: Sparkles,  accent: true },
 }
 
@@ -22,17 +26,18 @@ const TAB_LABEL_KEYS: Record<TabId, string> = {
   words: 'tab_words',
   translations: 'tab_translations',
   tafsir: 'tab_tafsir',
+  similar: 'tab_similar',
   explain: 'tab_explain',
 }
 
 export default function VerseDetailPanel() {
   const { t } = useTranslation('verseDetail')
-  const isOpen = useVerseDetailStore(s => s.isOpen)
+  const isOpen = useSidePanelStore(s => s.activePanel === 'verseDetail')
   const [activeTab, setActiveTab] = useState<TabId>('words')
 
   return (
     <div
-      className={`fixed inset-y-0 right-0 rtl:right-auto rtl:left-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+      className={`fixed top-12 bottom-0 right-0 rtl:right-auto rtl:left-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
         isOpen ? 'translate-x-0' : 'translate-x-full rtl:-translate-x-full'
       }`}
     >
@@ -70,6 +75,11 @@ export default function VerseDetailPanel() {
         {activeTab === 'words' && <WordByWordSection />}
         {activeTab === 'translations' && <TranslationsSection />}
         {activeTab === 'tafsir' && <TafsirSection />}
+        {activeTab === 'similar' && (
+          <Suspense fallback={<div className="flex items-center justify-center py-12"><span className="text-xs text-slate-300">Loading…</span></div>}>
+            <SimilarPhrasesSection />
+          </Suspense>
+        )}
       </div>
     </div>
   )
