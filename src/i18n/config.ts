@@ -11,6 +11,8 @@ import enWorkspace from './locales/en/workspace.json'
 import enVerseDetail from './locales/en/verseDetail.json'
 import enAiScope from './locales/en/aiScope.json'
 import enGraph from './locales/en/graph.json'
+import enUser from './locales/en/user.json'
+import enWelcome from './locales/en/welcome.json'
 
 // AR namespaces
 import arCommon from './locales/ar/common.json'
@@ -21,6 +23,8 @@ import arWorkspace from './locales/ar/workspace.json'
 import arVerseDetail from './locales/ar/verseDetail.json'
 import arAiScope from './locales/ar/aiScope.json'
 import arGraph from './locales/ar/graph.json'
+import arUser from './locales/ar/user.json'
+import arWelcome from './locales/ar/welcome.json'
 
 export const supportedLanguages = ['en', 'ar'] as const
 export type SupportedLanguage = (typeof supportedLanguages)[number]
@@ -41,6 +45,8 @@ i18n
         verseDetail: enVerseDetail,
         aiScope: enAiScope,
         graph: enGraph,
+        user: enUser,
+        welcome: enWelcome,
       },
       ar: {
         common: arCommon,
@@ -51,11 +57,13 @@ i18n
         verseDetail: arVerseDetail,
         aiScope: arAiScope,
         graph: arGraph,
+        user: arUser,
+        welcome: arWelcome,
       },
     },
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'toolbar', 'discovery', 'mushaf', 'workspace', 'verseDetail', 'aiScope', 'graph'],
+    ns: ['common', 'toolbar', 'discovery', 'mushaf', 'workspace', 'verseDetail', 'aiScope', 'graph', 'user', 'welcome'],
     interpolation: {
       escapeValue: false,
     },

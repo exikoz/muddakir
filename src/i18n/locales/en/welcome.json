@@ -1,0 +1,15 @@
+{
+  "app_name": "Tadabbar",
+  "app_name_ar": "تَدَبَّرْ",
+  "tagline": "Explore how Quranic verses connect through shared words, roots, and meanings",
+  "input_placeholder": "Enter a verse to begin (e.g. 2:255)",
+  "go": "Go",
+  "try_example": "Try an example →",
+  "card_connections_title": "Word Connections",
+  "card_connections_text": "Click any Arabic word to discover every verse that shares it",
+  "card_ai_title": "AI-Grounded Insights",
+  "card_ai_text": "Ask questions — answers backed by verified Quran.com sources",
+  "card_study_title": "Deep Verse Study",
+  "card_study_text": "Word-by-word breakdown, tafsir, translations, and similar phrases",
+  "need_help": "Need help? Open the Guide"
+}

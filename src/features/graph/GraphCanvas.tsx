@@ -11,12 +11,13 @@ function GraphCanvasInner() {
   useEffect(() => {
     instanceRef.current = reactFlowInstance
     // Store the instance globally for access from other components
-    ;(window as any).__reactFlowInstance = reactFlowInstance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as Record<string, any>).__reactFlowInstance = reactFlowInstance
   }, [reactFlowInstance])
 
   return (
     <>
-      <Background color="#cbd5e1" gap={24} size={1} />
+      <Background variant="dots" color="#d4d4d4" gap={20} size={1.5} />
       <Controls />
     </>
   )
@@ -38,6 +39,7 @@ export default function GraphCanvas() {
       onConnect={onConnect}
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
+      deleteKeyCode={['Backspace', 'Delete']}
       minZoom={0.1}
       fitView
       className="flow-canvas"
