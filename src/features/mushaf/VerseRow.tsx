@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ExternalLink, Copy, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import BookmarkButton from '../user/BookmarkButton'
 import type { Verse, Word } from '../../types/quran'
 
 interface VerseRowProps {
@@ -47,6 +48,11 @@ export function VerseRow({ verse, isHighlighted, onOpenInExplorer }: VerseRowPro
           {verse.verse_key}
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <BookmarkButton
+            verseKey={verse.verse_key}
+            size={11}
+            className="bg-white text-slate-400 border-slate-100 opacity-100 hover:text-amber-500 hover:bg-amber-50 hover:border-amber-200"
+          />
           <button
             onClick={handleCopy}
             className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-emerald-600 font-medium transition-all px-2 py-0.5 rounded-full hover:bg-emerald-50 border border-transparent hover:border-emerald-200"

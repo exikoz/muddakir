@@ -1,0 +1,12 @@
+{
+  "sign_in": "Sign in",
+  "sign_out": "Sign out",
+  "sign_in_with_quran": "Sign in with Quran.com",
+  "sign_in_to_bookmark": "Sign in to save bookmarks",
+  "bookmark": "Bookmark verse",
+  "bookmarked": "Remove bookmark",
+  "signing_in": "Signing you in…",
+  "signed_in": "Signed in! Redirecting…",
+  "auth_error": "Authentication failed",
+  "back_to_app": "Back to Muddakir"
+}
