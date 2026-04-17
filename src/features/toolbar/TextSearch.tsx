@@ -25,7 +25,7 @@ export default function TextSearch() {
       onSubmit={handleSubmit}
       className="flex items-center h-8 bg-slate-50 rounded-lg border border-slate-200 transition-all focus-within:border-emerald-400 focus-within:bg-white"
     >
-      <div className="pl-2 rtl:pl-0 rtl:pr-2 text-slate-400">
+      <div className="pl-2 text-slate-400">
         {discoveryLoading ? <Loader2 size={13} className="animate-spin text-emerald-500" /> : <Search size={13} />}
       </div>
       <input
@@ -39,7 +39,7 @@ export default function TextSearch() {
       <button
         type="submit"
         disabled={discoveryLoading || !input.trim()}
-        className="h-full px-2.5 text-[11px] font-semibold text-emerald-600 hover:text-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l rtl:border-l-0 rtl:border-r border-slate-200"
+        className="h-full px-2.5 text-[11px] font-semibold text-emerald-600 hover:text-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l border-slate-200"
       >
         {discoveryLoading ? '…' : t('find')}
       </button>

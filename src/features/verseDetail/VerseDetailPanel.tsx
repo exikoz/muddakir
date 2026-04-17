@@ -2,7 +2,6 @@ import { useState, lazy, Suspense } from 'react'
 import { Sparkles, Type, Languages, BookOpen, Repeat } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSidePanelStore } from '../../store/sidePanelStore'
-import { useVerseDetailStore } from '../../store/verseDetailStore'
 import VerseHeader from './sections/VerseHeader'
 import VerseExplanationSection from './sections/VerseExplanationSection'
 import WordByWordSection from './sections/WordByWordSection'
@@ -32,13 +31,14 @@ const TAB_LABEL_KEYS: Record<TabId, string> = {
 
 export default function VerseDetailPanel() {
   const { t } = useTranslation('verseDetail')
-  const isOpen = useSidePanelStore(s => s.activePanel === 'verseDetail')
+  const isOpen = useSidePanelStore(s => s.rightPanel === 'verseDetail')
   const [activeTab, setActiveTab] = useState<TabId>('words')
 
   return (
     <div
-      className={`fixed top-12 bottom-0 right-0 rtl:right-auto rtl:left-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
-        isOpen ? 'translate-x-0' : 'translate-x-full rtl:-translate-x-full'
+      dir="ltr"
+      className={`fixed top-12 bottom-0 right-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {/* Header only — no Arabic text, no audio */}

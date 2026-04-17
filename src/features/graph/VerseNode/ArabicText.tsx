@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { Verse, MatchType } from '../../../types/quran'
 import { useStore } from '../../../store'
+import { useWordBuilderStore } from '../../../store/wordBuilderStore'
 import {
   getHoverClasses,
   getClickedWordClasses,
@@ -20,45 +21,43 @@ interface Props {
 }
 
 function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId, matchedTokens, matchType, searchQuery }: Props) {
-  const searchFromWord = useStore(s => s.searchFromWord)
   const searchOptions = useStore(s => s.searchOptions)
-  const multiWordMode = useStore(s => s.multiWordMode)
-  const selectedWords = useStore(s => s.selectedWords)
+
+  // Word builder state
+  const builderWords = useWordBuilderStore(s => s.words)
+  const addWord = useWordBuilderStore(s => s.addWord)
+
+  // Also sync to main store for executeMultiWordSearch compatibility
   const addSelectedWord = useStore(s => s.addSelectedWord)
   const removeSelectedWord = useStore(s => s.removeSelectedWord)
+  const mainSelectedWords = useStore(s => s.selectedWords)
 
   const hoverClasses = getHoverClasses(searchOptions)
 
-  // Which word indices in THIS node are selected for multi-word search
+  // Which word indices in THIS node are selected in the word builder
   const selectedIndicesInThisNode = useMemo(() => {
     return new Set(
-      selectedWords
+      builderWords
         .filter(w => w.nodeId === sourceNodeId)
         .map(w => w.wordIndex)
     )
-  }, [selectedWords, sourceNodeId])
+  }, [builderWords, sourceNodeId])
 
-  async function handleWordClick(wordIndex: number) {
+  function handleWordClick(wordIndex: number) {
     const word = verse.words[wordIndex]
     if (!word || word.char_type_name === 'end') return
 
-    if (multiWordMode) {
-      // Toggle word selection
-      const globalIndex = selectedWords.findIndex(
-        w => w.nodeId === sourceNodeId && w.wordIndex === wordIndex
-      )
-      if (globalIndex >= 0) {
-        removeSelectedWord(globalIndex)
-      } else {
-        addSelectedWord(sourceNodeId, wordIndex, word.text_simple || word.text)
-      }
-      return
-    }
+    // Toggle in word builder store
+    addWord(sourceNodeId, wordIndex, word.text_simple || word.text)
 
-    try {
-      await searchFromWord(sourceNodeId, wordIndex)
-    } catch (err) {
-      console.error('[ArabicText] search error:', err)
+    // Sync to main store for executeMultiWordSearch
+    const existsInMain = mainSelectedWords.findIndex(
+      w => w.nodeId === sourceNodeId && w.wordIndex === wordIndex
+    )
+    if (existsInMain >= 0) {
+      removeSelectedWord(existsInMain)
+    } else {
+      addSelectedWord(sourceNodeId, wordIndex, word.text_simple || word.text)
     }
   }
 
@@ -66,7 +65,7 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
     if (!matchType) return null
     const map = getWordHighlights(verse.words, matchedTokens ?? [], matchType, searchQuery, verse.verse_key)
     return map.size > 0 ? map : null
-  }, [verse.words, matchedTokens, matchType, searchQuery])
+  }, [verse.words, verse.verse_key, matchedTokens, matchType, searchQuery])
 
   return (
     <div className="font-arabic text-right text-2xl leading-loose text-slate-800" dir="rtl">
@@ -81,14 +80,13 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
         let title = word.translation || word.text
 
         if (isSelected) {
-          // Multi-word selected state
           className += 'bg-emerald-200 text-emerald-900 border border-emerald-400 shadow-sm ring-2 ring-emerald-300'
-          title = `Selected for multi-word search: "${word.text}"`
+          title = `Selected: "${word.text}"`
         } else if (isActive) {
           const clickedMatchType = activeWordMatchType || 'exact'
           if (clickedMatchType === 'none') {
             className += 'bg-red-100 text-red-900 border border-red-300 shadow-sm'
-            title = `No results found for "${word.text}" with current search filters`
+            title = `No results found for "${word.text}"`
           } else {
             className += getClickedWordClasses(clickedMatchType)
           }

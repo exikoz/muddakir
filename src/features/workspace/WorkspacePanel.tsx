@@ -19,7 +19,7 @@ export default function WorkspacePanel() {
   const workspaces = useWorkspaceStore((s) => s.workspaces)
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId)
   const loading = useWorkspaceStore((s) => s.loading)
-  const isPanelOpen = useSidePanelStore(s => s.activePanel === 'workspace')
+  const isPanelOpen = useSidePanelStore(s => s.rightPanel === 'workspace')
   const closePanel = useSidePanelStore(s => s.close)
   const createWorkspace = useWorkspaceStore((s) => s.createWorkspace)
   const saveCurrentWorkspace = useWorkspaceStore((s) => s.saveCurrentWorkspace)
@@ -46,7 +46,7 @@ export default function WorkspacePanel() {
     try {
       await createWorkspace(name)
       setNewName('')
-    } catch (e) {
+    } catch {
       setError(t('error_save'))
     }
   }
@@ -88,8 +88,8 @@ export default function WorkspacePanel() {
     setError(null)
     try {
       await importWorkspace(file)
-    } catch (err: any) {
-      setError(err.message || t('error_import'))
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('error_import'))
     }
     // Reset input so the same file can be re-selected
     e.target.value = ''
@@ -101,7 +101,7 @@ export default function WorkspacePanel() {
   }
 
   return (
-    <div className="absolute top-0 right-0 rtl:right-auto rtl:left-0 z-50 h-full w-80 bg-white/95 backdrop-blur-md border-l rtl:border-l-0 rtl:border-r border-slate-200 shadow-xl flex flex-col">
+    <div dir="ltr" className="absolute top-0 right-0 z-50 h-full w-80 bg-white/95 backdrop-blur-md border-l border-slate-200 shadow-xl flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">

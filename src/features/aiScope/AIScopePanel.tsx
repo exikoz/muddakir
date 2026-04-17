@@ -24,7 +24,7 @@ const MODEL_OPTIONS: { id: AIScopeModelId; label: string }[] = [
 
 export default function AIScopePanel() {
   const { t } = useTranslation('aiScope')
-  const isOpen = useSidePanelStore(s => s.activePanel === 'aiScope')
+  const isOpen = useSidePanelStore(s => s.rightPanel === 'aiScope')
   const closePanel = useSidePanelStore(s => s.close)
   const messages = useAIScopeStore(s => s.messages)
   const isLoading = useAIScopeStore(s => s.isLoading)
@@ -69,8 +69,9 @@ export default function AIScopePanel() {
 
   return (
     <div
-      className={`fixed top-12 bottom-0 right-0 rtl:right-auto rtl:left-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
-        isOpen ? 'translate-x-0' : 'translate-x-full rtl:-translate-x-full'
+      dir="ltr"
+      className={`fixed top-12 bottom-0 right-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {/* Header */}
@@ -95,7 +96,7 @@ export default function AIScopePanel() {
             >
               <Bug size={14} />
               {logs.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 rtl:-right-auto rtl:-left-0.5 min-w-[12px] h-[12px] rounded-full bg-amber-500 text-white text-[7px] font-bold flex items-center justify-center px-0.5">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-[12px] rounded-full bg-amber-500 text-white text-[7px] font-bold flex items-center justify-center px-0.5">
                   {logs.length}
                 </span>
               )}

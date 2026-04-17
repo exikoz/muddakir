@@ -69,7 +69,7 @@ export default function ModeToggle() {
       </button>
 
       {open && (
-        <div className="absolute top-10 left-0 rtl:left-auto rtl:right-0 bg-white rounded-xl shadow-lg border border-slate-100 p-1.5 min-w-[150px] z-50 flex flex-col gap-0.5">
+        <div className="absolute top-10 left-0 bg-white rounded-xl shadow-lg border border-slate-100 p-1.5 min-w-[150px] z-50 flex flex-col gap-0.5">
           <button
             onClick={selectExact}
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left ${

@@ -5,6 +5,7 @@ import { useStore } from '../../../store'
 import { useAIScopeStore } from '../../../store/aiScopeStore'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { useSidePanelStore } from '../../../store/sidePanelStore'
+import BookmarkButton from '../../user/BookmarkButton'
 import type { Verse } from '../../../types/quran'
 
 interface Props {
@@ -19,7 +20,7 @@ function NodeActions({ nodeId, verse }: Props) {
   const contextItems = useAIScopeStore(s => s.contextItems)
   const openDetail = useVerseDetailStore(s => s.openDetail)
   const detailVerse = useVerseDetailStore(s => s.verse)
-  const activePanel = useSidePanelStore(s => s.activePanel)
+  const rightPanel = useSidePanelStore(s => s.rightPanel)
   const openPanel = useSidePanelStore(s => s.open)
 
   const isInContext = contextItems.some(c => c.verseKey === verse.verse_key)
@@ -39,8 +40,8 @@ function NodeActions({ nodeId, verse }: Props) {
   function handleOpenDetail(e: React.MouseEvent) {
     e.stopPropagation()
     // Track which panel was open before so we can restore on back
-    const prev = activePanel === 'aiScope' ? 'aiScope' as const
-      : activePanel === 'discovery' ? 'discovery' as const
+    const prev = rightPanel === 'aiScope' ? 'aiScope' as const
+      : rightPanel === 'discovery' ? 'discovery' as const
       : null
     openDetail(verse, prev)
     openPanel('verseDetail')
@@ -48,6 +49,7 @@ function NodeActions({ nodeId, verse }: Props) {
 
   return (
     <div className="flex items-center gap-1">
+      <BookmarkButton verseKey={verse.verse_key} />
       <button
         onClick={handleOpenDetail}
         className={`p-1.5 rounded-full shadow-sm border transition-all ${

@@ -31,7 +31,7 @@ export default function SeedInput() {
       onSubmit={handleSubmit}
       className="flex items-center h-8 bg-slate-50 rounded-lg border border-slate-200 transition-all focus-within:border-slate-400 focus-within:bg-white"
     >
-      <div className="pl-2 rtl:pl-0 rtl:pr-2 text-slate-400">
+      <div className="pl-2 text-slate-400">
         <MapPin size={13} />
       </div>
       <input
@@ -44,7 +44,7 @@ export default function SeedInput() {
       <button
         type="submit"
         disabled={loading}
-        className="h-full px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l rtl:border-l-0 rtl:border-r border-slate-200"
+        className="h-full px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors border-l border-slate-200"
       >
         {loading ? '…' : t('go')}
       </button>

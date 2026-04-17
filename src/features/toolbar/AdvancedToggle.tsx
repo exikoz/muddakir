@@ -28,18 +28,19 @@ export default function AdvancedToggle() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className={`h-8 w-8 rounded-lg border transition-all flex items-center justify-center ${
+        className={`h-8 px-2.5 rounded-lg border transition-all flex items-center justify-center gap-1.5 text-[11px] font-semibold ${
           isActive
-            ? 'bg-amber-50 text-amber-600 border-amber-300'
-            : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-white hover:text-slate-600 hover:border-slate-300'
+            ? 'bg-orange-50 text-orange-600 border-orange-300'
+            : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300'
         }`}
         title={t('advanced_title')}
       >
         <Wrench size={14} />
+        <span>{t('advanced_label')}</span>
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 rtl:right-auto rtl:left-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-50">
+        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-50">
           <button
             onClick={() => {
               setCustomizerOpen(v => !v)
@@ -47,7 +48,7 @@ export default function AdvancedToggle() {
             }}
             className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${
               customizerOpen
-                ? 'text-amber-600 bg-amber-50'
+                ? 'text-orange-600 bg-orange-50'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
             }`}
           >
@@ -61,7 +62,7 @@ export default function AdvancedToggle() {
             }}
             className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors ${
               consoleOpen
-                ? 'text-amber-600 bg-amber-50'
+                ? 'text-orange-600 bg-orange-50'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
             }`}
           >

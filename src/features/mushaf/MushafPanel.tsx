@@ -8,7 +8,7 @@ import SurahSelector from './SurahSelector'
 
 export function MushafPanel() {
   const { t, i18n } = useTranslation('mushaf')
-  const isMushafOpen = useSidePanelStore(s => s.activePanel === 'mushaf')
+  const isMushafOpen = useSidePanelStore(s => s.leftPanel === 'mushaf')
   const closePanel = useSidePanelStore(s => s.close)
   const mushafChapter = useStore(s => s.mushafChapter)
   const mushafVerses = useStore(s => s.mushafVerses)
@@ -37,8 +37,9 @@ export function MushafPanel() {
 
   return (
     <div
-      className={`fixed top-12 bottom-0 left-0 rtl:left-auto rtl:right-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
-        isMushafOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
+      dir="ltr"
+      className={`fixed top-12 bottom-0 left-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+        isMushafOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       {/* Header */}

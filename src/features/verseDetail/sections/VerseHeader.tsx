@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { useSidePanelStore } from '../../../store/sidePanelStore'
 import { getSurahName } from '../../mushaf/surahNames'
+import BookmarkButton from '../../user/BookmarkButton'
 
 export default function VerseHeader() {
   const { t, i18n } = useTranslation('verseDetail')
@@ -53,9 +54,16 @@ export default function VerseHeader() {
       <h2 className="font-semibold text-slate-800 text-lg leading-tight">
         {verse.verse_key}
       </h2>
-      <p className="text-[11px] text-slate-400 mt-0.5">
-        {surahName}
-      </p>
+      <div className="flex items-center justify-between mt-0.5">
+        <p className="text-[11px] text-slate-400">
+          {surahName}
+        </p>
+        <BookmarkButton
+          verseKey={verse.verse_key}
+          size={14}
+          className="bg-white text-slate-400 border-slate-100 hover:text-amber-500 hover:bg-amber-50 hover:border-amber-200"
+        />
+      </div>
     </div>
   )
 }

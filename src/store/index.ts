@@ -7,7 +7,7 @@ import {
   type OnEdgesChange,
   type Connection,
 } from '@xyflow/react'
-import type { VerseNode, VerseEdge, Snapshot } from '../types/graph'
+import type { VerseNode, VerseEdge, NoteNode, Snapshot } from '../types/graph'
 import type { SearchOptions, SearchResult, Verse } from '../types/quran'
 import { VerseExplorer } from '../core/verseExplorer'
 import type { ExplorationNode } from '../core/verseExplorer'
@@ -15,16 +15,26 @@ import { fetchChapterVerses, fetchVerse } from '../services/quranApi'
 import { searchWord, searchRegex, buildAdjacentPattern } from '../services/quranSearch'
 import { getLayoutedElements } from '../lib/autoLayout'
 import { useSidePanelStore } from './sidePanelStore'
+import { useWordBuilderStore } from './wordBuilderStore'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getReactFlowInstance = () => (window as Record<string, any>).__reactFlowInstance as { fitView: (opts: Record<string, unknown>) => void; getViewport: () => { zoom: number; x: number; y: number } } | undefined
+
+// ReactFlow nodes/edges use loose typing to support mixed node types (verse + note)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyNode = any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyEdge = any
 
 interface GraphState {
   // Core explorer (framework-agnostic business logic)
   explorer: VerseExplorer
   
   // ReactFlow state
-  nodes: any[]
-  edges: any[]
-  onNodesChange: OnNodesChange<any>
-  onEdgesChange: OnEdgesChange<any>
+  nodes: AnyNode[]
+  edges: AnyEdge[]
+  onNodesChange: OnNodesChange<AnyNode>
+  onEdgesChange: OnEdgesChange<AnyEdge>
   onConnect: (connection: Connection) => void
   
   // High-level actions (delegate to explorer)
@@ -34,9 +44,13 @@ interface GraphState {
   addSequentialVerse: (nodeId: string, direction: 'prev' | 'next') => Promise<void>
   addNoteNode: () => void
   
+  // Note color memory
+  lastNoteColor: string
+  setLastNoteColor: (color: string) => void
+  
   // Low-level ReactFlow operations (internal)
-  _addReactFlowNode: (node: any) => void
-  _addReactFlowEdge: (edge: any) => void
+  _addReactFlowNode: (node: AnyNode) => void
+  _addReactFlowEdge: (edge: AnyEdge) => void
   _applyAutoLayout: () => void
   updateNodeData: (id: string, data: Partial<VerseNode['data']>) => void
   focusNode: (verseKey: string) => string | null
@@ -172,8 +186,8 @@ export const useStore = create<GraphState>((set, get) => ({
     semantic: false,
   },
   
-  multiWordMode: false,
-  adjacentMode: false,
+  multiWordMode: true,
+  adjacentMode: true,
   selectedWords: [],
   
   isDiscoveryOpen: false,
@@ -183,6 +197,8 @@ export const useStore = create<GraphState>((set, get) => ({
   discoveryLoading: false,
   
   useAutoLayout: false, // Default OFF
+  
+  lastNoteColor: '#5DCAA5',
   
   history: [],
   historyIndex: -1,
@@ -229,7 +245,7 @@ export const useStore = create<GraphState>((set, get) => ({
       const existing = explorer.getNodeByVerseKey(verseKey)
       if (existing) {
         // Focus on existing node
-        const reactFlowInstance = (window as any).__reactFlowInstance
+        const reactFlowInstance = getReactFlowInstance()
         if (reactFlowInstance) {
           reactFlowInstance.fitView({
             nodes: [{ id: existing.id }],
@@ -279,7 +295,7 @@ export const useStore = create<GraphState>((set, get) => ({
     // Center on the new node if it's a root node (no parent)
     if (!parentId) {
       setTimeout(() => {
-        const reactFlowInstance = (window as any).__reactFlowInstance
+        const reactFlowInstance = getReactFlowInstance()
         if (reactFlowInstance) {
           reactFlowInstance.fitView({
             nodes: [{ id: explorationNode.id }],
@@ -365,7 +381,7 @@ export const useStore = create<GraphState>((set, get) => ({
     // Fit view to show parent and all new children
     if (result.nodesToAdd.length > 0) {
       setTimeout(() => {
-        const reactFlowInstance = (window as any).__reactFlowInstance
+        const reactFlowInstance = getReactFlowInstance()
         if (reactFlowInstance) {
           const nodeIds = [nodeId, ...result.nodesToAdd.map(n => n.id)]
           reactFlowInstance.fitView({
@@ -391,8 +407,7 @@ export const useStore = create<GraphState>((set, get) => ({
   _applyAutoLayout: () => {
     const { nodes, edges } = get()
     const { nodes: layoutedNodes } = getLayoutedElements(nodes, edges, 'LR')
-    // Cast back to VerseNode[] since getLayoutedElements preserves node structure
-    set({ nodes: layoutedNodes as VerseNode[] })
+    set({ nodes: layoutedNodes as AnyNode[] })
   },
   
   deleteNode: (id) => {
@@ -445,11 +460,8 @@ export const useStore = create<GraphState>((set, get) => ({
   },
 
   addNoteNode: () => {
-    const NOTE_COLORS = ['amber', 'sky', 'rose', 'violet', 'emerald', 'slate']
-    const color = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)]
-
     // Place near center of current viewport
-    const rf = (window as any).__reactFlowInstance
+    const rf = getReactFlowInstance()
     let position = { x: 200, y: 200 }
     if (rf) {
       const viewport = rf.getViewport()
@@ -461,16 +473,18 @@ export const useStore = create<GraphState>((set, get) => ({
       }
     }
 
-    const noteNode = {
+    const noteNode: NoteNode = {
       id: `note-${Date.now()}`,
       type: 'note' as const,
       position,
-      data: { text: '', color },
+      data: { title: 'Note', text: '', color: get().lastNoteColor },
     }
 
-    set({ nodes: [...get().nodes, noteNode as any] })
+    set({ nodes: [...get().nodes, noteNode] })
     get().pushHistory()
   },
+  
+  setLastNoteColor: (color) => set({ lastNoteColor: color }),
   
   addSequentialVerse: async (nodeId, direction) => {
     const node = get().nodes.find(n => n.id === nodeId)
@@ -495,7 +509,7 @@ export const useStore = create<GraphState>((set, get) => ({
     const existing = get().nodes.find(n => n.type === 'verse' && n.data.verse.verse_key === targetVerseKey)
     if (existing) {
       // Focus on existing node
-      const reactFlowInstance = (window as any).__reactFlowInstance
+      const reactFlowInstance = getReactFlowInstance()
       if (reactFlowInstance) {
         reactFlowInstance.fitView({
           nodes: [{ id: existing.id }],
@@ -550,7 +564,7 @@ export const useStore = create<GraphState>((set, get) => ({
     
     // Focus on the new node
     setTimeout(() => {
-      const reactFlowInstance = (window as any).__reactFlowInstance
+      const reactFlowInstance = getReactFlowInstance()
       if (reactFlowInstance) {
         reactFlowInstance.fitView({
           nodes: [{ id: nodeId }, { id: newNodeId }],
@@ -592,13 +606,25 @@ export const useStore = create<GraphState>((set, get) => ({
     set({ selectedWords: get().selectedWords.filter((_, i) => i !== index) })
   },
   
-  clearSelectedWords: () => set({ selectedWords: [] }),
+  clearSelectedWords: () => {
+    set({ selectedWords: [] })
+    useWordBuilderStore.getState().clear()
+  },
   
   executeMultiWordSearch: async () => {
     const { selectedWords, searchOptions, adjacentMode, explorer } = get()
     if (selectedWords.length === 0) return
+
+    // 1 word → use normal searchFromWord (respects toolbar mode filter)
+    if (selectedWords.length === 1) {
+      const w = selectedWords[0]
+      set({ selectedWords: [] })
+      useWordBuilderStore.getState().clear()
+      await get().searchFromWord(w.nodeId, w.wordIndex)
+      return
+    }
     
-    // Use the first selected word's node as the source
+    // 2+ words → adjacent regex search (or free AND search if adjacentMode is off)
     const sourceNodeId = selectedWords[0].nodeId
     const wordTexts = selectedWords.map(w => w.text)
     
@@ -633,6 +659,7 @@ export const useStore = create<GraphState>((set, get) => ({
           activeWordMatchType: 'none',
         })
         set({ discoveryLoading: false, selectedWords: [] })
+        useWordBuilderStore.getState().clear()
         return
       }
       
@@ -687,8 +714,8 @@ export const useStore = create<GraphState>((set, get) => ({
       }
       
       // Update explorer search context
-      ;(explorer as any).lastSearchSourceId = sourceNodeId
-      ;(explorer as any).currentSearchTerm = displayQuery
+      ;explorer.setLastSearchSourceId(sourceNodeId)
+      ;explorer.setCurrentSearchTerm(displayQuery)
       
       // Apply auto-layout if enabled
       if (toAdd.length > 0 && get().useAutoLayout) {
@@ -709,12 +736,13 @@ export const useStore = create<GraphState>((set, get) => ({
         discoveryLoading: false,
         selectedWords: [],
       })
+      useWordBuilderStore.getState().clear()
       if (allOverflow.length > 0) useSidePanelStore.getState().open('discovery')
       
       // Fit view
       if (toAdd.length > 0) {
         setTimeout(() => {
-          const reactFlowInstance = (window as any).__reactFlowInstance
+          const reactFlowInstance = getReactFlowInstance()
           if (reactFlowInstance) {
             reactFlowInstance.fitView({
               nodes: [{ id: sourceNodeId }],
@@ -756,7 +784,7 @@ export const useStore = create<GraphState>((set, get) => ({
       const filtered = results.filter(r => !existingVerseKeys.has(r.verse_key))
       
       // Update the explorer's search term so addVerseNode can use it
-      ;(explorer as any).currentSearchTerm = trimmed
+      ;explorer.setCurrentSearchTerm(trimmed)
       
       // Update edges that came from the last search source to reflect the new search term
       const lastSourceId = explorer.getLastSearchSourceId()

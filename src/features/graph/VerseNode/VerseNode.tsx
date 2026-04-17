@@ -3,13 +3,14 @@ import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { useTranslation } from 'react-i18next'
 import type { VerseNodeData } from '../../../types/graph'
 import { useStore } from '../../../store'
+import { getSurahName } from '../../mushaf/surahNames'
 import ArabicText from './ArabicText'
 import NodeActions from './NodeActions'
 import MiniPlayer from '../../audio/MiniPlayer'
 
-function VerseNode({ id, data }: NodeProps<any>) {
-  const { t } = useTranslation('graph')
-  const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery } = data as VerseNodeData
+function VerseNode({ id, data }: NodeProps) {
+  const { t, i18n } = useTranslation('graph')
+  const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery, matchType } = data as VerseNodeData
   const addSequentialVerse = useStore(state => state.addSequentialVerse)
   const edges = useStore(state => state.edges)
   
@@ -31,9 +32,10 @@ function VerseNode({ id, data }: NodeProps<any>) {
     addSequentialVerse(id as string, 'next')
   }
   
-  // Check if we're at verse 1 (can't go before)
-  const [, ayahStr] = verse.verse_key.split(':')
+  const [chapterStr, ayahStr] = verse.verse_key.split(':')
+  const chapter = parseInt(chapterStr, 10)
   const isFirstVerse = parseInt(ayahStr, 10) === 1
+  const surahName = getSurahName(chapter, i18n.language)
 
   return (
     <div className="min-w-[300px] max-w-[500px] bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl group flex flex-col">
@@ -79,8 +81,8 @@ function VerseNode({ id, data }: NodeProps<any>) {
         ) : (
           <div />
         )}
-        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          {t('verse', { key: verse.verse_key })}
+        <span className="text-xs font-semibold text-slate-400 tracking-wider">
+          {surahName} · {verse.verse_key}
         </span>
         <NodeActions nodeId={id as string} verse={verse} />
       </div>
@@ -94,7 +96,7 @@ function VerseNode({ id, data }: NodeProps<any>) {
           activeWordMatchType={activeWordMatchType}
           matchedTokens={matchedTokens}
           tokenTypes={tokenTypes}
-          matchType={data.matchType as any}
+          matchType={matchType}
           searchQuery={searchQuery}
         />
 
@@ -129,7 +131,8 @@ function VerseNode({ id, data }: NodeProps<any>) {
         <button
           onClick={(e) => {
             e.stopPropagation()
-            const openMushafToVerse = (window as any).__mushafOpener
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const openMushafToVerse = (window as Record<string, any>).__mushafOpener
             if (openMushafToVerse) openMushafToVerse(verse.verse_key)
           }}
           className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"

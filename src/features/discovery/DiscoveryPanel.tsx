@@ -17,7 +17,7 @@ const MODE_OPTIONS: { key: keyof SearchOptions | 'exact'; label: string; dot: st
 
 export default function DiscoveryPanel() {
   const { t } = useTranslation('discovery')
-  const isOpen = useSidePanelStore(s => s.activePanel === 'discovery')
+  const isOpen = useSidePanelStore(s => s.rightPanel === 'discovery')
   const closePanel = useSidePanelStore(s => s.close)
   const results = useStore(s => s.discoveryResults)
   const currentSearchTerm = useStore(s => s.currentSearchTerm)
@@ -90,7 +90,7 @@ export default function DiscoveryPanel() {
   if (!isOpen) return null
 
   return (
-    <div className="fixed top-12 bottom-0 right-0 rtl:right-auto rtl:left-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
+    <div dir="ltr" className="fixed top-12 bottom-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
       <div className="p-4 border-b border-slate-100 bg-slate-50 space-y-3">
         <div className="flex justify-between items-center">
           <div>
@@ -116,15 +116,15 @@ export default function DiscoveryPanel() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('search_placeholder')}
-              className="w-full pl-9 rtl:pl-4 rtl:pr-9 pr-4 py-2 rounded-full border border-emerald-300 bg-white text-slate-700 text-sm font-arabic font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-emerald-300 bg-white text-slate-700 text-sm font-arabic font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               dir="rtl"
             />
             {discoveryLoading ? (
-              <Loader2 size={16} className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin" />
+              <Loader2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin" />
             ) : (
               <button
                 type="submit"
-                className="absolute left-2 rtl:left-auto rtl:right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 transition-colors"
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 transition-colors"
               >
                 <Search size={16} className="text-slate-400" />
               </button>
@@ -144,7 +144,7 @@ export default function DiscoveryPanel() {
             </button>
 
             {modeOpen && (
-              <div className="absolute top-11 right-0 rtl:right-auto rtl:left-0 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 min-w-[140px] z-50 flex flex-col gap-0.5">
+              <div className="absolute top-11 right-0 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 min-w-[140px] z-50 flex flex-col gap-0.5">
                 {MODE_OPTIONS.map(({ key, label, dot }) => {
                   const isActive = key === activeKey
                   return (
