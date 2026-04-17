@@ -69,20 +69,20 @@ export async function fetchVerse(verseKey: string): Promise<Verse | null> {
     const v = json.verse
     if (!v) return null
 
-    const words = (v.words ?? []).map((w: any) => ({
-      id:              w.id ?? w.position,
-      position:        w.position,
-      text:            w.text_imlaei ?? '',
-      text_simple:     w.text_imlaei ?? '',
-      char_type_name:  w.char_type_name ?? 'word',
-      transliteration: w.transliteration?.text,
-      translation:     w.translation?.text,
-      root:            w.root_name,
-      lemma:           w.lemma_name,
+    const words = (v.words ?? []).map((w: Record<string, unknown>) => ({
+      id:              (w.id ?? w.position) as number,
+      position:        w.position as number,
+      text:            (w.text_imlaei ?? '') as string,
+      text_simple:     (w.text_imlaei ?? '') as string,
+      char_type_name:  (w.char_type_name ?? 'word') as string,
+      transliteration: (w.transliteration as Record<string, string> | undefined)?.text,
+      translation:     (w.translation as Record<string, string> | undefined)?.text,
+      root:            w.root_name as string | undefined,
+      lemma:           w.lemma_name as string | undefined,
     }))
 
     const arabicText = v.text_imlaei
-      ?? words.filter((w: any) => w.char_type_name !== 'end').map((w: any) => w.text).join(' ')
+      ?? words.filter((w: { char_type_name: string }) => w.char_type_name !== 'end').map((w: { text: string }) => w.text).join(' ')
 
     const translation = v.translations?.[0]?.text ?? ''
 
@@ -125,23 +125,23 @@ export async function fetchChapterVerses(
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
     const json = await res.json()
-    const verses: Verse[] = (json.verses ?? []).map((v: any) => {
-      const words = (v.words ?? []).map((w: any) => ({
-        id:              w.id ?? w.position,
-        position:        w.position,
-        text:            w.text_imlaei ?? '',
-        text_simple:     w.text_imlaei ?? '',
-        char_type_name:  w.char_type_name ?? 'word',
-        transliteration: w.transliteration?.text,
-        translation:     w.translation?.text,
-        root:            w.root_name,
-        lemma:           w.lemma_name,
+    const verses: Verse[] = (json.verses ?? []).map((v: Record<string, unknown>) => {
+      const words = (v.words as Array<Record<string, unknown>> ?? []).map((w: Record<string, unknown>) => ({
+        id:              (w.id ?? w.position) as number,
+        position:        w.position as number,
+        text:            (w.text_imlaei ?? '') as string,
+        text_simple:     (w.text_imlaei ?? '') as string,
+        char_type_name:  (w.char_type_name ?? 'word') as string,
+        transliteration: (w.transliteration as Record<string, string> | undefined)?.text,
+        translation:     (w.translation as Record<string, string> | undefined)?.text,
+        root:            w.root_name as string | undefined,
+        lemma:           w.lemma_name as string | undefined,
       }))
 
       const arabicText = v.text_imlaei
-        ?? words.filter((w: any) => w.char_type_name !== 'end').map((w: any) => w.text).join(' ')
+        ?? words.filter((w: { char_type_name: string }) => w.char_type_name !== 'end').map((w: { text: string }) => w.text).join(' ')
 
-      const translation = v.translations?.[0]?.text ?? ''
+      const translation = (v.translations as Array<{ text?: string }> | undefined)?.[0]?.text ?? ''
 
       return { verse_key: v.verse_key, text_arabic: arabicText, translation, words }
     })

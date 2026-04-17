@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { searchWord } from '../services/quranSearch'
 import { getHighlightRanges } from '../services/quranSearch'
 import DevModeToggle from '../components/DevModeToggle'
@@ -36,7 +36,7 @@ export default function DebugPage() {
   // UI state
   const [showHelp, setShowHelp] = useState(false)
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query.trim()) return
 
     const startTime = performance.now()
@@ -96,7 +96,7 @@ export default function DebugPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [query, lemma, root, fuzzy, semantic, isRegex, isBoolean, limit])
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -122,7 +122,7 @@ export default function DebugPage() {
     
     window.addEventListener('keydown', handleGlobalKeyPress)
     return () => window.removeEventListener('keydown', handleGlobalKeyPress)
-  }, [query, lemma, root, fuzzy, semantic, isRegex, isBoolean, limit])
+  }, [query, lemma, root, fuzzy, semantic, isRegex, isBoolean, limit, handleSearch])
 
   const clearLogs = () => {
     setSearchLogs([])
@@ -413,7 +413,7 @@ function HighlightedText({
   matchedTokens: string[]
   tokenTypes?: Record<string, string>
 }) {
-  const ranges = getHighlightRanges(text, matchedTokens, tokenTypes as any)
+  const ranges = getHighlightRanges(text, matchedTokens, tokenTypes as Record<string, import('../types/quran').MatchType> | undefined)
   
   if (ranges.length === 0) return <span>{text}</span>
 

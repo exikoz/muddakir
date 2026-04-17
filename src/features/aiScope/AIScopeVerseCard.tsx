@@ -22,8 +22,6 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    setError(false)
 
     fetchVerse(verseKey).then(v => {
       if (cancelled) return
@@ -55,7 +53,8 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
   }
 
   function handleOpenMushaf() {
-    const opener = (window as any).__mushafOpener
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const opener = (window as Record<string, any>).__mushafOpener
     if (opener) opener(verseKey)
   }
 

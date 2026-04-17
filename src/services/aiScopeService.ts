@@ -176,19 +176,19 @@ export function clearLogs(): void {
  */
 export function parseSearchQuranResponse(raw: unknown): AIScopeVerseResult[] {
   if (!raw) return []
-  const items = Array.isArray(raw) ? raw : (raw as any)?.results ?? (raw as any)?.verses ?? []
+  const items = Array.isArray(raw) ? raw : (raw as Record<string, unknown>)?.results ?? (raw as Record<string, unknown>)?.verses ?? []
   if (!Array.isArray(items)) return []
 
   return items
-    .map((item: any): AIScopeVerseResult | null => {
+    .map((item: Record<string, unknown>): AIScopeVerseResult | null => {
       const verseKey = item.verse_key ?? item.verseKey ?? item.key ?? item.reference
       if (!verseKey || typeof verseKey !== 'string') return null
       return {
         verseKey,
-        text: item.text ?? item.text_arabic ?? item.arabic,
-        translation: item.translation ?? item.english ?? item.text_english,
-        score: item.score ?? item.matchScore ?? item.relevance,
-        matchType: item.matchType ?? item.match_type ?? item.type,
+        text: (item.text ?? item.text_arabic ?? item.arabic) as string | undefined,
+        translation: (item.translation ?? item.english ?? item.text_english) as string | undefined,
+        score: (item.score ?? item.matchScore ?? item.relevance) as number | undefined,
+        matchType: (item.matchType ?? item.match_type ?? item.type) as string | undefined,
         raw: item,
       }
     })

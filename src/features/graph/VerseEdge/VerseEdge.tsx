@@ -9,7 +9,7 @@ const SEQUENTIAL_COLORS = {
   next: '#a855f7', // purple-500
 }
 
-function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }: EdgeProps<any>) {
+function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }: EdgeProps) {
   const edgeData = data as VerseEdgeData | undefined
   const edgeType = edgeData?.edgeType ?? 'search'
   const matchType: MatchType = edgeData?.matchType ?? 'none'

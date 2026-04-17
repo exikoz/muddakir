@@ -343,6 +343,20 @@ export class VerseExplorer {
   }
 
   /**
+   * Set the last search source node ID
+   */
+  setLastSearchSourceId(id: string | null): void {
+    this.lastSearchSourceId = id
+  }
+
+  /**
+   * Set the current search term
+   */
+  setCurrentSearchTerm(term: string): void {
+    this.currentSearchTerm = term
+  }
+
+  /**
    * Clear all nodes (reset exploration)
    */
   clear(): void {

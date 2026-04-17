@@ -20,6 +20,9 @@ import {
 import { useStore } from './index'
 import { useSidePanelStore } from './sidePanelStore'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getReactFlowInstance = () => (window as Record<string, any>).__reactFlowInstance as { fitView: (opts: Record<string, unknown>) => void } | undefined
+
 // ---------------------------------------------------------------------------
 // Snapshot helpers — bridge between graphStore and WorkspaceData
 // ---------------------------------------------------------------------------
@@ -94,7 +97,7 @@ function restoreState(data: WorkspaceData) {
 
   // Fit the viewport to the restored nodes after ReactFlow processes the update
   setTimeout(() => {
-    const rf = (window as any).__reactFlowInstance
+    const rf = getReactFlowInstance()
     if (rf && data.nodes.length > 0) {
       rf.fitView({ duration: 300, padding: 0.2 })
     }

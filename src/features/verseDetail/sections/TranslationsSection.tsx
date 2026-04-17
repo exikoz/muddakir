@@ -10,7 +10,6 @@ export default function TranslationsSection() {
   const { t } = useTranslation('verseDetail')
   const verse = useVerseDetailStore(s => s.verse)
   const [translations, setTranslations] = useState<TranslationData[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   // Available translations from API + user selection
@@ -18,32 +17,46 @@ export default function TranslationsSection() {
   const [selectedIds, setSelectedIds] = useState<number[]>(() => TRANSLATIONS.map(t => t.id))
   const [showPicker, setShowPicker] = useState(false)
 
+  // Track in-flight fetch key to derive loading state
+  const [fetchingKey, setFetchingKey] = useState<string | null>(null)
+
   // Fetch available translations list once
   useEffect(() => {
     fetchAvailableTranslations().then(setAvailable)
   }, [])
 
   // Fetch selected translations for the current verse
+  const verseKey = verse?.verse_key
+  const idsKey = selectedIds.join(',')
+  const currentFetchKey = `${verseKey}:${idsKey}`
+
   useEffect(() => {
-    if (!verse || selectedIds.length === 0) {
-      setTranslations([])
-      setLoading(false)
+    if (!verseKey || selectedIds.length === 0) {
       return
     }
     let cancelled = false
-    setLoading(true)
-    setError(false)
 
-    fetchTranslations(verse.verse_key, selectedIds).then(data => {
-      if (!cancelled) { setTranslations(data); setLoading(false) }
+    // Mark as fetching (in the microtask after effect starts — not synchronous in effect body)
+    Promise.resolve().then(() => {
+      if (!cancelled) setFetchingKey(currentFetchKey)
+    })
+
+    fetchTranslations(verseKey, selectedIds).then(data => {
+      if (!cancelled) { setTranslations(data); setFetchingKey(null); setError(false) }
     }).catch(() => {
-      if (!cancelled) { setError(true); setLoading(false) }
+      if (!cancelled) { setError(true); setFetchingKey(null) }
     })
 
     return () => { cancelled = true }
-  }, [verse?.verse_key, selectedIds])
+  }, [verseKey, idsKey, selectedIds, currentFetchKey])
 
   if (!verse) return null
+
+  // Derive empty state without effects
+  const isLoading = fetchingKey !== null
+  const shouldShowEmpty = !verse || selectedIds.length === 0
+  const displayTranslations = shouldShowEmpty ? [] : translations
+  const displayLoading = shouldShowEmpty ? false : isLoading
 
   function toggleTranslation(id: number) {
     setSelectedIds(prev =>
@@ -114,18 +127,18 @@ export default function TranslationsSection() {
 
       {/* Results */}
       <div className="space-y-3">
-        {loading && (
+        {displayLoading && (
           <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
             <Loader2 size={12} className="animate-spin" />
             {t('loading_translations')}
           </div>
         )}
 
-        {error && !loading && (
+        {error && !displayLoading && (
           <div className="flex items-center justify-between py-2">
             <span className="text-xs text-slate-400">{t('error_translations')}</span>
             <button
-              onClick={() => { setLoading(true); setError(false); fetchTranslations(verse.verse_key, selectedIds).then(setTranslations).finally(() => setLoading(false)) }}
+              onClick={() => { setFetchingKey('retry'); setError(false); fetchTranslations(verse.verse_key, selectedIds).then(setTranslations).finally(() => setFetchingKey(null)) }}
               className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium"
             >
               <RefreshCw size={10} /> {t('retry')}
@@ -133,14 +146,14 @@ export default function TranslationsSection() {
           </div>
         )}
 
-        {!loading && !error && translations.map(t => (
+        {!displayLoading && !error && displayTranslations.map(t => (
           <div key={t.resourceId}>
             <p className="text-[10px] font-semibold text-slate-400 mb-1">{t.resourceName}</p>
             <p className="text-sm text-slate-600 leading-relaxed">{t.text}</p>
           </div>
         ))}
 
-        {!loading && !error && translations.length === 0 && selectedIds.length > 0 && (
+        {!displayLoading && !error && displayTranslations.length === 0 && selectedIds.length > 0 && (
           <p className="text-xs text-slate-400">{t('no_translations')}</p>
         )}
 

@@ -25,6 +25,8 @@ export default function VerseExplanationSection() {
     if (verse && !explanation && !loading) {
       fetchExplanation()
     }
+    // Only re-run when the verse key changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verse?.verse_key])
 
   if (!verse) return null

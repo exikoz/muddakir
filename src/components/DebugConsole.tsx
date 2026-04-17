@@ -85,13 +85,38 @@ const EXAMPLES = [
   },
 ]
 
+interface NormalizationComparison {
+  original: string
+  removeTashkeel: string
+  normalizeArabic: string
+  comparison: {
+    originalLength: number
+    removeTashkeelLength: number
+    normalizedLength: number
+    tashkeelRemoved: number
+    totalChanges: number
+  }
+}
+
+type NormalizationResult = string | NormalizationComparison
+
+interface SearchLogDetails {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  options?: any
+  count?: number
+  matchTypes?: Record<string, number>
+  pagination?: unknown
+  counts?: unknown
+  method?: string
+}
+
 interface LogEntry {
   timestamp: number
   type: 'search' | 'normalization'
   input: string
-  output: any
+  output: unknown
   duration: number
-  details?: any
+  details?: SearchLogDetails
 }
 
 export default function DebugConsole({ onClose }: Props) {
@@ -102,10 +127,11 @@ export default function DebugConsole({ onClose }: Props) {
   const [duration, setDuration] = useState<number>(0)
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [currentType, setCurrentType] = useState<'search' | 'normalization'>('search')
-  const [normalizationResult, setNormalizationResult] = useState<any>(null)
-  const [selectedResult, setSelectedResult] = useState<any>(null)
+  const [normalizationResult, setNormalizationResult] = useState<NormalizationResult | null>(null)
+  const [selectedResult, setSelectedResult] = useState<Record<string, unknown> | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [rawResponse, setRawResponse] = useState<any>(null)
-  const [dataStatus, setDataStatus] = useState<any>(null)
+  const [dataStatus, setDataStatus] = useState<ReturnType<typeof getDataStatus> | null>(null)
   
   // Options
   const [lemma, setLemma] = useState(true)
@@ -231,7 +257,7 @@ export default function DebugConsole({ onClose }: Props) {
     console.group(`🔧 Normalization: ${method}`)
     console.log('Input:', query)
 
-    let result: any
+    let result: NormalizationResult = ''
 
     if (method === 'removeTashkeel') {
       result = removeTashkeel(query)
@@ -755,21 +781,21 @@ export default function DebugConsole({ onClose }: Props) {
                       <>
                         <div className="log-section">
                           <strong>Options:</strong>
-                          <pre>{JSON.stringify(log.details.options, null, 2)}</pre>
+                          <pre>{JSON.stringify(log.details?.options, null, 2)}</pre>
                         </div>
                         <div className="log-section">
-                          <strong>Results:</strong> {log.details.count}
+                          <strong>Results:</strong> {log.details?.count}
                         </div>
                         <div className="log-section">
                           <strong>Match Types:</strong>
-                          <pre>{JSON.stringify(log.details.matchTypes, null, 2)}</pre>
+                          <pre>{JSON.stringify(log.details?.matchTypes, null, 2)}</pre>
                         </div>
                       </>
                     )}
                     {log.type === 'normalization' && (
                       <>
                         <div className="log-section">
-                          <strong>Method:</strong> {log.details.method}
+                          <strong>Method:</strong> {log.details?.method}
                         </div>
                         <div className="log-section">
                           <strong>Output:</strong>
@@ -797,7 +823,7 @@ function HighlightedText({
   matchedTokens: string[]
   tokenTypes?: Record<string, string>
 }) {
-  const ranges = getHighlightRanges(text, matchedTokens, tokenTypes as any)
+  const ranges = getHighlightRanges(text, matchedTokens, tokenTypes as Record<string, import('../types/quran').MatchType> | undefined)
   
   if (ranges.length === 0) return <span>{text}</span>
 

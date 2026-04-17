@@ -5,7 +5,7 @@
  */
 
 import { contentFetch } from '../lib/auth'
-import type { TranslationData, TafsirData, ResourceItem } from '../features/verseDetail/types'
+import type { TranslationData, TafsirData, ResourceItem, ReflectionPost } from '../features/verseDetail/types'
 
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
@@ -26,10 +26,10 @@ export async function fetchAvailableTafsirs(): Promise<ResourceItem[]> {
     const res = await fetch('https://api.quran.com/api/v4/resources/tafsirs?language=en')
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const json = await res.json()
-    const items: ResourceItem[] = (json.tafsirs ?? []).map((t: any) => ({
-      id: t.id,
-      name: t.name ?? t.translated_name?.name ?? 'Unknown',
-      language: t.language_name ?? t.translated_name?.language_name ?? '',
+    const items: ResourceItem[] = (json.tafsirs ?? []).map((t: Record<string, unknown>) => ({
+      id: t.id as number,
+      name: (t.name ?? (t.translated_name as Record<string, string> | undefined)?.name ?? 'Unknown') as string,
+      language: (t.language_name ?? (t.translated_name as Record<string, string> | undefined)?.language_name ?? '') as string,
     }))
     tafsirListCache = { data: items, timestamp: Date.now() }
     return items
@@ -46,10 +46,10 @@ export async function fetchAvailableTranslations(): Promise<ResourceItem[]> {
     const res = await fetch('https://api.quran.com/api/v4/resources/translations?language=en')
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const json = await res.json()
-    const items: ResourceItem[] = (json.translations ?? []).map((t: any) => ({
-      id: t.id,
-      name: t.name ?? t.translated_name?.name ?? 'Unknown',
-      language: t.language_name ?? t.translated_name?.language_name ?? '',
+    const items: ResourceItem[] = (json.translations ?? []).map((t: Record<string, unknown>) => ({
+      id: t.id as number,
+      name: (t.name ?? (t.translated_name as Record<string, string> | undefined)?.name ?? 'Unknown') as string,
+      language: (t.language_name ?? (t.translated_name as Record<string, string> | undefined)?.language_name ?? '') as string,
     }))
     translationListCache = { data: items, timestamp: Date.now() }
     return items
@@ -79,10 +79,10 @@ export async function fetchTranslations(verseKey: string, translationIds: number
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
     const json = await res.json()
-    const translations: TranslationData[] = (json.verse?.translations ?? []).map((t: any) => ({
-      resourceId: t.resource_id,
-      resourceName: t.resource_name ?? 'Unknown',
-      text: (t.text ?? '').replace(/<[^>]*>/g, ''),
+    const translations: TranslationData[] = (json.verse?.translations ?? []).map((t: Record<string, unknown>) => ({
+      resourceId: t.resource_id as number,
+      resourceName: (t.resource_name ?? 'Unknown') as string,
+      text: ((t.text ?? '') as string).replace(/<[^>]*>/g, ''),
     }))
 
     translationCache.set(cacheKey, { data: translations, timestamp: Date.now() })
@@ -156,5 +156,37 @@ export async function fetchAudioUrl(verseKey: string, recitationId: number): Pro
   } catch (err) {
     console.error('[verseDetailApi] fetchAudioUrl error:', err)
     return null
+  }
+}
+
+
+// ── Reflections ─────────────────────────────────────────────────────────────
+
+const reflectionCache = new Map<string, CacheEntry<ReflectionPost[]>>()
+
+export async function fetchReflections(verseKey: string): Promise<ReflectionPost[]> {
+  const cached = reflectionCache.get(verseKey)
+  if (isCacheValid(cached)) return cached.data
+
+  try {
+    const res = await fetch(
+      `https://api.quran.com/api/v4/posts/by_ayah/${verseKey}?language=en`
+    )
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+    const json = await res.json()
+    const posts: ReflectionPost[] = (json.posts ?? []).map((p: Record<string, unknown>) => ({
+      id: p.id as number,
+      body: (p.body ?? '') as string,
+      postTypeId: (p.post_type_id ?? 1) as number,
+      authorName: (p.author_name ?? '') as string,
+      likeCount: (p.like_count ?? 0) as number,
+    }))
+
+    reflectionCache.set(verseKey, { data: posts, timestamp: Date.now() })
+    return posts
+  } catch (err) {
+    console.error('[verseDetailApi] fetchReflections error:', err)
+    return []
   }
 }

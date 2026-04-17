@@ -131,20 +131,21 @@ function logSearch(query: string, options: SearchOptions, limit: number) {
     root: options.root,
     fuzzy: options.fuzzy,
     semantic: options.semantic,
-    isRegex: (options as any).isRegex,
-    isBoolean: (options as any).isBoolean,
+    isRegex: (options as unknown as Record<string, unknown>).isRegex,
+    isBoolean: (options as unknown as Record<string, unknown>).isBoolean,
   })
   console.log('Limit:', limit)
   console.time('Search Duration')
 }
 
-function logResults(results: any[], duration?: number) {
+function logResults(results: Array<{ matchType?: string; matchScore?: number; matchedTokens?: string[]; sura_id?: number; aya_id?: number }>, duration?: number) {
   if (!isDev) return
   console.log(`✅ Found ${results.length} results`)
   
   if (results.length > 0) {
     const matchTypeCounts = results.reduce((acc, r) => {
-      acc[r.matchType] = (acc[r.matchType] || 0) + 1
+      const mt = r.matchType ?? 'unknown'
+      acc[mt] = (acc[mt] || 0) + 1
       return acc
     }, {} as Record<string, number>)
     

@@ -160,7 +160,6 @@ function VerseRow({ verseKey, wordRanges, color, onNavigate }: VerseRowProps) {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
     fetchVerse(verseKey).then(v => {
       if (!cancelled) {
         setVerse(v)
@@ -241,7 +240,6 @@ export default function SimilarPhrasesSection() {
   useEffect(() => {
     if (!verse) return
     let cancelled = false
-    setLoading(true)
 
     getPhrasesForVerse(verse.verse_key).then(result => {
       if (!cancelled) {
@@ -251,7 +249,7 @@ export default function SimilarPhrasesSection() {
     })
 
     return () => { cancelled = true }
-  }, [verse?.verse_key])
+  }, [verse])
 
   const handleNavigateToVerse = useCallback(async (verseKey: string) => {
     const v = await fetchVerse(verseKey)

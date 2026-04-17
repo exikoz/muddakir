@@ -18,8 +18,6 @@ export default function ReflectionsSection() {
   useEffect(() => {
     if (!verse) return
     let cancelled = false
-    setLoading(true)
-    setExpandedIds(new Set())
 
     fetchReflections(verse.verse_key).then(data => {
       if (!cancelled) { setPosts(data); setLoading(false) }
@@ -28,7 +26,7 @@ export default function ReflectionsSection() {
     })
 
     return () => { cancelled = true }
-  }, [verse?.verse_key])
+  }, [verse])
 
   if (!verse) return null
 
@@ -38,7 +36,11 @@ export default function ReflectionsSection() {
   function toggleExpand(id: number) {
     setExpandedIds(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }

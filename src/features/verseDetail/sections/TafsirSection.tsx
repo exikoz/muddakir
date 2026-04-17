@@ -35,18 +35,15 @@ export default function TafsirSection() {
   useEffect(() => {
     if (!verse) return
     let cancelled = false
-    setLoading(true)
-    setError(false)
-    setExpanded(false)
 
     fetchTafsir(verse.verse_key, selectedId).then(data => {
-      if (!cancelled) { setTafsir(data); setLoading(false) }
+      if (!cancelled) { setTafsir(data); setLoading(false); setError(false); setExpanded(false) }
     }).catch(() => {
       if (!cancelled) { setError(true); setLoading(false) }
     })
 
     return () => { cancelled = true }
-  }, [verse?.verse_key, selectedId])
+  }, [verse, selectedId])
 
   if (!verse) return null
 

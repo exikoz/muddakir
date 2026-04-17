@@ -45,7 +45,7 @@ export function parseAIResponse(raw: string): ResponseBlock[] {
 
   // 1. Check for "Also referenced:" section and split it off
   let mainText = raw
-  let refListItems: Array<{ verseKey: string; description: string }> = []
+  const refListItems: Array<{ verseKey: string; description: string }> = []
 
   const alsoMatch = raw.match(ALSO_REFERENCED_PATTERN)
   if (alsoMatch) {

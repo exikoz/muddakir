@@ -23,7 +23,6 @@ function DiscoveryItem({ result }: Props) {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
     fetchVerse(result.verse_key).then(v => {
       if (!cancelled) {
         setVerse(v)

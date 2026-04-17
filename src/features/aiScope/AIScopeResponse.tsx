@@ -13,7 +13,6 @@ export default function AIScopeResponse({ content }: Props) {
   const { t, i18n } = useTranslation('aiScope')
   const contentDir = i18n.dir()
   const addVerseNode = useStore(s => s.addVerseNode)
-  const nodes = useStore(s => s.nodes)
   const [addingAll, setAddingAll] = useState(false)
 
   const blocks = useMemo(() => parseAIResponse(content), [content])

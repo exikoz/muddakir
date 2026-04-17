@@ -316,7 +316,7 @@ export default function UIDebugCustomizer({ onClose }: UIDebugCustomizerProps) {
           <Control label="Dash Style">
             <select
               value={styles.prevEdgeDash}
-              onChange={(e) => updateStyle('prevEdgeDash', e.target.value as any)}
+              onChange={(e) => updateStyle('prevEdgeDash', e.target.value as CustomStyles['prevEdgeDash'])}
               className="w-full px-2 py-1 text-sm border border-slate-200 rounded"
             >
               <option value="solid">Solid</option>
@@ -342,7 +342,7 @@ export default function UIDebugCustomizer({ onClose }: UIDebugCustomizerProps) {
           <Control label="Dash Style">
             <select
               value={styles.nextEdgeDash}
-              onChange={(e) => updateStyle('nextEdgeDash', e.target.value as any)}
+              onChange={(e) => updateStyle('nextEdgeDash', e.target.value as CustomStyles['nextEdgeDash'])}
               className="w-full px-2 py-1 text-sm border border-slate-200 rounded"
             >
               <option value="solid">Solid</option>

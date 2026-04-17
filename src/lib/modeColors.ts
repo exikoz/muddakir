@@ -112,7 +112,7 @@ export function getActiveMode(searchOptions: SearchOptions): MatchType {
  */
 export function getModeColors(matchType: MatchType) {
   if (!USE_MODE_COLORS) return MODE_COLORS.exact
-  return MODE_COLORS[matchType] || MODE_COLORS.exact
+  return MODE_COLORS[matchType as keyof typeof MODE_COLORS] || MODE_COLORS.exact
 }
 
 /**
