@@ -8,5 +8,11 @@
   "open_in_mushaf": "Open in Mushaf",
   "play": "Play",
   "play_verse": "Play verse",
-  "change_reciter": "Change reciter"
+  "change_reciter": "Change reciter",
+  "note_default_title": "Note",
+  "note_title_placeholder": "Title...",
+  "note_body_placeholder": "Write your thoughts...",
+  "note_rename_hint": "Double-click to rename",
+  "note_delete": "Delete note",
+  "note_remove_connection": "Remove connection"
 }

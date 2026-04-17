@@ -1,121 +1,156 @@
 import { memo, useState, useRef, useEffect, useCallback } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { X, GripVertical } from 'lucide-react'
+import { PenLine, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useStore } from '../../../store'
 
 export interface NoteNodeData extends Record<string, unknown> {
+  title: string
   text: string
   color: string
 }
 
-const COLOR_PALETTE = [
-  { bg: 'bg-amber-50', border: 'border-amber-200', accent: 'bg-amber-400', ring: 'ring-amber-300' },
-  { bg: 'bg-sky-50', border: 'border-sky-200', accent: 'bg-sky-400', ring: 'ring-sky-300' },
-  { bg: 'bg-rose-50', border: 'border-rose-200', accent: 'bg-rose-400', ring: 'ring-rose-300' },
-  { bg: 'bg-violet-50', border: 'border-violet-200', accent: 'bg-violet-400', ring: 'ring-violet-300' },
-  { bg: 'bg-emerald-50', border: 'border-emerald-200', accent: 'bg-emerald-400', ring: 'ring-emerald-300' },
-  { bg: 'bg-slate-50', border: 'border-slate-200', accent: 'bg-slate-400', ring: 'ring-slate-300' },
-]
+const HANDLE_STYLE = {
+  width: 8,
+  height: 8,
+  borderRadius: '50%',
+  border: '2px solid #e8e0d4',
+  background: '#d4c9b8',
+} as const
 
-function getColorClasses(color: string) {
-  const idx = COLOR_PALETTE.findIndex(c => c.accent.includes(color))
-  return COLOR_PALETTE[idx >= 0 ? idx : 0]
-}
-
-function NoteNode({ id, data }: NodeProps<any>) {
+function NoteNode({ id, data, selected }: NodeProps) {
+  const { t } = useTranslation('graph')
   const noteData = data as NoteNodeData
   const deleteNode = useStore(s => s.deleteNode)
   const updateNodeData = useStore(s => s.updateNodeData)
 
+  const [title, setTitle] = useState(noteData.title ?? t('note_default_title'))
   const [text, setText] = useState(noteData.text ?? '')
-  const [isEditing, setIsEditing] = useState(!noteData.text)
+  const [editingTitle, setEditingTitle] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const colors = getColorClasses(noteData.color ?? 'amber')
+  const titleInputRef = useRef<HTMLInputElement>(null)
+
+  const commitTitle = useCallback(() => {
+    setEditingTitle(false)
+    updateNodeData(id as string, { title: title || t('note_default_title') } as never)
+  }, [id, title, updateNodeData])
+
+  const commitText = useCallback(() => {
+    updateNodeData(id as string, { text } as never)
+  }, [id, text, updateNodeData])
+
+  const handleTextKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') (e.target as HTMLTextAreaElement).blur()
+  }, [])
+
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === 'Escape') (e.target as HTMLInputElement).blur()
+  }, [])
 
   useEffect(() => {
-    if (isEditing && textareaRef.current) {
-      textareaRef.current.focus()
-      textareaRef.current.setSelectionRange(text.length, text.length)
+    if (editingTitle && titleInputRef.current) {
+      titleInputRef.current.focus()
+      titleInputRef.current.select()
     }
-  }, [isEditing])
+  }, [editingTitle])
 
-  const handleBlur = useCallback(() => {
-    setIsEditing(false)
-    updateNodeData(id as string, { text } as any)
-  }, [id, text, updateNodeData])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setIsEditing(false)
-      updateNodeData(id as string, { text } as any)
-    }
-  }, [id, text, updateNodeData])
-
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
     }
-  }, [text, isEditing])
-
-  const handleStyle = "!w-3 !h-3 !rounded-full !border-2 !border-white !shadow-sm opacity-0 group-hover:opacity-100 !transition-opacity !duration-200"
+  }, [text])
 
   return (
-    <div className={`w-[260px] rounded-2xl ${colors.bg} ${colors.border} border shadow-md hover:shadow-lg transition-all duration-200 group relative`}>
-      {/* Visible connection handles — left, right, bottom */}
-      <Handle id="left-src" type="source" position={Position.Left}
-        className={`${handleStyle} !bg-slate-400 hover:!bg-slate-600`} />
-      <Handle id="left-tgt" type="target" position={Position.Left}
-        className={`${handleStyle} !bg-slate-400 hover:!bg-slate-600`} style={{ top: '40%' }} />
-      <Handle id="right-src" type="source" position={Position.Right}
-        className={`${handleStyle} !bg-slate-400 hover:!bg-slate-600`} />
-      <Handle id="right-tgt" type="target" position={Position.Right}
-        className={`${handleStyle} !bg-slate-400 hover:!bg-slate-600`} style={{ top: '40%' }} />
-      <Handle id="bottom-src" type="source" position={Position.Bottom}
-        className={`${handleStyle} !bg-slate-400 hover:!bg-slate-600`} />
+    <div
+      className={`w-[240px] rounded-xl relative group transition-all duration-200 ${
+        selected ? 'ring-2 ring-amber-200' : ''
+      }`}
+      style={{
+        background: '#FFFDF5',
+        border: '1px solid #e8e0d4',
+        boxShadow: selected
+          ? '0 4px 12px rgba(180,160,120,0.15)'
+          : '0 2px 8px rgba(180,160,120,0.10)',
+      }}
+    >
+      {/* ── Handles ── */}
+      <Handle id="top-tgt" type="target" position={Position.Top} style={HANDLE_STYLE} />
+      <Handle id="bottom-src" type="source" position={Position.Bottom} style={HANDLE_STYLE} />
       <Handle id="bottom-tgt" type="target" position={Position.Bottom}
-        className={`${handleStyle} !bg-slate-400 hover:!bg-slate-600`} style={{ left: '40%' }} />
+        style={{ ...HANDLE_STYLE, left: '35%' }} />
+      <Handle id="left-tgt-1" type="target" position={Position.Left}
+        style={{ ...HANDLE_STYLE, top: '35%' }} />
+      <Handle id="left-tgt-2" type="target" position={Position.Left}
+        style={{ ...HANDLE_STYLE, top: '65%' }} />
+      <Handle id="right-src-1" type="source" position={Position.Right}
+        style={{ ...HANDLE_STYLE, top: '35%' }} />
+      <Handle id="right-src-2" type="source" position={Position.Right}
+        style={{ ...HANDLE_STYLE, top: '65%' }} />
 
-      {/* Top accent strip */}
-      <div className={`h-1 rounded-t-2xl ${colors.accent}`} />
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 pt-2 pb-1">
-        <div className="flex items-center gap-1 text-slate-400">
-          <GripVertical size={12} className="cursor-grab" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider">Note</span>
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between px-3 py-1.5 cursor-grab active:cursor-grabbing"
+        style={{ borderBottom: '1px solid #efe8db' }}>
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <PenLine
+            size={10}
+            className="nodrag shrink-0 text-[#b8a88a] hover:text-[#8a7a60] cursor-pointer transition-colors"
+            onClick={() => setEditingTitle(true)}
+          />
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={handleTitleKeyDown}
+              maxLength={30}
+              className="nodrag max-w-[140px] text-[12px] uppercase tracking-wider bg-white/70 outline-none rounded px-1 py-0.5 ring-1 ring-[#d4c9b8]"
+              style={{ color: '#5a4d38', fontWeight: 500 }}
+              placeholder={t('note_title_placeholder')}
+            />
+          ) : (
+            <span
+              onDoubleClick={() => setEditingTitle(true)}
+              className="text-[12px] uppercase tracking-wider truncate max-w-[140px] select-none cursor-text"
+              style={{ color: '#6b5c45', fontWeight: 500 }}
+              title={t('note_rename_hint')}
+            >
+              {title || t('note_default_title')}
+            </span>
+          )}
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); deleteNode(id as string) }}
-          className="p-1 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+          className="nodrag p-0.5 rounded text-[#c4b89a] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
         >
-          <X size={12} />
+          <X size={10} />
         </button>
       </div>
 
-      {/* Content */}
-      <div className="px-3 pb-3">
-        {isEditing ? (
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={e => setText(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder="Write your thoughts..."
-            className={`w-full bg-white/60 rounded-xl px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 outline-none resize-none min-h-[60px] ring-2 ${colors.ring} transition-all leading-relaxed`}
-            rows={3}
-          />
-        ) : (
-          <div
-            onClick={() => setIsEditing(true)}
-            className="w-full min-h-[40px] px-3 py-2 text-sm text-slate-700 leading-relaxed cursor-text rounded-xl hover:bg-white/40 transition-colors whitespace-pre-wrap"
-          >
-            {text || <span className="text-slate-400 italic">Click to add a note...</span>}
-          </div>
-        )}
+      {/* ── Body ── */}
+      <div className="px-3 py-2">
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onBlur={commitText}
+          onKeyDown={handleTextKeyDown}
+          placeholder={t('note_body_placeholder')}
+          className="nodrag w-full bg-transparent text-[12px] placeholder:text-[#c4b89a] outline-none resize-none min-h-[40px] focus:ring-1 focus:ring-[#d4c9b8] rounded px-0.5 py-0.5 transition-shadow"
+          style={{ color: '#6b5c45', lineHeight: 1.7, fontWeight: 400 }}
+          rows={2}
+        />
       </div>
+
+      {/* ── Folded corner ── */}
+      <div
+        className="absolute bottom-0 right-0 w-3 h-3 pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, transparent 50%, #efe8db 50%)',
+          borderRadius: '0 0 0.75rem 0',
+        }}
+      />
     </div>
   )
 }

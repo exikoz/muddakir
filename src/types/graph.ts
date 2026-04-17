@@ -15,6 +15,7 @@ export interface VerseNodeData extends Record<string, unknown> {
 }
 
 export interface NoteNodeData extends Record<string, unknown> {
+  title: string
   text: string
   color: string
 }

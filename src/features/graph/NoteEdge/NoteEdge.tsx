@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -6,10 +6,13 @@ import {
   useReactFlow,
   type EdgeProps,
 } from '@xyflow/react'
+import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 /**
- * A custom edge for note connections with a visible delete (×) button.
- * Uses ReactFlow's built-in useReactFlow().deleteElements() for removal.
+ * A dashed edge for note connections.
+ * Shows a small trash icon at the midpoint on hover.
+ * Also supports select + Backspace/Delete.
  */
 function NoteEdge({
   id,
@@ -19,8 +22,11 @@ function NoteEdge({
   targetY,
   sourcePosition,
   targetPosition,
+  selected,
 }: EdgeProps) {
   const { deleteElements } = useReactFlow()
+  const { t } = useTranslation('graph')
+  const [hovered, setHovered] = useState(false)
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -37,49 +43,40 @@ function NoteEdge({
       <BaseEdge
         id={id as string}
         path={edgePath}
+        interactionWidth={20}
         style={{
-          stroke: '#94a3b8',
-          strokeWidth: 1.5,
+          stroke: selected ? '#60a5fa' : hovered ? '#64748b' : '#94a3b8',
+          strokeWidth: selected ? 2 : hovered ? 2 : 1.5,
           strokeDasharray: '6 4',
+          transition: 'stroke 150ms, stroke-width 150ms',
         }}
       />
       <EdgeLabelRenderer>
-        <button
-          className="nodrag nopan"
+        {/* Invisible hover zone centered on the edge midpoint */}
+        <div
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            width: 40,
+            height: 40,
             pointerEvents: 'all',
-            width: 20,
-            height: 20,
-            borderRadius: '50%',
-            border: '1px solid #e2e8f0',
-            background: '#fff',
-            color: '#94a3b8',
-            fontSize: 12,
-            lineHeight: '18px',
-            textAlign: 'center',
-            cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            transition: 'all 150ms',
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#fef2f2'
-            e.currentTarget.style.color = '#ef4444'
-            e.currentTarget.style.borderColor = '#fecaca'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#fff'
-            e.currentTarget.style.color = '#94a3b8'
-            e.currentTarget.style.borderColor = '#e2e8f0'
-          }}
-          onClick={() => deleteElements({ edges: [{ id: id as string }] })}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
         >
-          ×
-        </button>
+          <button
+            className={`nodrag nopan flex items-center justify-center w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 shadow-sm transition-all ${
+              hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+            }`}
+            onClick={() => deleteElements({ edges: [{ id: id as string }] })}
+            title={t('note_remove_connection')}
+          >
+            <Trash2 size={10} />
+          </button>
+        </div>
       </EdgeLabelRenderer>
     </>
   )

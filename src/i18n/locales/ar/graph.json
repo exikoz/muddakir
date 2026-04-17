@@ -8,5 +8,11 @@
   "open_in_mushaf": "فتح في المصحف",
   "play": "تشغيل",
   "play_verse": "تشغيل الآية",
-  "change_reciter": "تغيير القارئ"
+  "change_reciter": "تغيير القارئ",
+  "note_default_title": "ملاحظة",
+  "note_title_placeholder": "العنوان...",
+  "note_body_placeholder": "اكتب أفكارك...",
+  "note_rename_hint": "انقر مرتين لإعادة التسمية",
+  "note_delete": "حذف الملاحظة",
+  "note_remove_connection": "إزالة الاتصال"
 }
