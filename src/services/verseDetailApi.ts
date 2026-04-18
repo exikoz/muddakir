@@ -190,3 +190,101 @@ export async function fetchReflections(verseKey: string): Promise<ReflectionPost
     return []
   }
 }
+
+
+// ── Word Timestamps (for word-by-word highlighting) ─────────────────────────
+
+export interface WordTimestamp {
+  wordIndex: number       // 0-based
+  timestampFrom: number   // ms (absolute within chapter audio)
+  timestampTo: number     // ms (absolute within chapter audio)
+}
+
+export interface ChapterAudioData {
+  audioUrl: string
+  verseTimings: Map<string, {
+    timestampFrom: number  // ms
+    timestampTo: number    // ms
+    wordTimings: WordTimestamp[]
+  }>
+}
+
+/** Cache: chapterReciterId:chapter → full chapter audio data */
+const chapterAudioCache = new Map<string, CacheEntry<ChapterAudioData>>()
+
+/**
+ * Fetch chapter audio data including the audio URL, verse timings, and
+ * word-level segments. Cached per chapter+reciter.
+ */
+export async function fetchChapterAudio(
+  chapterReciterId: number,
+  chapter: number
+): Promise<ChapterAudioData | null> {
+  const cacheKey = `chaudio:${chapterReciterId}:${chapter}`
+  const cached = chapterAudioCache.get(cacheKey)
+  if (isCacheValid(cached)) return cached.data
+
+  try {
+    const url = `https://api.quran.com/api/v4/chapter_recitations/${chapterReciterId}/${chapter}?segments=true`
+    const res = await fetch(url)
+    if (!res.ok) return null
+
+    const json = await res.json()
+    const audioFile = json.audio_file
+    if (!audioFile?.audio_url) return null
+
+    const timestamps = audioFile.timestamps as Array<{
+      verse_key: string
+      timestamp_from: number
+      timestamp_to: number
+      segments: [number, number, number][]
+    }> | undefined
+
+    const verseTimings = new Map<string, {
+      timestampFrom: number
+      timestampTo: number
+      wordTimings: WordTimestamp[]
+    }>()
+
+    if (timestamps) {
+      for (const vt of timestamps) {
+        const wordTimings: WordTimestamp[] = (vt.segments ?? []).map((seg, i, arr) => ({
+          wordIndex: seg[0] - 1,
+          timestampFrom: seg[1],
+          timestampTo: i < arr.length - 1 ? arr[i + 1][1] : seg[2],
+        }))
+
+        verseTimings.set(vt.verse_key, {
+          timestampFrom: vt.timestamp_from,
+          timestampTo: vt.timestamp_to,
+          wordTimings,
+        })
+      }
+    }
+
+    const data: ChapterAudioData = {
+      audioUrl: audioFile.audio_url as string,
+      verseTimings,
+    }
+
+    chapterAudioCache.set(cacheKey, { data, timestamp: Date.now() })
+    return data
+  } catch (err) {
+    console.error('[verseDetailApi] fetchChapterAudio error:', err)
+    return null
+  }
+}
+
+/**
+ * Get word timestamps for a specific verse (absolute ms within chapter audio).
+ */
+export async function fetchWordTimestamps(
+  verseKey: string,
+  chapterReciterId: number,
+  _totalWords: number
+): Promise<WordTimestamp[]> {
+  const [chapterStr] = verseKey.split(':')
+  const chapter = parseInt(chapterStr, 10)
+  const data = await fetchChapterAudio(chapterReciterId, chapter)
+  return data?.verseTimings.get(verseKey)?.wordTimings ?? []
+}

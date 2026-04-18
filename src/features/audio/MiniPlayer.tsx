@@ -1,10 +1,12 @@
 /**
- * Upgraded compact player for verse nodes on the canvas.
- * Idle: just a play icon. Playing: play/pause + progress bar + time + reciter gear.
+ * Inline linear audio controls for the center cell of the verse node bottom bar.
+ *
+ * Sits inside a flex-1 cell. All sub-elements are flush grid cells
+ * separated by 1px borders. Progress bar is flush at the top.
  */
 
 import { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Settings } from 'lucide-react'
+import { Play, Pause, Square, Settings, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAudioStore } from './audioStore'
 import { RECITERS } from './audioConfig'
@@ -25,10 +27,13 @@ export default function MiniPlayer({ verseKey }: Props) {
   const currentVerseKey = useAudioStore(s => s.currentVerseKey)
   const currentReciterId = useAudioStore(s => s.currentReciterId)
   const isPlaying = useAudioStore(s => s.isPlaying)
+  const isLoading = useAudioStore(s => s.isLoading)
   const duration = useAudioStore(s => s.duration)
   const currentTime = useAudioStore(s => s.currentTime)
+  const verseStartTime = useAudioStore(s => s.verseStartTime)
   const playVerse = useAudioStore(s => s.playVerse)
   const pause = useAudioStore(s => s.pause)
+  const stop = useAudioStore(s => s.stop)
   const setReciter = useAudioStore(s => s.setReciter)
   const seek = useAudioStore(s => s.seek)
 
@@ -37,10 +42,10 @@ export default function MiniPlayer({ verseKey }: Props) {
 
   const isThisVerse = currentVerseKey === verseKey
   const isThisPlaying = isThisVerse && isPlaying
-  const isThisActive = isThisVerse && (isPlaying || currentTime > 0)
-  const progress = isThisVerse && duration > 0 ? (currentTime / duration) * 100 : 0
+  // currentTime is absolute in chapter audio; compute verse-relative progress
+  const verseElapsed = isThisVerse ? Math.max(0, currentTime - verseStartTime) : 0
+  const progress = isThisVerse && duration > 0 ? (verseElapsed / duration) * 100 : 0
 
-  // Close reciter menu on outside click
   useEffect(() => {
     if (!showReciterMenu) return
     const handler = (e: MouseEvent) => {
@@ -56,6 +61,11 @@ export default function MiniPlayer({ verseKey }: Props) {
     else playVerse(verseKey, currentReciterId)
   }
 
+  function handleStop(e: React.MouseEvent) {
+    e.stopPropagation()
+    stop()
+  }
+
   function handleSeek(e: React.MouseEvent<HTMLDivElement>) {
     e.stopPropagation()
     if (!isThisVerse || duration <= 0) return
@@ -64,78 +74,82 @@ export default function MiniPlayer({ verseKey }: Props) {
     seek(ratio * duration)
   }
 
-  // Idle state — just a play button
-  if (!isThisActive) {
-    return (
-      <button
-        onClick={handlePlayPause}
-        className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all px-2 py-1 rounded-full"
-        title={t('play_verse')}
-      >
-        <Play size={11} className="ml-0.5" />
-        <span>{t('play')}</span>
-      </button>
-    )
-  }
-
-  // Active state — full compact player
   return (
-    <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-      {/* Play/Pause */}
-      <button
-        onClick={handlePlayPause}
-        className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors shrink-0"
-      >
-        {isThisPlaying ? <Pause size={8} /> : <Play size={8} className="ml-px" />}
-      </button>
-
-      {/* Progress bar */}
+    <div className="flex flex-col flex-1 min-w-0" onClick={e => e.stopPropagation()}>
+      {/* Progress bar — flush top edge of the cell */}
       <div
-        className="w-16 h-1 bg-slate-200 rounded-full cursor-pointer relative shrink-0"
+        className="h-1 bg-slate-100 cursor-pointer relative shrink-0"
         onClick={handleSeek}
       >
         <div
-          className="h-full bg-emerald-500 rounded-full transition-all duration-100"
+          className="h-full bg-emerald-500 transition-[width] duration-100"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Time */}
-      <span className="text-[8px] text-slate-400 tabular-nums shrink-0">
-        {formatTime(currentTime)}
-      </span>
-
-      {/* Reciter gear */}
-      <div className="relative" ref={menuRef}>
+      {/* Controls row */}
+      <div className="flex items-stretch flex-1 min-w-0">
+        {/* Play / Pause */}
         <button
-          onClick={(e) => { e.stopPropagation(); setShowReciterMenu(!showReciterMenu) }}
-          className="p-0.5 text-slate-400 hover:text-slate-600 transition-colors"
-          title={t('change_reciter')}
+          onClick={handlePlayPause}
+          className="w-8 flex items-center justify-center border-r border-gray-200/60 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors shrink-0"
+          title={isThisPlaying ? t('play') : t('play_verse')}
         >
-          <Settings size={10} />
+          {isLoading && isThisVerse ? (
+            <Loader2 size={11} className="animate-spin text-emerald-500" />
+          ) : isThisPlaying ? (
+            <Pause size={11} />
+          ) : (
+            <Play size={11} />
+          )}
         </button>
 
-        {showReciterMenu && (
-          <div className="absolute bottom-6 right-0 rtl:right-auto rtl:left-0 bg-white rounded-lg shadow-lg border border-slate-100 p-1 min-w-[120px] z-50">
-            {RECITERS.map(r => (
-              <button
-                key={r.id}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setReciter(r.recitationId)
-                  setShowReciterMenu(false)
-                }}
-                className={`w-full text-left px-2 py-1 rounded text-[10px] transition-colors ${
-                  currentReciterId === r.recitationId
-                    ? 'bg-emerald-50 text-emerald-700 font-medium'
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {r.name}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Stop */}
+        <button
+          onClick={handleStop}
+          className="w-8 flex items-center justify-center border-r border-gray-200/60 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors shrink-0"
+          title={t('stop')}
+        >
+          <Square size={9} />
+        </button>
+
+        {/* Time */}
+        <div className="flex items-center justify-center px-2 text-[9px] text-gray-400 tabular-nums whitespace-nowrap select-none flex-1 min-w-0">
+          {formatTime(verseElapsed)} / {formatTime(duration)}
+        </div>
+
+        {/* Reciter */}
+        <div className="relative border-l border-gray-200/60 shrink-0" ref={menuRef}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowReciterMenu(!showReciterMenu) }}
+            className="h-full px-2 flex items-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
+            title={t('change_reciter')}
+          >
+            <Settings size={11} />
+          </button>
+
+          {showReciterMenu && (
+            <div className="absolute bottom-full right-0 mb-px bg-white border border-gray-200/60 min-w-[130px] z-50">
+              {RECITERS.map(r => (
+                <button
+                  key={r.id}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setReciter(r.recitationId)
+                    setShowReciterMenu(false)
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-[10px] transition-colors border-b border-slate-100 last:border-b-0 ${
+                    currentReciterId === r.recitationId
+                      ? 'bg-emerald-50 text-emerald-700 font-medium'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

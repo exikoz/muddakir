@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { Verse, MatchType } from '../../../types/quran'
 import { useStore } from '../../../store'
 import { useWordBuilderStore } from '../../../store/wordBuilderStore'
+import { useWordHighlighting } from '../../audio/useWordHighlighting'
 import {
   getHoverClasses,
   getClickedWordClasses,
@@ -26,13 +27,18 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
   // Word builder state
   const builderWords = useWordBuilderStore(s => s.words)
   const addWord = useWordBuilderStore(s => s.addWord)
-
-  // Also sync to main store for executeMultiWordSearch compatibility
   const addSelectedWord = useStore(s => s.addSelectedWord)
   const removeSelectedWord = useStore(s => s.removeSelectedWord)
   const mainSelectedWords = useStore(s => s.selectedWords)
 
   const hoverClasses = getHoverClasses(searchOptions)
+
+  // Word-by-word audio highlighting
+  const totalWords = useMemo(
+    () => verse.words.filter(w => w.char_type_name !== 'end').length,
+    [verse.words]
+  )
+  const recitingWordIndex = useWordHighlighting(verse.verse_key, totalWords)
 
   // Which word indices in THIS node are selected in the word builder
   const selectedIndicesInThisNode = useMemo(() => {
@@ -47,10 +53,8 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
     const word = verse.words[wordIndex]
     if (!word || word.char_type_name === 'end') return
 
-    // Toggle in word builder store
     addWord(sourceNodeId, wordIndex, word.text_simple || word.text)
 
-    // Sync to main store for executeMultiWordSearch
     const existsInMain = mainSelectedWords.findIndex(
       w => w.nodeId === sourceNodeId && w.wordIndex === wordIndex
     )
@@ -68,18 +72,23 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
   }, [verse.words, verse.verse_key, matchedTokens, matchType, searchQuery])
 
   return (
-    <div className="font-arabic text-right text-2xl leading-loose text-slate-800" dir="rtl">
+    <div className="font-arabic text-right text-2xl leading-loose text-slate-800 w-full" dir="rtl">
       {verse.words.map((word, index) => {
         if (word.char_type_name === 'end') return null
 
+        const isReciting = recitingWordIndex === index
         const isActive = activeWordIndex === index
         const isSelected = selectedIndicesInThisNode.has(index)
         const highlightType = wordHighlights?.get(index)
 
-        let className = 'inline-block px-1 rounded-md cursor-pointer transition-all mx-0.5 '
+        let className = 'inline-block px-1 rounded-md cursor-pointer transition-all duration-150 mx-0.5 '
         let title = word.translation || word.text
 
-        if (isSelected) {
+        // Priority: reciting > selected > active search > match highlight > idle
+        if (isReciting) {
+          className += 'bg-sky-100 text-sky-900 ring-2 ring-sky-400/50 scale-[1.03]'
+          title = word.translation || word.text
+        } else if (isSelected) {
           className += 'bg-emerald-200 text-emerald-900 border border-emerald-400 shadow-sm ring-2 ring-emerald-300'
           title = `Selected: "${word.text}"`
         } else if (isActive) {
@@ -101,6 +110,7 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
             key={index}
             onClick={() => handleWordClick(index)}
             className={className}
+            data-word-index={index}
             title={title}
           >
             {word.text}

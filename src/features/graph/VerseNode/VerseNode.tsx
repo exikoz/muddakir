@@ -1,8 +1,10 @@
 import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { useTranslation } from 'react-i18next'
+import { ChevronUp, ChevronDown, BookOpen, Play, Loader2 } from 'lucide-react'
 import type { VerseNodeData } from '../../../types/graph'
 import { useStore } from '../../../store'
+import { useAudioStore } from '../../audio/audioStore'
 import { getSurahName } from '../../mushaf/surahNames'
 import ArabicText from './ArabicText'
 import NodeActions from './NodeActions'
@@ -11,87 +13,93 @@ import MiniPlayer from '../../audio/MiniPlayer'
 function VerseNode({ id, data }: NodeProps) {
   const { t, i18n } = useTranslation('graph')
   const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery, matchType } = data as VerseNodeData
-  const addSequentialVerse = useStore(state => state.addSequentialVerse)
-  const edges = useStore(state => state.edges)
-  
-  // Check if we already have prev/next verses connected
-  const hasPrevVerse = edges.some(e => 
-    e.target === id && e.data?.edgeType === 'sequential-prev'
-  )
-  const hasNextVerse = edges.some(e => 
-    e.source === id && e.data?.edgeType === 'sequential-next'
-  )
-  
-  const handlePrevVerse = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    addSequentialVerse(id as string, 'prev')
-  }
-  
-  const handleNextVerse = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    addSequentialVerse(id as string, 'next')
-  }
-  
+  const addSequentialVerse = useStore(s => s.addSequentialVerse)
+  const edges = useStore(s => s.edges)
+
+  // Audio
+  const currentVerseKey = useAudioStore(s => s.currentVerseKey)
+  const isPlaying = useAudioStore(s => s.isPlaying)
+  const isAudioLoading = useAudioStore(s => s.isLoading)
+  const currentTime = useAudioStore(s => s.currentTime)
+  const playVerse = useAudioStore(s => s.playVerse)
+  const pauseAudio = useAudioStore(s => s.pause)
+  const currentReciterId = useAudioStore(s => s.currentReciterId)
+
+  const isThisVerse = currentVerseKey === verse.verse_key
+  const isThisPlaying = isThisVerse && isPlaying
+  const isThisActive = isThisVerse && (isPlaying || (currentTime > 0 && useAudioStore.getState().verseStartTime > 0))
+
+  const hasPrevVerse = edges.some(e => e.target === id && e.data?.edgeType === 'sequential-prev')
+  const hasNextVerse = edges.some(e => e.source === id && e.data?.edgeType === 'sequential-next')
+
   const [chapterStr, ayahStr] = verse.verse_key.split(':')
   const chapter = parseInt(chapterStr, 10)
   const isFirstVerse = parseInt(ayahStr, 10) === 1
   const surahName = getSurahName(chapter, i18n.language)
 
-  return (
-    <div className="min-w-[300px] max-w-[500px] bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-xl group flex flex-col">
-      {/* Handles - completely invisible, no dots */}
-      <Handle
-        id="top-src"
-        type="source"
-        position={Position.Top}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
-      <Handle
-        id="top-tgt"
-        type="target"
-        position={Position.Top}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
-      <Handle
-        id="left-src"
-        type="source"
-        position={Position.Left}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
-      <Handle
-        id="left-tgt"
-        type="target"
-        position={Position.Left}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
+  const handlePrevVerse = (e: React.MouseEvent) => { e.stopPropagation(); addSequentialVerse(id as string, 'prev') }
+  const handleNextVerse = (e: React.MouseEvent) => { e.stopPropagation(); addSequentialVerse(id as string, 'next') }
+  const handlePlayPause = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isThisPlaying) pauseAudio()
+    else playVerse(verse.verse_key, currentReciterId)
+  }
+  const handleOpenMushaf = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const opener = (window as Record<string, any>).__mushafOpener
+    if (opener) opener(verse.verse_key)
+  }
 
-      {/* Top Bar - Navigation and Tools */}
-      <div className="border-b border-slate-50 px-4 py-2 flex items-center justify-between">
-        {!hasPrevVerse && !isFirstVerse ? (
-          <button
-            onClick={handlePrevVerse}
-            className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
-            title={t('load_previous')}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m18 15-6-6-6 6"/>
-            </svg>
-            <span>{t('previous')}</span>
-          </button>
-        ) : (
-          <div />
-        )}
-        <span className="text-xs font-semibold text-slate-400 tracking-wider">
-          {surahName} · {verse.verse_key}
-        </span>
+  // Quiet grid: light borders, muted text that darkens on node hover (via `group`)
+  const navW = 'w-[120px]'
+  const border = 'border-gray-200/60'
+  const cellBase = 'flex items-center text-[11px] font-medium transition-colors'
+  const quietCell = 'text-gray-400 group-hover:text-gray-600 hover:!text-gray-700 hover:bg-gray-50'
+  const handleCls = '!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0'
+
+  return (
+    <div className={`group min-w-[420px] max-w-[520px] bg-white rounded-xl border ${border} overflow-hidden flex flex-col`}>
+      {/* Invisible handles */}
+      <Handle id="top-src" type="source" position={Position.Top} className={handleCls} />
+      <Handle id="top-tgt" type="target" position={Position.Top} className={handleCls} />
+      <Handle id="left-src" type="source" position={Position.Left} className={handleCls} />
+      <Handle id="left-tgt" type="target" position={Position.Left} className={handleCls} />
+
+      {/* ── TOP BAR ── */}
+      <div className={`flex items-stretch border-b ${border} h-9`}>
+        {/* Left: Previous Verse */}
+        <div className={`${navW} shrink-0 border-r ${border}`}>
+          {!hasPrevVerse && !isFirstVerse ? (
+            <button
+              onClick={handlePrevVerse}
+              className={`${cellBase} ${quietCell} h-full w-full justify-start pl-3 gap-1.5`}
+              title={t('load_previous')}
+            >
+              <ChevronUp size={12} />
+              <span>{t('previous_verse')}</span>
+            </button>
+          ) : (
+            <div className="h-full" />
+          )}
+        </div>
+
+        {/* Center: Verse title */}
+        <div className="flex-1 flex items-center justify-center px-3 min-w-0">
+          <span className="text-[11px] font-semibold text-gray-400 group-hover:text-gray-500 tracking-wide truncate transition-colors">
+            {surahName} · {verse.verse_key}
+          </span>
+        </div>
+
+        {/* Right: Action buttons */}
         <NodeActions nodeId={id as string} verse={verse} />
       </div>
 
-      <div className="p-6 flex-1">
-        {/* Arabic Text */}
-        <ArabicText 
-          verse={verse} 
-          sourceNodeId={id as string} 
+      {/* ── BODY ── */}
+      <div className="px-5 py-4 flex-1 min-h-[130px] flex flex-col justify-center items-end">
+        <ArabicText
+          verse={verse}
+          sourceNodeId={id as string}
           activeWordIndex={activeWordIndex}
           activeWordMatchType={activeWordMatchType}
           matchedTokens={matchedTokens}
@@ -100,75 +108,64 @@ function VerseNode({ id, data }: NodeProps) {
           searchQuery={searchQuery}
         />
 
-        {/* Translation */}
         {verse.translation && (
-          <p className="text-sm text-slate-600 leading-relaxed mt-4 pt-4 border-t border-slate-50">
+          <p className={`text-sm text-gray-500 group-hover:text-gray-600 leading-relaxed mt-3 pt-3 border-t ${border} transition-colors`}>
             {verse.translation}
           </p>
         )}
       </div>
-        
-      {/* Bottom Bar - Next Button, Audio, and Mushaf Link */}
-      <div className="border-t border-slate-50 px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-1">
+
+      {/* ── BOTTOM BAR ── */}
+      <div className={`flex items-stretch border-t ${border} h-9`}>
+        {/* Left: Next Verse */}
+        <div className={`${navW} shrink-0 border-r ${border}`}>
           {!hasNextVerse ? (
             <button
               onClick={handleNextVerse}
-              className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-700 font-medium transition-all px-2 py-1 rounded-full hover:bg-slate-50"
+              className={`${cellBase} ${quietCell} h-full w-full justify-start pl-3 gap-1.5`}
               title={t('load_next')}
             >
-              <span>{t('next')}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m6 9 6 6 6-6"/>
-              </svg>
+              <ChevronDown size={12} />
+              <span>{t('next_verse')}</span>
             </button>
           ) : (
-            <div />
+            <div className="h-full" />
           )}
-          <MiniPlayer verseKey={verse.verse_key} />
         </div>
-        
+
+        {/* Center: Play button OR inline audio player */}
+        {isThisActive ? (
+          <MiniPlayer verseKey={verse.verse_key} />
+        ) : (
+          <button
+            onClick={handlePlayPause}
+            className={`${cellBase} ${quietCell} flex-1 justify-center gap-1.5`}
+            title={t('play_verse')}
+          >
+            {isAudioLoading && isThisVerse ? (
+              <Loader2 size={11} className="animate-spin text-emerald-500" />
+            ) : (
+              <Play size={11} />
+            )}
+            <span>{isAudioLoading && isThisVerse ? '…' : t('play')}</span>
+          </button>
+        )}
+
+        {/* Right: Read in Mushaf */}
         <button
-          onClick={(e) => {
-            e.stopPropagation()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const openMushafToVerse = (window as Record<string, any>).__mushafOpener
-            if (openMushafToVerse) openMushafToVerse(verse.verse_key)
-          }}
-          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"
+          onClick={handleOpenMushaf}
+          className={`${cellBase} ${quietCell} ${navW} shrink-0 justify-center gap-1.5 border-l ${border}`}
           title={t('open_in_mushaf')}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-          </svg>
-          {t('read_in_mushaf')}
+          <BookOpen size={11} />
+          <span>{t('read_in_mushaf')}</span>
         </button>
       </div>
 
-      <Handle
-        id="right-src"
-        type="source"
-        position={Position.Right}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
-      <Handle
-        id="right-tgt"
-        type="target"
-        position={Position.Right}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
-      <Handle
-        id="bottom-src"
-        type="source"
-        position={Position.Bottom}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
-      <Handle
-        id="bottom-tgt"
-        type="target"
-        position={Position.Bottom}
-        className="!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0"
-      />
+      <Handle id="right-src" type="source" position={Position.Right} className={handleCls} />
+      <Handle id="right-tgt" type="target" position={Position.Right} className={handleCls} />
+      <Handle id="bottom-src" type="source" position={Position.Bottom} className={handleCls} />
+      <Handle id="bottom-tgt" type="target" position={Position.Bottom} className={handleCls} />
     </div>
   )
 }

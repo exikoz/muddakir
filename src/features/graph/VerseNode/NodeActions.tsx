@@ -1,17 +1,24 @@
 import { memo } from 'react'
-import { X, Sparkles, Info } from 'lucide-react'
+import { X, Sparkles, Info, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../../store'
 import { useAIScopeStore } from '../../../store/aiScopeStore'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { useSidePanelStore } from '../../../store/sidePanelStore'
-import BookmarkButton from '../../user/BookmarkButton'
+import { useUserStore } from '../../../store/userStore'
 import type { Verse } from '../../../types/quran'
 
 interface Props {
   nodeId: string
   verse: Verse
 }
+
+/**
+ * Quiet grid cell: very muted by default, darkens on node hover (group-hover),
+ * and each button has its own hover color flood.
+ */
+const cell =
+  'w-9 h-full flex items-center justify-center border-l border-gray-200/60 transition-colors text-gray-400 group-hover:text-gray-500'
 
 function NodeActions({ nodeId, verse }: Props) {
   const { t } = useTranslation('aiScope')
@@ -23,8 +30,29 @@ function NodeActions({ nodeId, verse }: Props) {
   const rightPanel = useSidePanelStore(s => s.rightPanel)
   const openPanel = useSidePanelStore(s => s.open)
 
+  const isLoggedIn = useUserStore(s => s.isLoggedIn)
+  const bookmarkedVerseKeys = useUserStore(s => s.bookmarkedVerseKeys)
+  const toggleBookmark = useUserStore(s => s.toggleBookmark)
+  const login = useUserStore(s => s.login)
+  const isBookmarked = bookmarkedVerseKeys.has(verse.verse_key)
+
   const isInContext = contextItems.some(c => c.verseKey === verse.verse_key)
   const isDetailActive = detailVerse?.verse_key === verse.verse_key
+
+  function handleBookmark(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!isLoggedIn) { login(); return }
+    toggleBookmark(verse.verse_key)
+  }
+
+  function handleOpenDetail(e: React.MouseEvent) {
+    e.stopPropagation()
+    const prev = rightPanel === 'aiScope' ? 'aiScope' as const
+      : rightPanel === 'discovery' ? 'discovery' as const
+      : null
+    openDetail(verse, prev)
+    openPanel('verseDetail')
+  }
 
   function handleAddToAIScope(e: React.MouseEvent) {
     e.stopPropagation()
@@ -37,47 +65,47 @@ function NodeActions({ nodeId, verse }: Props) {
     openPanel('aiScope')
   }
 
-  function handleOpenDetail(e: React.MouseEvent) {
-    e.stopPropagation()
-    // Track which panel was open before so we can restore on back
-    const prev = rightPanel === 'aiScope' ? 'aiScope' as const
-      : rightPanel === 'discovery' ? 'discovery' as const
-      : null
-    openDetail(verse, prev)
-    openPanel('verseDetail')
-  }
-
   return (
-    <div className="flex items-center gap-1">
-      <BookmarkButton verseKey={verse.verse_key} />
+    <div className="flex items-stretch shrink-0">
+      <button
+        onClick={handleBookmark}
+        className={`${cell} ${
+          isBookmarked
+            ? '!text-amber-500 bg-amber-50'
+            : 'hover:!text-amber-500 hover:bg-amber-50'
+        }`}
+        title={isBookmarked ? 'Remove bookmark' : 'Bookmark verse'}
+      >
+        {isBookmarked ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
+      </button>
+
       <button
         onClick={handleOpenDetail}
-        className={`p-1.5 rounded-full shadow-sm border transition-all ${
+        className={`${cell} ${
           isDetailActive
-            ? 'bg-emerald-50 text-emerald-500 border-emerald-200 opacity-100'
-            : 'bg-white text-slate-400 border-slate-100 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-emerald-500 hover:bg-emerald-50 hover:border-emerald-200'
+            ? '!text-emerald-500 bg-emerald-50'
+            : 'hover:!text-emerald-500 hover:bg-emerald-50'
         }`}
         title={t('verse_details')}
       >
-        <Info size={12} />
+        <Info size={13} />
       </button>
+
       <button
         onClick={handleAddToAIScope}
-        className={`p-1.5 rounded-full shadow-sm border transition-all ${
+        className={`${cell} ${
           isInContext
-            ? 'bg-purple-50 text-purple-500 border-purple-200 opacity-100'
-            : 'bg-white text-slate-400 border-slate-100 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-purple-500 hover:bg-purple-50 hover:border-purple-200'
+            ? '!text-violet-500 bg-violet-50'
+            : 'hover:!text-violet-500 hover:bg-violet-50'
         }`}
         title={isInContext ? t('in_ai_scope_context') : t('add_to_ai_scope')}
       >
-        <Sparkles size={12} />
+        <Sparkles size={13} />
       </button>
+
       <button
-        onClick={(e) => {
-          e.stopPropagation()
-          deleteNode(nodeId)
-        }}
-        className="p-1.5 rounded-full bg-white shadow-sm border border-slate-100 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all"
+        onClick={(e) => { e.stopPropagation(); deleteNode(nodeId) }}
+        className={`${cell} hover:!text-red-500 hover:bg-red-50`}
         title={t('remove_verse')}
       >
         <X size={14} />

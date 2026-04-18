@@ -1,6 +1,6 @@
 /**
- * Compact single-row audio player for the Verse Detail panel.
- * Play/pause, progress bar, time, and reciter selector — all on one line.
+ * Linear grid audio player for the Verse Detail panel.
+ * All cells flush, separated by 1px borders.
  */
 
 import { Play, Pause } from 'lucide-react'
@@ -46,41 +46,47 @@ export default function AudioPlayer({ verseKey }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-2.5 py-1.5">
-      {/* Play/Pause */}
-      <button
-        onClick={handlePlayPause}
-        className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors shrink-0"
-      >
-        {isThisPlaying ? <Pause size={10} /> : <Play size={10} className="ml-0.5" />}
-      </button>
-
-      {/* Progress bar */}
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      {/* Progress bar — flush top cell */}
       <div
-        className="flex-1 h-1 bg-slate-200 rounded-full cursor-pointer relative min-w-0"
+        className="h-1.5 bg-slate-100 cursor-pointer relative"
         onClick={handleSeek}
       >
         <div
-          className="h-full bg-emerald-500 rounded-full transition-all duration-100"
+          className="h-full bg-emerald-500 transition-[width] duration-100"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Time */}
-      <span className="text-[9px] text-slate-400 shrink-0 w-16 text-center tabular-nums">
-        {isThisVerse ? `${formatTime(currentTime)}/${formatTime(duration)}` : '0:00'}
-      </span>
+      {/* Controls row */}
+      <div className="flex items-stretch h-8 border-t border-slate-200">
+        {/* Play / Pause */}
+        <button
+          onClick={handlePlayPause}
+          className="w-9 flex items-center justify-center border-r border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+        >
+          {isThisPlaying ? <Pause size={12} /> : <Play size={12} />}
+        </button>
 
-      {/* Reciter selector */}
-      <select
-        value={currentReciterId}
-        onChange={e => setReciter(Number(e.target.value))}
-        className="text-[9px] text-slate-500 bg-white border border-slate-200 rounded px-1 py-0.5 outline-none focus:border-emerald-400 shrink-0 max-w-[90px]"
-      >
-        {RECITERS.map(r => (
-          <option key={r.id} value={r.recitationId}>{r.name}</option>
-        ))}
-      </select>
+        {/* Time */}
+        <div className="flex items-center justify-center px-2 border-r border-slate-200 text-[9px] text-slate-400 tabular-nums whitespace-nowrap select-none">
+          {isThisVerse ? `${formatTime(currentTime)} / ${formatTime(duration)}` : '0:00'}
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Reciter selector */}
+        <select
+          value={currentReciterId}
+          onChange={e => setReciter(Number(e.target.value))}
+          className="text-[9px] text-slate-500 bg-transparent border-l border-slate-200 px-2 outline-none hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          {RECITERS.map(r => (
+            <option key={r.id} value={r.recitationId}>{r.name}</option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 }
