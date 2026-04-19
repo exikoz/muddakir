@@ -16,6 +16,7 @@ import { searchWord, searchRegex, buildAdjacentPattern } from '../services/quran
 import { getLayoutedElements } from '../lib/autoLayout'
 import { useSidePanelStore } from './sidePanelStore'
 import { useWordBuilderStore } from './wordBuilderStore'
+import { useDiscoveryCacheStore } from './discoveryCacheStore'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getReactFlowInstance = () => (window as Record<string, any>).__reactFlowInstance as { fitView: (opts: Record<string, unknown>) => void; getViewport: () => { zoom: number; x: number; y: number } } | undefined
@@ -78,6 +79,7 @@ interface GraphState {
   discoveryLoading: boolean
   setDiscoveryOpen: (open: boolean) => void
   searchDiscovery: (query: string) => Promise<void>
+  showNodeDiscovery: (nodeId: string) => void
   
   // Debug settings
   useAutoLayout: boolean
@@ -366,16 +368,26 @@ export const useStore = create<GraphState>((set, get) => ({
     }
     
     // Update discovery panel
+    const discoverySearchMode = searchOptions.lemma ? 'Lemma' 
+      : searchOptions.root ? 'Root'
+      : searchOptions.fuzzy ? 'Fuzzy'
+      : searchOptions.semantic ? 'Semantic'
+      : 'Exact'
+    const discoveryTerm = explorer.getCurrentSearchTerm()
+    
     set({
       discoveryResults: result.resultsForDiscovery,
       isDiscoveryOpen: result.shouldOpenDiscovery,
-      currentSearchTerm: explorer.getCurrentSearchTerm(),
-      discoverySearchMode: searchOptions.lemma ? 'Lemma' 
-        : searchOptions.root ? 'Root'
-        : searchOptions.fuzzy ? 'Fuzzy'
-        : searchOptions.semantic ? 'Semantic'
-        : 'Exact',
+      currentSearchTerm: discoveryTerm,
+      discoverySearchMode,
     })
+    
+    // Cache results for this node so user can revisit later
+    if (result.resultsForDiscovery.length > 0) {
+      useDiscoveryCacheStore.getState().cacheResults(nodeId, result.resultsForDiscovery, discoveryTerm, discoverySearchMode)
+    }
+    useDiscoveryCacheStore.getState().setActiveNodeId(nodeId)
+    
     if (result.shouldOpenDiscovery) useSidePanelStore.getState().open('discovery')
     
     // Fit view to show parent and all new children
@@ -455,6 +467,9 @@ export const useStore = create<GraphState>((set, get) => ({
         currentSearchTerm: '',
       })
     }
+    
+    // Evict discovery cache for deleted nodes
+    useDiscoveryCacheStore.getState().evict(result.deletedIds)
     
     get().pushHistory()
   },
@@ -724,19 +739,28 @@ export const useStore = create<GraphState>((set, get) => ({
       
       // Update discovery panel
       const allOverflow = [...overflow, ...sorted.filter(r => existingVerseKeys.has(r.verse_key))]
+      const multiDiscoveryMode = activeMode === 'lemma' ? 'Lemma'
+        : activeMode === 'root' ? 'Root'
+        : activeMode === 'fuzzy' ? 'Fuzzy'
+        : activeMode === 'semantic' ? 'Semantic'
+        : 'Exact'
+      
       set({
         discoveryResults: allOverflow,
         isDiscoveryOpen: allOverflow.length > 0,
         currentSearchTerm: displayQuery,
-        discoverySearchMode: activeMode === 'lemma' ? 'Lemma'
-          : activeMode === 'root' ? 'Root'
-          : activeMode === 'fuzzy' ? 'Fuzzy'
-          : activeMode === 'semantic' ? 'Semantic'
-          : 'Exact',
+        discoverySearchMode: multiDiscoveryMode,
         discoveryLoading: false,
         selectedWords: [],
       })
       useWordBuilderStore.getState().clear()
+      
+      // Cache results for this node
+      if (allOverflow.length > 0) {
+        useDiscoveryCacheStore.getState().cacheResults(sourceNodeId, allOverflow, displayQuery, multiDiscoveryMode)
+      }
+      useDiscoveryCacheStore.getState().setActiveNodeId(sourceNodeId)
+      
       if (allOverflow.length > 0) useSidePanelStore.getState().open('discovery')
       
       // Fit view
@@ -761,6 +785,27 @@ export const useStore = create<GraphState>((set, get) => ({
   // Discovery drawer
   setDiscoveryOpen: (open) => set({ isDiscoveryOpen: open }),
   
+  showNodeDiscovery: (nodeId) => {
+    const cached = useDiscoveryCacheStore.getState().getCached(nodeId)
+    if (!cached) return
+    
+    const { explorer } = get()
+    
+    set({
+      discoveryResults: cached.results,
+      isDiscoveryOpen: true,
+      currentSearchTerm: cached.searchTerm,
+      discoverySearchMode: cached.searchMode,
+      discoveryLoading: false,
+    })
+    
+    // Sync explorer search term so addVerseNode picks up the correct searchQuery for the new node
+    explorer.setCurrentSearchTerm(cached.searchTerm)
+    
+    useDiscoveryCacheStore.getState().setActiveNodeId(nodeId)
+    useSidePanelStore.getState().open('discovery')
+  },
+  
   searchDiscovery: async (query) => {
     const trimmed = query.trim()
     if (!trimmed) return
@@ -775,6 +820,9 @@ export const useStore = create<GraphState>((set, get) => ({
       : 'Exact'
     
     set({ discoveryLoading: true, currentSearchTerm: trimmed, discoverySearchMode: activeMode })
+    
+    // Manual search from the panel — not tied to any node
+    useDiscoveryCacheStore.getState().setActiveNodeId(null)
     
     try {
       const results = await searchWord(trimmed, searchOptions, 50)

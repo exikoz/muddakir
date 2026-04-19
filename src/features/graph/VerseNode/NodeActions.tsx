@@ -1,11 +1,12 @@
 import { memo } from 'react'
-import { X, Sparkles, Info, Bookmark, BookmarkCheck } from 'lucide-react'
+import { X, Sparkles, Info, Bookmark, BookmarkCheck, Layers } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../../store'
 import { useAIScopeStore } from '../../../store/aiScopeStore'
 import { useVerseDetailStore } from '../../../store/verseDetailStore'
 import { useSidePanelStore } from '../../../store/sidePanelStore'
 import { useUserStore } from '../../../store/userStore'
+import { useDiscoveryCacheStore } from '../../../store/discoveryCacheStore'
 import type { Verse } from '../../../types/quran'
 
 interface Props {
@@ -23,6 +24,7 @@ const cell =
 function NodeActions({ nodeId, verse }: Props) {
   const { t } = useTranslation('aiScope')
   const deleteNode = useStore(s => s.deleteNode)
+  const showNodeDiscovery = useStore(s => s.showNodeDiscovery)
   const addContextItem = useAIScopeStore(s => s.addContextItem)
   const contextItems = useAIScopeStore(s => s.contextItems)
   const openDetail = useVerseDetailStore(s => s.openDetail)
@@ -35,6 +37,9 @@ function NodeActions({ nodeId, verse }: Props) {
   const toggleBookmark = useUserStore(s => s.toggleBookmark)
   const login = useUserStore(s => s.login)
   const isBookmarked = bookmarkedVerseKeys.has(verse.verse_key)
+
+  const hasCachedResults = useDiscoveryCacheStore(s => s.cache.has(nodeId))
+  const isActiveDiscoveryNode = useDiscoveryCacheStore(s => s.activeNodeId === nodeId)
 
   const isInContext = contextItems.some(c => c.verseKey === verse.verse_key)
   const isDetailActive = detailVerse?.verse_key === verse.verse_key
@@ -65,8 +70,26 @@ function NodeActions({ nodeId, verse }: Props) {
     openPanel('aiScope')
   }
 
+  function handleShowResults(e: React.MouseEvent) {
+    e.stopPropagation()
+    showNodeDiscovery(nodeId)
+  }
+
   return (
     <div className="flex items-stretch shrink-0">
+      {hasCachedResults && (
+        <button
+          onClick={handleShowResults}
+          className={`${cell} ${
+            isActiveDiscoveryNode && rightPanel === 'discovery'
+              ? '!text-cyan-500 bg-cyan-50'
+              : 'hover:!text-cyan-500 hover:bg-cyan-50'
+          }`}
+          title={t('show_search_results', 'Show search results')}
+        >
+          <Layers size={13} />
+        </button>
+      )}
       <button
         onClick={handleBookmark}
         className={`${cell} ${

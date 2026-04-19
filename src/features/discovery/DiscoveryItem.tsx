@@ -3,6 +3,7 @@ import { Plus, Check, Trophy, Tag, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { SearchResult, Verse } from '../../types/quran'
 import { useStore } from '../../store'
+import { useDiscoveryCacheStore } from '../../store/discoveryCacheStore'
 import { getBadgeClasses, getMatchHighlightClasses } from '../../lib/modeColors'
 import { fetchVerse } from '../../services/quranApi'
 import { getWordHighlights } from '../../lib/highlightWords'
@@ -14,9 +15,9 @@ interface Props {
 function DiscoveryItem({ result }: Props) {
   const { t } = useTranslation('discovery')
   const addVerseNode = useStore(s => s.addVerseNode)
-  const explorer = useStore(s => s.explorer)
   const nodes = useStore(s => s.nodes)
   const currentSearchTerm = useStore(s => s.currentSearchTerm)
+  const activeNodeId = useDiscoveryCacheStore(s => s.activeNodeId)
 
   const [verse, setVerse] = useState<Verse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -36,8 +37,7 @@ function DiscoveryItem({ result }: Props) {
   const frozenMatchType = result.matchType
 
   async function handleAdd() {
-    const lastSearchSourceId = explorer.getLastSearchSourceId()
-    await addVerseNode(result.verse_key, lastSearchSourceId || undefined, {
+    await addVerseNode(result.verse_key, activeNodeId || undefined, {
       matchedTokens: result.matchedTokens,
       tokenTypes: result.tokenTypes,
       matchType: result.matchType,

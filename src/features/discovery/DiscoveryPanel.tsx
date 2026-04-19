@@ -3,6 +3,7 @@ import { X, Search, Loader2, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 import { useSidePanelStore } from '../../store/sidePanelStore'
+import { useDiscoveryCacheStore } from '../../store/discoveryCacheStore'
 import { MODE_COLORS } from '../../lib/modeColors'
 import type { SearchOptions } from '../../types/quran'
 import DiscoveryItem from './DiscoveryItem'
@@ -26,6 +27,13 @@ export default function DiscoveryPanel() {
   const searchDiscovery = useStore(s => s.searchDiscovery)
   const searchOptions = useStore(s => s.searchOptions)
   const setSearchOptions = useStore(s => s.setSearchOptions)
+  const activeNodeId = useDiscoveryCacheStore(s => s.activeNodeId)
+  
+  // Resolve the source verse key for display
+  const nodes = useStore(s => s.nodes)
+  const sourceVerseKey = activeNodeId
+    ? nodes.find(n => n.id === activeNodeId && n.type === 'verse')?.data?.verse?.verse_key ?? null
+    : null
 
   const [inputValue, setInputValue] = useState('')
   const [modeOpen, setModeOpen] = useState(false)
@@ -167,13 +175,18 @@ export default function DiscoveryPanel() {
 
         {/* Info badge: which mode was used for current results */}
         {discoverySearchMode && results.length > 0 && !discoveryLoading && (
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 flex-wrap">
             <span className={`w-1.5 h-1.5 rounded-full ${MODE_OPTIONS.find(o => o.label === discoverySearchMode)?.dot ?? 'bg-slate-400'}`} />
             {t('results_from')} <span className="font-semibold text-slate-700">{discoverySearchMode}</span> {t('search_suffix')}
             {currentSearchTerm && (
               <>
                 {' '}{t('for_term')} "<span className="font-semibold text-slate-700 font-arabic" dir="rtl">{currentSearchTerm}</span>"
               </>
+            )}
+            {sourceVerseKey && (
+              <span className="text-slate-400 ml-1">
+                · from <span className="font-semibold text-slate-600">{sourceVerseKey}</span>
+              </span>
             )}
           </div>
         )}
