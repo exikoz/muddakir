@@ -18,6 +18,10 @@ export interface NoteNodeData extends Record<string, unknown> {
   title: string
   text: string
   color: string
+  createdAt: number
+  updatedAt: number
+  width?: number
+  height?: number
 }
 
 export interface VerseEdgeData extends Record<string, unknown> {
@@ -32,8 +36,21 @@ export type VerseNode = Node<VerseNodeData, 'verse'>
 export type NoteNode = Node<NoteNodeData, 'note'>
 export type VerseEdge = Edge<VerseEdgeData, 'verse'>
 
+export interface ExplorerSnapshot {
+  nodes: [string, import('../core/verseExplorer').ExplorationNode][]
+  lastSearchSourceId: string | null
+  currentSearchTerm: string
+}
+
+export interface DiscoveryCacheSnapshot {
+  cache: [string, import('../store/discoveryCacheStore').CachedDiscovery][]
+  activeNodeId: string | null
+}
+
 export interface Snapshot {
   nodes: VerseNode[]
   edges: VerseEdge[]
+  explorerState: ExplorerSnapshot
+  discoveryCache: DiscoveryCacheSnapshot
   timestamp: number
 }

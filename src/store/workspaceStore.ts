@@ -70,6 +70,8 @@ function restoreState(data: WorkspaceData) {
   const initialSnapshot = {
     nodes: data.nodes,
     edges: data.edges,
+    explorerState: data.explorerState,
+    discoveryCache: { cache: [], activeNodeId: null },
     timestamp: Date.now(),
   }
 

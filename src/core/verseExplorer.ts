@@ -357,6 +357,15 @@ export class VerseExplorer {
   }
 
   /**
+   * Register a pre-built node directly (e.g. sequential verses that are already fetched).
+   * Skips the fetch + duplicate check of addVerse.
+   */
+  registerNode(node: ExplorationNode): void {
+    this.nodes.set(node.id, node)
+    console.log(`[VerseExplorer] Registered node ${node.id} (${node.verse.verse_key})`)
+  }
+
+  /**
    * Clear all nodes (reset exploration)
    */
   clear(): void {

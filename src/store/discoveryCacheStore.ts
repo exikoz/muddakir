@@ -37,6 +37,12 @@ interface DiscoveryCacheState {
 
   /** Check if a node has cached results */
   has: (nodeId: string) => boolean
+
+  /** Export current cache state for undo/redo snapshots */
+  exportSnapshot: () => { cache: [string, CachedDiscovery][]; activeNodeId: string | null }
+
+  /** Restore cache state from an undo/redo snapshot */
+  restoreSnapshot: (snapshot: { cache: [string, CachedDiscovery][]; activeNodeId: string | null }) => void
 }
 
 export const useDiscoveryCacheStore = create<DiscoveryCacheState>((set, get) => ({
@@ -74,5 +80,19 @@ export const useDiscoveryCacheStore = create<DiscoveryCacheState>((set, get) => 
 
   has: (nodeId) => {
     return get().cache.has(nodeId)
+  },
+
+  exportSnapshot: () => {
+    return {
+      cache: Array.from(get().cache.entries()),
+      activeNodeId: get().activeNodeId,
+    }
+  },
+
+  restoreSnapshot: (snapshot) => {
+    set({
+      cache: new Map(snapshot.cache),
+      activeNodeId: snapshot.activeNodeId,
+    })
   },
 }))
