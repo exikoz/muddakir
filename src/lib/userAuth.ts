@@ -65,7 +65,7 @@ export async function buildLoginUrl(): Promise<string> {
   const codeChallenge = base64url(await sha256(codeVerifier))
   const state = randomString(16)
   const nonce = randomString(16)
-  const redirectUri = `${window.location.origin}/auth/callback`
+  const redirectUri = `${window.location.origin}/api/auth/callback/quran`
 
   // Persist for the callback page
   const pkce: PkceParams = { codeVerifier, state, nonce, redirectUri }

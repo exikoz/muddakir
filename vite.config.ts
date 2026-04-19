@@ -45,6 +45,18 @@ export default defineConfig(({ mode }) => {
       {
         name: 'auth-exchange-proxy',
         configureServer(server) {
+          // OAuth callback redirect — mirrors the Vercel serverless function
+          // QF redirects here; we forward code+state to the SPA callback page
+          server.middlewares.use('/api/auth/callback/quran', (req, res) => {
+            const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
+            const spaCallback = new URL('/auth/callback', `http://${req.headers.host}`)
+            for (const [key, val] of url.searchParams) {
+              spaCallback.searchParams.set(key, val)
+            }
+            res.writeHead(302, { Location: spaCallback.pathname + spaCallback.search })
+            res.end()
+          })
+
           // Token exchange (authorization code → access token)
           server.middlewares.use('/api/auth/exchange', async (req, res) => {
             if (req.method !== 'POST') { res.statusCode = 405; res.end('Method not allowed'); return }
@@ -121,15 +133,48 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
-        // Content API — strips the /api prefix and forwards the auth token
+        // Content API — strips the /api prefix, injects client_credentials token
         '/api/content': {
           target: contentTarget,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
           configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
+            // Cache content token in memory for dev server
+            let devContentToken = ''
+            let devTokenExpiry = 0
+
+            proxy.on('proxyReq', async (proxyReq, req) => {
               proxyReq.setHeader('x-client-id', clientId)
+
+              // If the client sent a user auth token, forward it
+              const userToken = req.headers['x-auth-token']
+              if (userToken) {
+                proxyReq.setHeader('x-auth-token', userToken as string)
+              } else if (devContentToken && Date.now() < devTokenExpiry) {
+                // Use cached client_credentials token
+                proxyReq.setHeader('Authorization', `Bearer ${devContentToken}`)
+              }
             })
+
+            // Pre-fetch a content token on startup
+            ;(async () => {
+              try {
+                const basic = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+                const res = await fetch(authEndpoint, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: new URLSearchParams({ grant_type: 'client_credentials', scope: 'content' }).toString(),
+                })
+                if (res.ok) {
+                  const json = await res.json() as { access_token: string; expires_in: number }
+                  devContentToken = json.access_token
+                  devTokenExpiry = Date.now() + (json.expires_in ?? 3600) * 1000 - 60_000
+                  console.log('[vite] Content API token acquired')
+                }
+              } catch (err) {
+                console.warn('[vite] Failed to get content token:', err)
+              }
+            })()
           },
         },
         // Muddakir backend — MCP + Gemini orchestration (local Express server)
