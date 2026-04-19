@@ -15,5 +15,7 @@
   "note_body_placeholder": "Write your thoughts...",
   "note_rename_hint": "Double-click to rename",
   "note_delete": "Delete note",
-  "note_remove_connection": "Remove connection"
+  "note_remove_connection": "Remove connection",
+  "note_label": "NOTE",
+  "note_edited": "edited"
 }

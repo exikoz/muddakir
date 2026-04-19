@@ -15,5 +15,7 @@
   "note_body_placeholder": "اكتب أفكارك...",
   "note_rename_hint": "انقر مرتين لإعادة التسمية",
   "note_delete": "حذف الملاحظة",
-  "note_remove_connection": "إزالة الاتصال"
+  "note_remove_connection": "إزالة الاتصال",
+  "note_label": "ملاحظة",
+  "note_edited": "تعديل"
 }
