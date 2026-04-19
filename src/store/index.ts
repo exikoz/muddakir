@@ -7,7 +7,7 @@ import {
   type OnEdgesChange,
   type Connection,
 } from '@xyflow/react'
-import type { VerseNode, VerseEdge, NoteNode, Snapshot } from '../types/graph'
+import type { VerseNode, VerseEdge, NoteNode, Snapshot, ExplorerSnapshot, DiscoveryCacheSnapshot } from '../types/graph'
 import type { SearchOptions, SearchResult, Verse } from '../types/quran'
 import { VerseExplorer } from '../core/verseExplorer'
 import type { ExplorationNode } from '../core/verseExplorer'
@@ -94,6 +94,11 @@ interface GraphState {
   canUndo: boolean
   canRedo: boolean
   
+  // History batching (internal) — prevents multiple pushHistory calls per operation
+  _historyBatching: boolean
+  _beginHistoryBatch: () => void
+  _endHistoryBatch: () => void
+  
   // Mushaf panel state
   isMushafOpen: boolean
   mushafChapter: number
@@ -110,6 +115,10 @@ interface GraphState {
   loadMushafChapter: (chapter: number) => Promise<void>
   loadMushafMore: () => Promise<void>
   loadMushafPrev: () => Promise<void>
+
+  // Mobile-specific: search without auto-adding nodes (all results → discovery only)
+  mobileSearchFromWord: (nodeId: string, wordIndex: number) => Promise<void>
+  mobileMultiWordSearch: () => Promise<void>
 }
 
 // Helper: Convert ExplorationNode to ReactFlow VerseNode
@@ -206,6 +215,7 @@ export const useStore = create<GraphState>((set, get) => ({
   historyIndex: -1,
   canUndo: false,
   canRedo: false,
+  _historyBatching: false,
   
   // Mushaf initial state
   isMushafOpen: false,
@@ -293,6 +303,9 @@ export const useStore = create<GraphState>((set, get) => ({
     if (get().useAutoLayout) {
       get()._applyAutoLayout()
     }
+
+    // Single history push for the whole add operation
+    get().pushHistory()
     
     // Center on the new node if it's a root node (no parent)
     if (!parentId) {
@@ -331,6 +344,9 @@ export const useStore = create<GraphState>((set, get) => ({
       return
     }
     
+    // Begin batch — all nodes/edges added here produce a single history entry
+    get()._beginHistoryBatch()
+
     // Add nodes to ReactFlow with proper spacing
     // Edge color should reflect the search mode used, not the per-result engine classification
     const parentNode = explorer.getNode(nodeId)
@@ -389,6 +405,9 @@ export const useStore = create<GraphState>((set, get) => ({
     useDiscoveryCacheStore.getState().setActiveNodeId(nodeId)
     
     if (result.shouldOpenDiscovery) useSidePanelStore.getState().open('discovery')
+
+    // End batch — single history push for the entire search operation
+    get()._endHistoryBatch()
     
     // Fit view to show parent and all new children
     if (result.nodesToAdd.length > 0) {
@@ -409,7 +428,6 @@ export const useStore = create<GraphState>((set, get) => ({
   // Low-level ReactFlow operations
   _addReactFlowNode: (node) => {
     set({ nodes: [...get().nodes, node] })
-    get().pushHistory()
   },
   
   _addReactFlowEdge: (edge) => {
@@ -492,7 +510,7 @@ export const useStore = create<GraphState>((set, get) => ({
       id: `note-${Date.now()}`,
       type: 'note' as const,
       position,
-      data: { title: 'Note', text: '', color: get().lastNoteColor },
+      data: { title: 'Note', text: '', color: get().lastNoteColor, createdAt: Date.now(), updatedAt: Date.now() },
     }
 
     set({ nodes: [...get().nodes, noteNode] })
@@ -539,8 +557,14 @@ export const useStore = create<GraphState>((set, get) => ({
     const verse = await fetchVerse(targetVerseKey)
     if (!verse) return // Verse doesn't exist (end of surah)
     
-    // Create new node
+    // Register with explorer so deleteNode/undo can find it
+    const { explorer } = get()
     const newNodeId = `verse-${targetVerseKey}-${Date.now()}`
+    explorer.registerNode({
+      id: newNodeId,
+      verse,
+      // Sequential verses are standalone — not children of the source node
+    })
     const position = direction === 'prev'
       ? { x: node.position.x, y: node.position.y - 400 }
       : { x: node.position.x, y: node.position.y + 400 }
@@ -576,6 +600,9 @@ export const useStore = create<GraphState>((set, get) => ({
     if (get().useAutoLayout) {
       get()._applyAutoLayout()
     }
+
+    // Single history push for the whole sequential add
+    get().pushHistory()
     
     // Focus on the new node
     setTimeout(() => {
@@ -691,6 +718,9 @@ export const useStore = create<GraphState>((set, get) => ({
       const toAdd = newResults.slice(0, 3)
       const overflow = newResults.slice(3)
       
+      // Begin batch — all nodes/edges added here produce a single history entry
+      get()._beginHistoryBatch()
+
       // Add top results as nodes
       for (const result of toAdd) {
         const verse = await fetchVerse(result.verse_key)
@@ -762,6 +792,9 @@ export const useStore = create<GraphState>((set, get) => ({
       useDiscoveryCacheStore.getState().setActiveNodeId(sourceNodeId)
       
       if (allOverflow.length > 0) useSidePanelStore.getState().open('discovery')
+
+      // End batch — single history push for the entire multi-word search
+      get()._endHistoryBatch()
       
       // Fit view
       if (toAdd.length > 0) {
@@ -778,7 +811,7 @@ export const useStore = create<GraphState>((set, get) => ({
       }
     } catch (err) {
       console.error('[Store] Multi-word search error:', err)
-      set({ discoveryLoading: false })
+      set({ discoveryLoading: false, _historyBatching: false })
     }
   },
   
@@ -861,8 +894,13 @@ export const useStore = create<GraphState>((set, get) => ({
   
   // History
   pushHistory: () => {
-    const { nodes, edges, history, historyIndex } = get()
-    const snapshot: Snapshot = { nodes, edges, timestamp: Date.now() }
+    // If we're inside a batch, skip — the batch-end will push once
+    if (get()._historyBatching) return
+
+    const { nodes, edges, history, historyIndex, explorer } = get()
+    const explorerState: ExplorerSnapshot = explorer.exportState() as ExplorerSnapshot
+    const discoveryCache: DiscoveryCacheSnapshot = useDiscoveryCacheStore.getState().exportSnapshot()
+    const snapshot: Snapshot = { nodes, edges, explorerState, discoveryCache, timestamp: Date.now() }
     const newHistory = history.slice(0, historyIndex + 1)
     newHistory.push(snapshot)
     // Keep last 50 snapshots
@@ -876,10 +914,17 @@ export const useStore = create<GraphState>((set, get) => ({
   },
   
   undo: () => {
-    const { history, historyIndex } = get()
+    const { history, historyIndex, explorer } = get()
     if (historyIndex <= 0) return
     const newIndex = historyIndex - 1
     const snapshot = history[newIndex]
+
+    // Restore explorer state so business logic stays in sync
+    explorer.importState(snapshot.explorerState)
+
+    // Restore discovery cache so per-node results survive undo
+    useDiscoveryCacheStore.getState().restoreSnapshot(snapshot.discoveryCache)
+
     set({
       nodes: snapshot.nodes,
       edges: snapshot.edges,
@@ -890,10 +935,17 @@ export const useStore = create<GraphState>((set, get) => ({
   },
   
   redo: () => {
-    const { history, historyIndex } = get()
+    const { history, historyIndex, explorer } = get()
     if (historyIndex >= history.length - 1) return
     const newIndex = historyIndex + 1
     const snapshot = history[newIndex]
+
+    // Restore explorer state
+    explorer.importState(snapshot.explorerState)
+
+    // Restore discovery cache
+    useDiscoveryCacheStore.getState().restoreSnapshot(snapshot.discoveryCache)
+
     set({
       nodes: snapshot.nodes,
       edges: snapshot.edges,
@@ -901,6 +953,15 @@ export const useStore = create<GraphState>((set, get) => ({
       canUndo: true,
       canRedo: newIndex < history.length - 1,
     })
+  },
+
+  _beginHistoryBatch: () => {
+    set({ _historyBatching: true })
+  },
+
+  _endHistoryBatch: () => {
+    set({ _historyBatching: false })
+    get().pushHistory()
   },
   
   // Mushaf actions
@@ -1029,6 +1090,142 @@ export const useStore = create<GraphState>((set, get) => ({
     // Prefetch previous page
     if (prevPage > 1) {
       fetchChapterVerses(chapter, prevPage - 1).catch(() => {})
+    }
+  },
+
+  // ── Mobile-specific search: discovery-only, no auto-add ──
+
+  mobileSearchFromWord: async (nodeId, wordIndex) => {
+    const { explorer, searchOptions } = get()
+
+    // Call explorer with autoAddCount=0 → all results go to discovery
+    const result = await explorer.searchFromWord(nodeId, wordIndex, searchOptions, 0)
+
+    if (result.nodesToAdd.length === 0 && result.resultsForDiscovery.length === 0) {
+      get().updateNodeData(nodeId, {
+        activeWordIndex: wordIndex,
+        activeWordMatchType: 'none',
+      })
+      return
+    }
+
+    // Update parent node highlight
+    const parentNode = explorer.getNode(nodeId)
+    if (parentNode) {
+      get().updateNodeData(nodeId, {
+        activeWordIndex: parentNode.activeWordIndex,
+        activeWordMatchType: parentNode.matchType,
+      })
+    }
+
+    // ALL results go to discovery (nodesToAdd will be empty since autoAddCount=0)
+    const allResults = [...result.nodesToAdd.map(n => ({
+      verse_key: n.verse.verse_key,
+      matchScore: 1,
+      matchType: n.matchType || ('exact' as const),
+      matchedTokens: n.matchedTokens || [],
+      text: n.verse.text_arabic,
+    })), ...result.resultsForDiscovery]
+
+    const discoverySearchMode = searchOptions.lemma ? 'Lemma'
+      : searchOptions.root ? 'Root'
+      : searchOptions.fuzzy ? 'Fuzzy'
+      : searchOptions.semantic ? 'Semantic'
+      : 'Exact'
+    const discoveryTerm = explorer.getCurrentSearchTerm()
+
+    set({
+      discoveryResults: allResults,
+      isDiscoveryOpen: true,
+      currentSearchTerm: discoveryTerm,
+      discoverySearchMode,
+      discoveryLoading: false,
+    })
+
+    if (allResults.length > 0) {
+      useDiscoveryCacheStore.getState().cacheResults(nodeId, allResults, discoveryTerm, discoverySearchMode)
+    }
+    useDiscoveryCacheStore.getState().setActiveNodeId(nodeId)
+  },
+
+  mobileMultiWordSearch: async () => {
+    const { selectedWords, searchOptions, adjacentMode, explorer } = get()
+    if (selectedWords.length === 0) return
+
+    // 1 word → use mobileSearchFromWord
+    if (selectedWords.length === 1) {
+      const w = selectedWords[0]
+      set({ selectedWords: [] })
+      useWordBuilderStore.getState().clear()
+      await get().mobileSearchFromWord(w.nodeId, w.wordIndex)
+      return
+    }
+
+    // 2+ words → adjacent regex or free search, but ALL results to discovery
+    const sourceNodeId = selectedWords[0].nodeId
+    const wordTexts = selectedWords.map(w => w.text)
+    const displayQuery = wordTexts.join(' ')
+
+    set({ discoveryLoading: true })
+
+    try {
+      let results: SearchResult[]
+
+      if (adjacentMode) {
+        const pattern = buildAdjacentPattern(wordTexts)
+        results = await searchRegex(pattern, 50)
+      } else {
+        results = await searchWord(displayQuery, searchOptions, 50)
+      }
+
+      if (results.length === 0) {
+        get().updateNodeData(sourceNodeId, { activeWordMatchType: 'none' })
+        set({ discoveryLoading: false, selectedWords: [] })
+        useWordBuilderStore.getState().clear()
+        return
+      }
+
+      const activeMode = searchOptions.lemma ? 'lemma'
+        : searchOptions.root ? 'root'
+        : searchOptions.fuzzy ? 'fuzzy'
+        : searchOptions.semantic ? 'semantic'
+        : 'exact' as const
+
+      const sorted = [...results].sort((a, b) => b.matchScore - a.matchScore)
+
+      // Update parent node
+      const parentNode = explorer.getNode(sourceNodeId)
+      if (parentNode) {
+        parentNode.matchType = activeMode
+        get().updateNodeData(sourceNodeId, { activeWordMatchType: activeMode })
+      }
+
+      explorer.setLastSearchSourceId(sourceNodeId)
+      explorer.setCurrentSearchTerm(displayQuery)
+
+      const multiDiscoveryMode = activeMode === 'lemma' ? 'Lemma'
+        : activeMode === 'root' ? 'Root'
+        : activeMode === 'fuzzy' ? 'Fuzzy'
+        : activeMode === 'semantic' ? 'Semantic'
+        : 'Exact'
+
+      set({
+        discoveryResults: sorted,
+        isDiscoveryOpen: true,
+        currentSearchTerm: displayQuery,
+        discoverySearchMode: multiDiscoveryMode,
+        discoveryLoading: false,
+        selectedWords: [],
+      })
+      useWordBuilderStore.getState().clear()
+
+      if (sorted.length > 0) {
+        useDiscoveryCacheStore.getState().cacheResults(sourceNodeId, sorted, displayQuery, multiDiscoveryMode)
+      }
+      useDiscoveryCacheStore.getState().setActiveNodeId(sourceNodeId)
+    } catch (err) {
+      console.error('[Store] Mobile multi-word search error:', err)
+      set({ discoveryLoading: false })
     }
   },
 }))

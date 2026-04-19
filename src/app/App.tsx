@@ -1,5 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react'
 import Providers from './providers'
+import MobileProviders from '../mobile/MobileProviders'
+import { isMobileDevice } from '../lib/deviceDetect'
 import Toolbar from '../features/toolbar/Toolbar'
 import GraphCanvas from '../features/graph/GraphCanvas'
 import WordBuilder from '../features/wordBuilder/WordBuilder'
@@ -18,8 +20,10 @@ import { useWorkspaceKeyboard } from '../features/workspace/useWorkspaceKeyboard
 import './App.css'
 
 const AuthCallback = lazy(() => import('../features/user/AuthCallback'))
+const MobileShell = lazy(() => import('../mobile/MobileShell'))
 
-function AppContent() {
+/** Desktop app content — ReactFlow graph canvas + side panels */
+function DesktopContent() {
   const openMushafToVerse = useStore(s => s.openMushafToVerse)
   const hasVerseNodes = useStore(s => s.nodes.some((n: { type: string }) => n.type === 'verse'))
   const initWorkspaces = useWorkspaceStore(s => s.init)
@@ -54,6 +58,9 @@ function AppContent() {
   )
 }
 
+/** Detect device once at module level */
+const IS_MOBILE = isMobileDevice()
+
 export default function App() {
   // Handle OAuth callback route
   if (window.location.pathname === '/auth/callback') {
@@ -64,9 +71,21 @@ export default function App() {
     )
   }
 
+  // Mobile companion view — no ReactFlowProvider needed
+  if (IS_MOBILE) {
+    return (
+      <MobileProviders>
+        <Suspense fallback={<div className="min-h-dvh flex items-center justify-center bg-slate-50"><p className="text-sm text-slate-400">Loading…</p></div>}>
+          <MobileShell />
+        </Suspense>
+      </MobileProviders>
+    )
+  }
+
+  // Desktop — full ReactFlow experience
   return (
     <Providers>
-      <AppContent />
+      <DesktopContent />
     </Providers>
   )
 }
