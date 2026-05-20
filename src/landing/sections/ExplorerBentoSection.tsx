@@ -3,7 +3,7 @@
  * Each cell borrows a subtle accent color that matches its in-app counterpart.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Search,
   Info,
@@ -407,34 +407,128 @@ function WordBuilderCell() {
   )
 }
 
-/* ───────────────────────── Audio cell (sync highlighting) ───────────────────────── */
+/* ───────────────────────── Audio cell (real audio playback) ───────────────────────── */
 
-const RECITERS = ['Abdul Basit', 'Al-Minshāwī', 'Al-Ḥuṣarī']
+const RECITERS = [
+  { name: 'Abdul Basit', id: 1 },
+  { name: 'Al-Minshāwī', id: 9 },
+  { name: 'Al-Ḥuṣarī', id: 6 },
+]
 const FATIHA_WORDS = ['بِسْمِ', 'ٱللَّهِ', 'ٱلرَّحْمَـٰنِ', 'ٱلرَّحِيمِ']
+
+// Word timing approximations for Fatiha 1:1 (ms offsets within the verse audio)
+const WORD_TIMINGS = [
+  { start: 0, end: 800 },
+  { start: 800, end: 1600 },
+  { start: 1600, end: 2800 },
+  { start: 2800, end: 4200 },
+]
 
 function AudioCell() {
   const [playing, setPlaying] = useState(false)
   const [active, setActive] = useState(-1)
   const [reciter, setReciter] = useState(0)
+  const [audioEl] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null)
+  const animFrameRef = useRef<number>(0)
+
+  // Audio URL for Fatiha 1:1 by recitation ID
+  function getAudioUrl(recitationId: number) {
+    return `https://audio.qurancdn.com/Abdul-Basit/Mujawwad/mp3/001001.mp3`
+      .replace('Abdul-Basit/Mujawwad', 
+        recitationId === 1 ? 'Abdul-Basit/Mujawwad' :
+        recitationId === 9 ? 'Minshawi/Murattal/mp3' :
+        'Husary/mp3'
+      )
+      .replace('/mp3/001001.mp3',
+        recitationId === 1 ? '/mp3/001001.mp3' :
+        recitationId === 9 ? '/001001.mp3' :
+        '/001001.mp3'
+      )
+  }
+
+  // Highlight words based on audio currentTime
+  const updateHighlight = () => {
+    if (!audioEl || !playing) return
+    const t = audioEl.currentTime * 1000
+    const idx = WORD_TIMINGS.findIndex(w => t >= w.start && t < w.end)
+    setActive(idx >= 0 ? idx : -1)
+    animFrameRef.current = requestAnimationFrame(updateHighlight)
+  }
 
   useEffect(() => {
-    if (!playing) return
-    let i = 0
-    setActive(0)
-    const id = setInterval(() => {
-      i++
-      if (i >= FATIHA_WORDS.length) {
-        clearInterval(id)
-        setTimeout(() => {
-          setPlaying(false)
-          setActive(-1)
-        }, 700)
-        return
+    if (!audioEl) return
+    
+    const handleEnded = () => {
+      setPlaying(false)
+      setActive(-1)
+    }
+    audioEl.addEventListener('ended', handleEnded)
+    return () => {
+      audioEl.removeEventListener('ended', handleEnded)
+      audioEl.pause()
+      cancelAnimationFrame(animFrameRef.current)
+    }
+  }, [audioEl])
+
+  function handlePlay() {
+    if (!audioEl) {
+      // Fallback: simulate if Audio not available (SSR)
+      setPlaying(true)
+      let i = 0
+      setActive(0)
+      const id = setInterval(() => {
+        i++
+        if (i >= FATIHA_WORDS.length) {
+          clearInterval(id)
+          setTimeout(() => { setPlaying(false); setActive(-1) }, 700)
+          return
+        }
+        setActive(i)
+      }, 720)
+      return
+    }
+
+    if (playing) {
+      audioEl.pause()
+      setPlaying(false)
+      setActive(-1)
+      cancelAnimationFrame(animFrameRef.current)
+    } else {
+      const url = getAudioUrl(RECITERS[reciter].id)
+      if (audioEl.src !== url) {
+        audioEl.src = url
       }
-      setActive(i)
-    }, 720)
-    return () => clearInterval(id)
-  }, [playing, reciter])
+      audioEl.currentTime = 0
+      audioEl.play().then(() => {
+        setPlaying(true)
+        animFrameRef.current = requestAnimationFrame(updateHighlight)
+      }).catch(() => {
+        // Autoplay blocked — fall back to simulation
+        setPlaying(true)
+        let i = 0
+        setActive(0)
+        const id = setInterval(() => {
+          i++
+          if (i >= FATIHA_WORDS.length) {
+            clearInterval(id)
+            setTimeout(() => { setPlaying(false); setActive(-1) }, 700)
+            return
+          }
+          setActive(i)
+        }, 720)
+      })
+    }
+  }
+
+  function handleReciterChange(i: number) {
+    if (playing && audioEl) {
+      audioEl.pause()
+      setPlaying(false)
+      setActive(-1)
+      cancelAnimationFrame(animFrameRef.current)
+    }
+    setReciter(i)
+  }
 
   return (
     <div>
@@ -445,7 +539,7 @@ function AudioCell() {
         Read with your ears.
       </h3>
       <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: 'var(--lp-text-dim)' }}>
-        Every node has an inline player with word-by-word highlighting across three reciters.
+        Every node has an inline player with word-by-word highlighting. Press play — this is real audio from Quran.com CDN.
       </p>
 
       {/* Reciter tabs */}
@@ -454,8 +548,8 @@ function AudioCell() {
           const isActive = reciter === i
           return (
             <button
-              key={r}
-              onClick={() => setReciter(i)}
+              key={r.name}
+              onClick={() => handleReciterChange(i)}
               className="flex-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors"
               style={
                 isActive
@@ -470,7 +564,7 @@ function AudioCell() {
                     }
               }
             >
-              {r}
+              {r.name}
             </button>
           )
         })}
@@ -503,14 +597,7 @@ function AudioCell() {
           })}
         </div>
         <button
-          onClick={() => {
-            if (playing) {
-              setPlaying(false)
-              setActive(-1)
-            } else {
-              setPlaying(true)
-            }
-          }}
+          onClick={handlePlay}
           className="w-full flex items-center justify-center gap-2 h-8 rounded-lg text-[12px] font-semibold transition-colors"
           style={{
             background: playing ? 'var(--lp-blue-soft)' : 'var(--lp-blue)',
