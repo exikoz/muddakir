@@ -41,16 +41,17 @@ function DiscoveryItem({ result }: Props) {
       matchedTokens: result.matchedTokens,
       tokenTypes: result.tokenTypes,
       matchType: result.matchType,
+      highlightedName: result.highlightedName,
     })
   }
 
   const highlightClass = getMatchHighlightClasses(frozenMatchType)
   const wordHighlights = verse
-    ? getWordHighlights(verse.words, result.matchedTokens, frozenMatchType, currentSearchTerm || undefined, result.verse_key)
+    ? getWordHighlights(verse.words, result.matchedTokens, frozenMatchType, currentSearchTerm || undefined, result.verse_key, result.highlightedName)
     : null
 
   return (
-    <div className="p-4 rounded-xl border border-slate-100 bg-white hover:shadow-md transition-all group relative pr-12">
+    <div className="p-4 rounded-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-all group relative pr-12">
       <div className="flex justify-between items-start mb-2">
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           {result.verse_key}
@@ -67,7 +68,7 @@ function DiscoveryItem({ result }: Props) {
         </div>
       </div>
 
-      <p className="font-arabic text-right text-2xl leading-loose text-slate-700 mb-2" dir="rtl">
+      <p className="font-arabic text-right text-2xl leading-loose text-slate-700 dark:text-slate-200 mb-2" dir="rtl">
         {loading ? (
           <span className="inline-flex items-center gap-2 text-slate-400 text-sm">
             <Loader2 size={14} className="animate-spin" />

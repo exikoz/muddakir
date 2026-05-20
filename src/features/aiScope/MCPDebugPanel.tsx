@@ -9,9 +9,9 @@ export default function MCPDebugPanel() {
   const logs = useSyncExternalStore(subscribeToLogs, getLogSnapshot)
 
   return (
-    <div className="border-b border-slate-100 bg-amber-50/40 max-h-48 overflow-y-auto shrink-0">
-      <div className="flex items-center justify-between px-3 py-1.5 sticky top-0 bg-amber-50/80 backdrop-blur-sm">
-        <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">
+    <div className="border-b border-slate-100 dark:border-slate-700 bg-amber-50/40 dark:bg-amber-900/20 max-h-48 overflow-y-auto shrink-0">
+      <div className="flex items-center justify-between px-3 py-1.5 sticky top-0 bg-amber-50/80 dark:bg-amber-900/40 backdrop-blur-sm">
+        <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
           {t('mcp_logs')} ({logs.length})
         </span>
         {logs.length > 0 && (
@@ -29,12 +29,12 @@ export default function MCPDebugPanel() {
       ) : (
         <div className="px-3 pb-2 space-y-1">
           {logs.map(log => (
-            <details key={log.id} className="bg-white border border-amber-100 rounded-lg text-[10px] overflow-hidden">
-              <summary className="px-2 py-1 cursor-pointer hover:bg-amber-50 flex items-center gap-1.5">
+            <details key={log.id} className="bg-white dark:bg-slate-800 border border-amber-100 dark:border-slate-600 rounded-lg text-[10px] overflow-hidden">
+              <summary className="px-2 py-1 cursor-pointer hover:bg-amber-50 dark:hover:bg-slate-700 flex items-center gap-1.5">
                 <span className={log.status === 'success' ? 'text-emerald-500' : 'text-red-500'}>
                   {log.status === 'success' ? '✅' : '❌'}
                 </span>
-                <span className="font-mono font-medium text-slate-600">{log.tool}</span>
+                <span className="font-mono font-medium text-slate-600 dark:text-slate-300">{log.tool}</span>
                 {log.modelId && (
                   <span className="text-[8px] px-1 py-0.5 rounded bg-purple-50 text-purple-500 font-medium">
                     {AI_SCOPE_MODELS[log.modelId]?.label ?? log.modelId}

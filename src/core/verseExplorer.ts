@@ -35,6 +35,7 @@ export interface ExplorationNode {
   activeWordIndex?: number
   matchedTokens?: string[]
   tokenTypes?: Record<string, string>
+  highlightedName?: string
 }
 
 export interface ExplorationResult {

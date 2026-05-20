@@ -44,7 +44,7 @@ export default function MobileWordBuilder() {
   }
 
   return (
-    <div className="fixed bottom-16 left-2 right-2 z-[60] flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-md rounded-xl border border-slate-200 shadow-lg">
+    <div className="fixed bottom-16 left-2 right-2 z-[60] flex items-center gap-2 px-3 py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-600 shadow-lg">
       {/* Selected words */}
       <div className="flex items-center gap-1 flex-1 overflow-x-auto" dir="rtl">
         {words.map((w: SelectedWord, i: number) => (

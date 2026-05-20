@@ -68,7 +68,7 @@ function NoteEdge({
           onMouseLeave={() => setHovered(false)}
         >
           <button
-            className={`nodrag nopan flex items-center justify-center w-5 h-5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 shadow-sm transition-all ${
+            className={`nodrag nopan flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-200 dark:hover:border-red-700 shadow-sm transition-all ${
               hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
             }`}
             onClick={() => deleteElements({ edges: [{ id: id as string }] })}

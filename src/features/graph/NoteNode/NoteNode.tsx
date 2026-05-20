@@ -3,6 +3,7 @@ import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react'
 import { PenLine, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../../store'
+import { useThemeStore } from '../../../store/themeStore'
 import { rtlLanguages, type SupportedLanguage } from '../../../i18n/config'
 
 export interface NoteNodeData extends Record<string, unknown> {
@@ -78,6 +79,7 @@ function NoteNode({ id, data, selected }: NodeProps) {
   const noteData = data as NoteNodeData
   const deleteNode = useStore(s => s.deleteNode)
   const updateNodeData = useStore(s => s.updateNodeData)
+  const isDark = useThemeStore(s => s.resolved === 'dark')
 
   const isRtl = rtlLanguages.includes(i18n.language as SupportedLanguage)
   const locale = i18n.language
@@ -167,16 +169,16 @@ function NoteNode({ id, data, selected }: NodeProps) {
   return (
     <div
       className={`rounded-xl relative group transition-all duration-200 ${
-        selected ? 'ring-2 ring-amber-200' : ''
+        selected ? 'ring-2 ring-amber-200 dark:ring-amber-700' : ''
       }`}
       style={{
         width: nodeWidth,
         height: noteData.height ?? 'auto',
-        background: '#FFFCF5',
-        border: '1px solid #e8e0d4',
+        background: isDark ? '#2a2520' : '#FFFCF5',
+        border: `1px solid ${isDark ? '#4a3f33' : '#e8e0d4'}`,
         boxShadow: selected
-          ? '0 4px 12px rgba(180,160,120,0.15)'
-          : '0 2px 8px rgba(180,160,120,0.10)',
+          ? isDark ? '0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(180,160,120,0.15)'
+          : isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(180,160,120,0.10)',
       }}
     >
       {/* ── Resizer ── */}
@@ -211,12 +213,12 @@ function NoteNode({ id, data, selected }: NodeProps) {
 
       {/* ── Header ── */}
       <div
-        className="flex items-center justify-between px-3 py-1.5 border-b border-amber-200 cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between px-3 py-1.5 border-b border-amber-200 dark:border-amber-800/60 cursor-grab active:cursor-grabbing"
       >
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
           <PenLine
             size={10}
-            className="nodrag shrink-0 text-amber-700 hover:text-amber-900 cursor-pointer transition-colors"
+            className="nodrag shrink-0 text-amber-700 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-300 cursor-pointer transition-colors"
             onClick={() => setEditingTitle(true)}
           />
           {editingTitle ? (
@@ -227,13 +229,13 @@ function NoteNode({ id, data, selected }: NodeProps) {
               onBlur={commitTitle}
               onKeyDown={handleTitleKeyDown}
               maxLength={30}
-              className="nodrag max-w-[140px] text-[11px] uppercase tracking-wider bg-white/70 outline-none rounded px-1 py-0.5 ring-1 ring-amber-300 text-amber-900 font-medium"
+              className="nodrag max-w-[140px] text-[11px] uppercase tracking-wider bg-white/70 dark:bg-slate-800/70 outline-none rounded px-1 py-0.5 ring-1 ring-amber-300 dark:ring-amber-600 text-amber-900 dark:text-amber-200 font-medium"
               placeholder={t('note_title_placeholder')}
             />
           ) : (
             <span
               onDoubleClick={() => setEditingTitle(true)}
-              className="text-[11px] uppercase tracking-wider truncate max-w-[140px] select-none cursor-text text-amber-700 font-medium"
+              className="text-[11px] uppercase tracking-wider truncate max-w-[140px] select-none cursor-text text-amber-700 dark:text-amber-400 font-medium"
               title={t('note_rename_hint')}
             >
               {title || t('note_label')}
@@ -242,7 +244,7 @@ function NoteNode({ id, data, selected }: NodeProps) {
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); deleteNode(id as string) }}
-          className="nodrag p-0.5 rounded text-amber-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+          className="nodrag p-0.5 rounded text-amber-400 dark:text-amber-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
         >
           <X size={10} />
         </button>
@@ -258,23 +260,23 @@ function NoteNode({ id, data, selected }: NodeProps) {
           onKeyDown={handleTextKeyDown}
           dir={isRtl ? 'rtl' : 'ltr'}
           placeholder={t('note_body_placeholder')}
-          className="nodrag w-full bg-transparent text-[12px] placeholder:text-amber-300 outline-none resize-none min-h-[40px] focus:ring-1 focus:ring-amber-200 rounded px-0.5 py-0.5 transition-shadow"
-          style={{ color: '#6b5c45', lineHeight: 1.7 }}
+          className="nodrag w-full bg-transparent text-[12px] placeholder:text-amber-300 dark:placeholder:text-amber-700 outline-none resize-none min-h-[40px] focus:ring-1 focus:ring-amber-200 dark:focus:ring-amber-700 rounded px-0.5 py-0.5 transition-shadow"
+          style={{ color: isDark ? '#c4a882' : '#6b5c45', lineHeight: 1.7 }}
           rows={2}
         />
       </div>
 
       {/* ── Footer: timestamps ── */}
-      <div className="flex justify-between px-3 py-1 border-t border-amber-200 select-none">
+      <div className="flex justify-between px-3 py-1 border-t border-amber-200 dark:border-amber-800/60 select-none">
         <span
-          className="text-[10px] text-amber-700/40"
+          className="text-[10px] text-amber-700/40 dark:text-amber-500/40"
           title={created.full}
         >
           {created.label}
         </span>
         {wasEdited && (
           <span
-            className="text-[10px] text-amber-700/40 italic"
+            className="text-[10px] text-amber-700/40 dark:text-amber-500/40 italic"
             title={updated.full}
           >
             {t('note_edited')} {updated.label}
@@ -286,7 +288,9 @@ function NoteNode({ id, data, selected }: NodeProps) {
       <div
         className="absolute bottom-0 right-0 w-3 h-3 pointer-events-none"
         style={{
-          background: 'linear-gradient(135deg, transparent 50%, #efe8db 50%)',
+          background: isDark
+            ? 'linear-gradient(135deg, transparent 50%, #3d3428 50%)'
+            : 'linear-gradient(135deg, transparent 50%, #efe8db 50%)',
           borderRadius: '0 0 0.75rem 0',
         }}
       />

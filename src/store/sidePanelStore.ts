@@ -15,6 +15,7 @@ export type PanelId =
   | 'workspace'
   | 'aiScope'
   | 'verseDetail'
+  | 'userProfile'
 
 export type PanelSide = 'left' | 'right'
 
@@ -25,6 +26,7 @@ export const PANEL_SIDE: Record<PanelId, PanelSide> = {
   workspace: 'right',
   aiScope: 'right',
   verseDetail: 'right',
+  userProfile: 'right',
 }
 
 interface SidePanelState {

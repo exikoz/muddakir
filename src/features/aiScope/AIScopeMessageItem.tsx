@@ -64,29 +64,29 @@ export default function AIScopeMessageItem({ message }: Props) {
       {showToolCalls && message.toolCalls && (
         <div className="mt-1 w-full space-y-1">
           {message.toolCalls.map(tc => (
-            <details key={tc.id} className="bg-slate-50 border border-slate-100 rounded-lg text-[10px] overflow-hidden">
-              <summary className="px-2 py-1 cursor-pointer hover:bg-slate-100 flex items-center gap-1.5">
+            <details key={tc.id} className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg text-[10px] overflow-hidden">
+              <summary className="px-2 py-1 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1.5">
                 <span className={tc.status === 'success' ? 'text-emerald-500' : 'text-red-500'}>
                   {tc.status === 'success' ? '✅' : '❌'}
                 </span>
-                <span className="font-mono font-medium text-slate-600">{tc.tool}</span>
+                <span className="font-mono font-medium text-slate-600 dark:text-slate-300">{tc.tool}</span>
                 {tc.modelId && (
-                  <span className="text-[8px] px-1 py-0.5 rounded bg-purple-50 text-purple-500 font-medium">
+                  <span className="text-[8px] px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/40 text-purple-500 dark:text-purple-400 font-medium">
                     {AI_SCOPE_MODELS[tc.modelId]?.label}
                   </span>
                 )}
                 <span className="text-slate-400 ml-auto">{tc.durationMs.toFixed(0)}ms</span>
               </summary>
-              <div className="px-2 py-1.5 border-t border-slate-100 space-y-1">
+              <div className="px-2 py-1.5 border-t border-slate-100 dark:border-slate-700 space-y-1">
                 <div>
                   <span className="text-slate-400">Input:</span>
-                  <pre className="mt-0.5 bg-white rounded p-1.5 overflow-x-auto text-[9px] text-slate-600 font-mono whitespace-pre-wrap">
+                  <pre className="mt-0.5 bg-white dark:bg-slate-900 rounded p-1.5 overflow-x-auto text-[9px] text-slate-600 dark:text-slate-300 font-mono whitespace-pre-wrap">
                     {JSON.stringify(tc.input, null, 2)}
                   </pre>
                 </div>
                 <div>
                   <span className="text-slate-400">Output:</span>
-                  <pre className="mt-0.5 bg-white rounded p-1.5 overflow-x-auto text-[9px] text-slate-600 font-mono whitespace-pre-wrap max-h-40">
+                  <pre className="mt-0.5 bg-white dark:bg-slate-900 rounded p-1.5 overflow-x-auto text-[9px] text-slate-600 dark:text-slate-300 font-mono whitespace-pre-wrap max-h-40">
                     {JSON.stringify(tc.output, null, 2)}
                   </pre>
                 </div>

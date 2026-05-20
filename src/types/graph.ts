@@ -12,6 +12,8 @@ export interface VerseNodeData extends Record<string, unknown> {
   tokenTypes?: Record<string, string>
   // Frozen search query — the query that produced this node, never changes
   searchQuery?: string
+  // API search: raw Uthmani HTML with <em> tags for highlighting
+  highlightedName?: string
 }
 
 export interface NoteNodeData extends Record<string, unknown> {

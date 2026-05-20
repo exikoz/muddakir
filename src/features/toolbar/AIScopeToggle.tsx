@@ -14,10 +14,10 @@ export default function AIScopeToggle() {
       onClick={() => toggle('aiScope')}
       className={`h-8 px-2.5 rounded-lg border transition-all flex items-center justify-center gap-1.5 text-[11px] font-semibold relative ${
         isOpen
-          ? 'bg-violet-50 text-violet-600 border-violet-300'
+          ? 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 border-violet-300 dark:border-violet-600'
           : messageCount > 0
-            ? 'bg-slate-50 text-violet-600 border-slate-200 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300'
-            : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-300'
+            ? 'bg-slate-50 dark:bg-slate-800 text-violet-600 dark:text-violet-400 border-slate-200 dark:border-slate-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 hover:text-violet-700 dark:hover:text-violet-300 hover:border-violet-300 dark:hover:border-violet-600'
+            : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-600 hover:bg-violet-50 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-300 dark:hover:border-violet-600'
       }`}
       title={t('ai_scope_title')}
     >

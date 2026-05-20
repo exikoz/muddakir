@@ -46,15 +46,15 @@ export default function SurahSelector({ value, onChange }: Props) {
     <div ref={ref} className="relative flex-1">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between text-sm border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
+        className="w-full flex items-center justify-between text-sm border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
       >
         <span className="truncate">{value}. {getSurahName(value, lang)}</span>
         <ChevronDown size={14} className={`text-slate-400 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute top-full mt-1 left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg z-50 flex flex-col max-h-64 overflow-hidden">
-          <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-slate-100">
+        <div className="absolute top-full mt-1 left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg z-50 flex flex-col max-h-64 overflow-hidden">
+          <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-slate-100 dark:border-slate-700">
             <Search size={12} className="text-slate-400 shrink-0" />
             <input
               ref={inputRef}
@@ -62,7 +62,7 @@ export default function SurahSelector({ value, onChange }: Props) {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={getSurahName(1, lang) + ', ' + getSurahName(1, lang === 'ar' ? 'en' : 'ar') + '...'}
-              className="flex-1 text-xs text-slate-700 placeholder:text-slate-400 bg-transparent outline-none"
+              className="flex-1 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-transparent outline-none"
             />
           </div>
           <div className="overflow-y-auto flex-1">
@@ -75,8 +75,8 @@ export default function SurahSelector({ value, onChange }: Props) {
                 onClick={() => select(n)}
                 className={`w-full text-left px-2.5 py-1.5 text-sm transition-colors ${
                   n === value
-                    ? 'bg-emerald-50 text-emerald-700 font-medium'
-                    : 'text-slate-700 hover:bg-slate-50'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
                 {n}. {getSurahName(n, lang)}

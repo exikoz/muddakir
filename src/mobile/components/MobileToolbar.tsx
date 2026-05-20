@@ -70,7 +70,7 @@ export default function MobileToolbar() {
   }, [activeMode, setSearchOptions])
 
   return (
-    <div className="sticky top-0 z-50 flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
+    <div className="sticky top-0 z-50 flex items-center gap-2 px-3 py-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80">
       {/* Undo / Redo */}
       <button onClick={undo} disabled={!canUndo} className="p-1.5 rounded-lg text-slate-400 disabled:opacity-30">
         <Undo2 size={16} />
@@ -95,7 +95,7 @@ export default function MobileToolbar() {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={t('search_placeholder', '2:255 or Arabic text…')}
-          className="flex-1 h-9 px-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 placeholder:text-slate-400 outline-none focus:border-emerald-400"
+          className="flex-1 h-9 px-3 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-400"
           dir="auto"
         />
 

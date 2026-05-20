@@ -74,14 +74,14 @@ export default function TranslationsSection() {
       <div className="relative mb-3">
         <button
           onClick={() => setShowPicker(!showPicker)}
-          className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
+          className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium transition-colors"
         >
           {selectedIds.length} {selectedIds.length !== 1 ? t('translations_selected_plural', { count: selectedIds.length }) : t('translations_selected', { count: selectedIds.length })}
           <ChevronDown size={10} className={`transition-transform ${showPicker ? 'rotate-180' : ''}`} />
         </button>
 
         {showPicker && (
-          <div className="absolute top-6 left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1">
+          <div className="absolute top-6 left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1">
             {englishTranslations.length > 0 && (
               <>
                 <p className="text-[9px] text-slate-400 font-semibold uppercase px-2 pt-1.5 pb-0.5">{t('english')}</p>
@@ -89,14 +89,14 @@ export default function TranslationsSection() {
                   <button
                     key={t.id}
                     onClick={() => toggleTranslation(t.id)}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
-                      selectedIds.includes(t.id) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300'
+                      selectedIds.includes(t.id) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-500'
                     }`}>
                       {selectedIds.includes(t.id) && <Check size={8} />}
                     </span>
-                    <span className="text-slate-700 truncate">{t.name}</span>
+                    <span className="text-slate-700 dark:text-slate-200 truncate">{t.name}</span>
                   </button>
                 ))}
               </>
@@ -108,14 +108,14 @@ export default function TranslationsSection() {
                   <button
                     key={t.id}
                     onClick={() => toggleTranslation(t.id)}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
-                      selectedIds.includes(t.id) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300'
+                      selectedIds.includes(t.id) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-500'
                     }`}>
                       {selectedIds.includes(t.id) && <Check size={8} />}
                     </span>
-                    <span className="text-slate-600 truncate">{t.name}</span>
+                    <span className="text-slate-600 dark:text-slate-300 truncate">{t.name}</span>
                     <span className="text-[8px] text-slate-400 ml-auto shrink-0">{t.language}</span>
                   </button>
                 ))}
@@ -148,8 +148,8 @@ export default function TranslationsSection() {
 
         {!displayLoading && !error && displayTranslations.map(t => (
           <div key={t.resourceId}>
-            <p className="text-[10px] font-semibold text-slate-400 mb-1">{t.resourceName}</p>
-            <p className="text-sm text-slate-600 leading-relaxed">{t.text}</p>
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mb-1">{t.resourceName}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{t.text}</p>
           </div>
         ))}
 

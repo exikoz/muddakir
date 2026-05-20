@@ -20,7 +20,7 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={cycleLang}
-      className="h-8 px-2 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1.5 bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-white"
+      className="h-8 px-2 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-white dark:hover:bg-slate-700"
       title="Switch language"
     >
       <Globe size={13} />

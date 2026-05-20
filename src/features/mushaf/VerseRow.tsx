@@ -38,8 +38,8 @@ export function VerseRow({ verse, isHighlighted, onOpenInExplorer }: VerseRowPro
       ref={ref}
       className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
         isHighlighted
-          ? 'border-emerald-300 bg-emerald-50 shadow-md'
-          : 'border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm'
+          ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 shadow-md'
+          : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-600 hover:shadow-sm'
       }`}
     >
       {/* Verse key */}
@@ -73,7 +73,7 @@ export function VerseRow({ verse, isHighlighted, onOpenInExplorer }: VerseRowPro
       </div>
 
       {/* Arabic text */}
-      <p className="font-arabic text-right text-2xl leading-loose text-slate-800 mb-2" dir="rtl">
+      <p className="font-arabic text-right text-2xl leading-loose text-slate-800 dark:text-slate-100 mb-2" dir="rtl">
         {displayWords.map((w: Word) => w.text).join(' ')}
         {endMarker && <span className="text-slate-400 mx-1">{endMarker.text}</span>}
       </p>

@@ -23,8 +23,8 @@ export default function MushafToggle() {
       onClick={handleToggle}
       className={`h-8 px-2.5 rounded-lg border transition-all flex items-center justify-center gap-1.5 text-[11px] font-semibold ${
         isOpen
-          ? 'bg-sky-50 text-sky-600 border-sky-300'
-          : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300'
+          ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-sky-300 dark:border-sky-600'
+          : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-600 hover:bg-sky-50 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 hover:border-sky-300 dark:hover:border-sky-600'
       }`}
       title={t('toggle_mushaf')}
     >

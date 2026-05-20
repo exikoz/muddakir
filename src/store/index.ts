@@ -13,6 +13,7 @@ import { VerseExplorer } from '../core/verseExplorer'
 import type { ExplorationNode } from '../core/verseExplorer'
 import { fetchChapterVerses, fetchVerse } from '../services/quranApi'
 import { searchWord, searchRegex, buildAdjacentPattern } from '../services/quranSearch'
+import { useSearchProviderStore } from './searchProviderStore'
 import { getLayoutedElements } from '../lib/autoLayout'
 import { useSidePanelStore } from './sidePanelStore'
 import { useWordBuilderStore } from './wordBuilderStore'
@@ -39,7 +40,7 @@ interface GraphState {
   onConnect: (connection: Connection) => void
   
   // High-level actions (delegate to explorer)
-  addVerseNode: (verseKey: string, parentId?: string, searchMeta?: { matchedTokens?: string[]; tokenTypes?: Record<string, string>; matchType?: import('../types/quran').MatchType }) => Promise<void>
+  addVerseNode: (verseKey: string, parentId?: string, searchMeta?: { matchedTokens?: string[]; tokenTypes?: Record<string, string>; matchType?: import('../types/quran').MatchType; highlightedName?: string }) => Promise<void>
   searchFromWord: (nodeId: string, wordIndex: number) => Promise<void>
   deleteNode: (id: string) => void
   addSequentialVerse: (nodeId: string, direction: 'prev' | 'next') => Promise<void>
@@ -178,6 +179,7 @@ function toReactFlowNode(
       matchedTokens: explorationNode.matchedTokens,
       tokenTypes: explorationNode.tokenTypes,
       searchQuery: explorationNode.searchTerm,
+      highlightedName: explorationNode.highlightedName,
     }
   }
 }
@@ -278,6 +280,7 @@ export const useStore = create<GraphState>((set, get) => ({
       explorationNode.matchedTokens = searchMeta.matchedTokens
       explorationNode.tokenTypes = searchMeta.tokenTypes
       explorationNode.matchType = searchMeta.matchType
+      explorationNode.highlightedName = searchMeta.highlightedName
       explorationNode.searchTerm = explorer.getCurrentSearchTerm()
     }
     
@@ -326,8 +329,107 @@ export const useStore = create<GraphState>((set, get) => ({
   
   searchFromWord: async (nodeId, wordIndex) => {
     const { explorer, searchOptions } = get()
-    
-    // Perform search using explorer
+    const { provider } = useSearchProviderStore.getState()
+
+    // ── API provider: search at store level ──
+    if (provider.name === 'api') {
+      const node = explorer.getNode(nodeId)
+      if (!node) return
+      if (explorer.hasChildren(nodeId)) return
+
+      const word = node.verse.words[wordIndex]
+      if (!word || word.char_type_name === 'end') return
+
+      const query = word.text_simple || word.text
+      console.log(`[Store] API search for: "${query}"`)
+
+      const results = await provider.searchWord(query, searchOptions, 50)
+
+      if (results.length === 0) {
+        get().updateNodeData(nodeId, { activeWordIndex: wordIndex, activeWordMatchType: 'none' })
+        return
+      }
+
+      get()._beginHistoryBatch()
+
+      const sorted = [...results].sort((a, b) => b.matchScore - a.matchScore)
+      const existingVerseKeys = new Set(
+        Array.from(explorer.getAllNodes()).map(n => n.verse.verse_key)
+      )
+      const newResults = sorted.filter(r => !existingVerseKeys.has(r.verse_key))
+      const toAdd = newResults.slice(0, 3)
+      const overflow = newResults.slice(3)
+
+      for (const result of toAdd) {
+        const verse = await fetchVerse(result.verse_key)
+        if (!verse) continue
+        const explorationNode = await explorer.addVerse(result.verse_key, nodeId)
+        if (!explorationNode) continue
+
+        explorationNode.matchedTokens = result.matchedTokens
+        explorationNode.tokenTypes = result.tokenTypes
+        explorationNode.matchType = result.matchType
+        explorationNode.searchTerm = query
+        explorationNode.highlightedName = result.highlightedName
+
+        const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
+        get()._addReactFlowNode(reactFlowNode)
+
+        const edge: VerseEdge = {
+          id: `${nodeId}-${explorationNode.id}`,
+          source: nodeId, sourceHandle: 'right-src',
+          target: explorationNode.id, targetHandle: 'left-tgt',
+          type: 'verse',
+          data: { matchType: 'exact', edgeType: 'search', searchTerm: query },
+        }
+        get()._addReactFlowEdge(edge)
+      }
+
+      // Update parent
+      node.activeWordIndex = wordIndex
+      node.matchType = 'exact'
+      get().updateNodeData(nodeId, { activeWordIndex: wordIndex, activeWordMatchType: 'exact' })
+
+      explorer.setLastSearchSourceId(nodeId)
+      explorer.setCurrentSearchTerm(query)
+
+      if (toAdd.length > 0 && get().useAutoLayout) get()._applyAutoLayout()
+
+      const allOverflow = [...overflow, ...sorted.filter(r => existingVerseKeys.has(r.verse_key))]
+      set({
+        discoveryResults: allOverflow.length > 0 ? allOverflow : sorted,
+        isDiscoveryOpen: sorted.length > toAdd.length || allOverflow.length > 0,
+        currentSearchTerm: query,
+        discoverySearchMode: 'API',
+      })
+
+      const discoveryToCache = allOverflow.length > 0 ? allOverflow : sorted
+      if (discoveryToCache.length > 0) {
+        useDiscoveryCacheStore.getState().cacheResults(nodeId, discoveryToCache, query, 'API')
+      }
+      useDiscoveryCacheStore.getState().setActiveNodeId(nodeId)
+      if (discoveryToCache.length > 0) useSidePanelStore.getState().open('discovery')
+
+      get()._endHistoryBatch()
+
+      if (toAdd.length > 0) {
+        setTimeout(() => {
+          const reactFlowInstance = getReactFlowInstance()
+          if (reactFlowInstance) {
+            reactFlowInstance.fitView({
+              nodes: [{ id: nodeId }, ...toAdd.map(r => {
+                const n = explorer.getNodeByVerseKey(r.verse_key)
+                return n ? { id: n.id } : { id: '' }
+              }).filter(n => n.id)],
+              duration: 500, padding: 0.3,
+            })
+          }
+        }, 100)
+      }
+      return
+    }
+
+    // ── Package provider: existing explorer flow (unchanged) ──
     const result = await explorer.searchFromWord(nodeId, wordIndex, searchOptions, 3)
     
     // Handle no results case
@@ -685,8 +787,12 @@ export const useStore = create<GraphState>((set, get) => ({
     
     try {
       let results: import('../types/quran').SearchResult[]
-      
-      if (adjacentMode) {
+      const { provider } = useSearchProviderStore.getState()
+
+      if (provider.name === 'api') {
+        // API provider handles both adjacent and free multi-word
+        results = await provider.searchMultiWord(wordTexts, adjacentMode, searchOptions, 50)
+      } else if (adjacentMode) {
         // Regex search for adjacent words
         const pattern = buildAdjacentPattern(wordTexts)
         console.log(`[Store] Adjacent search pattern: "${pattern}"`)
@@ -733,6 +839,7 @@ export const useStore = create<GraphState>((set, get) => ({
         explorationNode.tokenTypes = result.tokenTypes
         explorationNode.matchType = result.matchType
         explorationNode.searchTerm = displayQuery
+        explorationNode.highlightedName = result.highlightedName
         
         const reactFlowNode = toReactFlowNode(explorationNode, get().nodes, get().edges)
         get()._addReactFlowNode(reactFlowNode)

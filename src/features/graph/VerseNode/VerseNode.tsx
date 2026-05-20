@@ -12,7 +12,7 @@ import MiniPlayer from '../../audio/MiniPlayer'
 
 function VerseNode({ id, data }: NodeProps) {
   const { t, i18n } = useTranslation('graph')
-  const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery, matchType } = data as VerseNodeData
+  const { verse, activeWordIndex, activeWordMatchType, matchedTokens, tokenTypes, searchQuery, matchType, highlightedName } = data as VerseNodeData
   const addSequentialVerse = useStore(s => s.addSequentialVerse)
   const edges = useStore(s => s.edges)
 
@@ -53,13 +53,13 @@ function VerseNode({ id, data }: NodeProps) {
 
   // Quiet grid: light borders, muted text that darkens on node hover (via `group`)
   const navW = 'w-[120px]'
-  const border = 'border-gray-200/60'
+  const border = 'border-gray-200/60 dark:border-slate-600/60'
   const cellBase = 'flex items-center text-[11px] font-medium transition-colors'
-  const quietCell = 'text-gray-400 group-hover:text-gray-600 hover:!text-gray-700 hover:bg-gray-50'
+  const quietCell = 'text-gray-400 dark:text-slate-500 group-hover:text-gray-600 dark:group-hover:text-slate-300 hover:!text-gray-700 dark:hover:!text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50'
   const handleCls = '!bg-transparent !border-transparent !w-[1px] !h-[1px] !min-w-0 !min-h-0 !opacity-0'
 
   return (
-    <div className={`group min-w-[420px] max-w-[520px] bg-white rounded-xl border ${border} overflow-hidden flex flex-col`}>
+    <div className={`group min-w-[420px] max-w-[520px] bg-white dark:bg-slate-800 rounded-xl border ${border} overflow-hidden flex flex-col`}>
       {/* Invisible handles */}
       <Handle id="top-src" type="source" position={Position.Top} className={handleCls} />
       <Handle id="top-tgt" type="target" position={Position.Top} className={handleCls} />
@@ -86,7 +86,7 @@ function VerseNode({ id, data }: NodeProps) {
 
         {/* Center: Verse title */}
         <div className="flex-1 flex items-center justify-center px-3 min-w-0">
-          <span className="text-[11px] font-semibold text-gray-400 group-hover:text-gray-500 tracking-wide truncate transition-colors">
+          <span className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 group-hover:text-gray-500 dark:group-hover:text-slate-400 tracking-wide truncate transition-colors">
             {surahName} · {verse.verse_key}
           </span>
         </div>
@@ -106,10 +106,11 @@ function VerseNode({ id, data }: NodeProps) {
           tokenTypes={tokenTypes}
           matchType={matchType}
           searchQuery={searchQuery}
+          highlightedName={highlightedName}
         />
 
         {verse.translation && (
-          <p className={`text-sm text-gray-500 group-hover:text-gray-600 leading-relaxed mt-3 pt-3 border-t ${border} transition-colors`}>
+          <p className={`text-sm text-gray-500 dark:text-slate-400 group-hover:text-gray-600 dark:group-hover:text-slate-300 leading-relaxed mt-3 pt-3 border-t ${border} transition-colors`}>
             {verse.translation}
           </p>
         )}

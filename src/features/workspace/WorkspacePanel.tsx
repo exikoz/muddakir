@@ -101,10 +101,10 @@ export default function WorkspacePanel() {
   }
 
   return (
-    <div dir="ltr" className="absolute top-0 right-0 z-50 h-full w-80 bg-white/95 backdrop-blur-md border-l border-slate-200 shadow-xl flex flex-col">
+    <div dir="ltr" className="absolute top-0 right-0 z-50 h-full w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-l border-slate-200 dark:border-slate-700 shadow-xl flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
           <FolderOpen size={16} />
           {t('title')}
         </div>
@@ -117,13 +117,13 @@ export default function WorkspacePanel() {
       </div>
 
       {/* Actions bar */}
-      <div className="px-4 py-3 border-b border-slate-100 flex flex-col gap-2">
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex flex-col gap-2">
         {/* Save current */}
         {activeWorkspaceId && (
           <button
             onClick={handleSave}
             disabled={loading}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors disabled:opacity-50"
           >
             <Save size={14} />
             {t('save_current')}
@@ -143,7 +143,7 @@ export default function WorkspacePanel() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder={t('name_placeholder')}
-            className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/20"
+            className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-xs outline-none bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/20"
           />
           <button
             type="submit"
@@ -159,7 +159,7 @@ export default function WorkspacePanel() {
           <button
             onClick={newBlankWorkspace}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
             <Plus size={12} />
             {t('new_blank')}
@@ -167,7 +167,7 @@ export default function WorkspacePanel() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
             <Upload size={12} />
             {t('import')}
@@ -184,7 +184,7 @@ export default function WorkspacePanel() {
 
       {/* Error */}
       {error && (
-        <div className="px-4 py-2 text-xs text-red-600 bg-red-50 border-b border-red-100">
+        <div className="px-4 py-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-800">
           {error}
         </div>
       )}
@@ -266,8 +266,8 @@ function WorkspaceItem({
     <div
       className={`group rounded-lg mb-1.5 border transition-colors ${
         isActive
-          ? 'border-indigo-300 bg-indigo-50/60'
-          : 'border-transparent hover:border-slate-200 hover:bg-slate-50'
+          ? 'border-indigo-300 dark:border-indigo-600 bg-indigo-50/60 dark:bg-indigo-900/30'
+          : 'border-transparent hover:border-slate-200 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'
       }`}
     >
       <div className="flex items-center gap-2 px-3 py-2">
@@ -286,7 +286,7 @@ function WorkspaceItem({
                 value={editName}
                 onChange={(e) => onEditNameChange(e.target.value)}
                 onKeyDown={(e) => e.key === 'Escape' && onCancelEdit()}
-                className="flex-1 px-2 py-0.5 rounded border border-indigo-300 text-xs outline-none"
+                className="flex-1 px-2 py-0.5 rounded border border-indigo-300 dark:border-indigo-500 text-xs outline-none bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
               />
               <button
                 type="submit"
@@ -301,10 +301,10 @@ function WorkspaceItem({
               disabled={loading || isActive}
               className="w-full text-left"
             >
-              <div className="text-xs font-medium text-slate-800 truncate">
+              <div className="text-xs font-medium text-slate-800 dark:text-slate-100 truncate">
                 {meta.name}
               </div>
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[10px] text-slate-400 dark:text-slate-500">
                 {meta.nodeCount} nodes · {timeStr}
               </div>
             </button>

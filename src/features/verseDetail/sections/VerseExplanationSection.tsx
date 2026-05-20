@@ -46,9 +46,9 @@ export default function VerseExplanationSection() {
             {t('generating_explanation')}
           </div>
           <div className="space-y-1.5 animate-pulse">
-            <div className="h-2.5 bg-slate-200 rounded w-full" />
-            <div className="h-2.5 bg-slate-200 rounded w-11/12" />
-            <div className="h-2.5 bg-slate-200 rounded w-9/12" />
+            <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+            <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-11/12" />
+            <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-9/12" />
           </div>
         </div>
       )}
@@ -59,12 +59,12 @@ export default function VerseExplanationSection() {
             <Sparkles size={10} className="text-emerald-500" />
             <span className="text-[10px] font-semibold text-slate-400">{t('ai_explanation')}</span>
           </div>
-          <div className="text-sm text-slate-700 leading-relaxed space-y-2" dir={contentDir}>
+          <div className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed space-y-2" dir={contentDir}>
             {explanation.split(/\n{2,}|\n/).filter(Boolean).map((para, i) => {
               const trimmed = para.trim()
               if (trimmed.startsWith('✅') && /Verification Token/i.test(trimmed)) {
                 return (
-                  <p key={i} className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-relaxed">
+                  <p key={i} className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 pt-2 border-t border-slate-100 dark:border-slate-700 leading-relaxed">
                     {trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
                   </p>
                 )
@@ -74,14 +74,14 @@ export default function VerseExplanationSection() {
           </div>
 
           {/* Ask more */}
-          <form onSubmit={handleAskMore} className="mt-3 pt-2.5 border-t border-slate-100">
+          <form onSubmit={handleAskMore} className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder={t('ask_more_verse')}
-                className="flex-1 text-xs text-slate-600 placeholder:text-slate-400 bg-transparent outline-none"
+                className="flex-1 text-xs text-slate-600 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-transparent outline-none"
               />
               <button
                 type="submit"
@@ -93,7 +93,7 @@ export default function VerseExplanationSection() {
           </form>
 
           {/* Attribution */}
-          <p className="text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-100">
+          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-3 pt-2 border-t border-slate-100 dark:border-slate-700">
             {t('attribution')}
           </p>
         </>

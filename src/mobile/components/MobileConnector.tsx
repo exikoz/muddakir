@@ -25,7 +25,7 @@ function MobileConnector({ searchTerm, matchType, sourceVerseKey }: Props) {
       {/* Vertical line + dot */}
       <div className="flex flex-col items-center w-5 shrink-0">
         <div className="w-0.5 h-3" style={{ backgroundColor: color }} />
-        <div className={`w-3 h-3 rounded-full ${dotColor} shrink-0 ring-2 ring-white`} />
+        <div className={`w-3 h-3 rounded-full ${dotColor} shrink-0 ring-2 ring-white dark:ring-slate-900`} />
         <div className="w-0.5 h-3" style={{ backgroundColor: color }} />
       </div>
 

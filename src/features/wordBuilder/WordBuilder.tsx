@@ -42,7 +42,7 @@ export default function WordBuilder() {
   }
 
   return (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-2 bg-white/95 backdrop-blur-md rounded-xl border border-slate-200 shadow-lg">
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-600 shadow-lg">
       {/* Selected words */}
       <div className="flex items-center gap-1" dir="rtl">
         {words.map((w: SelectedWord, i: number) => (

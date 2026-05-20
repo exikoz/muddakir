@@ -177,6 +177,43 @@ export default defineConfig(({ mode }) => {
             })()
           },
         },
+        // Search API — proxies to quran.com search endpoint with 'search' scope token
+        '/api/search': {
+          target: contentTarget,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/search/, '/search'),
+          configure: (proxy) => {
+            let devSearchToken = ''
+            let devSearchTokenExpiry = 0
+
+            proxy.on('proxyReq', async (proxyReq) => {
+              proxyReq.setHeader('x-client-id', clientId)
+              if (devSearchToken && Date.now() < devSearchTokenExpiry) {
+                proxyReq.setHeader('x-auth-token', devSearchToken)
+              }
+            })
+
+            // Pre-fetch a search token on startup
+            ;(async () => {
+              try {
+                const basic = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+                const res = await fetch(authEndpoint, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: new URLSearchParams({ grant_type: 'client_credentials', scope: 'search' }).toString(),
+                })
+                if (res.ok) {
+                  const json = await res.json() as { access_token: string; expires_in: number }
+                  devSearchToken = json.access_token
+                  devSearchTokenExpiry = Date.now() + (json.expires_in ?? 3600) * 1000 - 60_000
+                  console.log('[vite] Search API token acquired')
+                }
+              } catch (err) {
+                console.warn('[vite] Failed to get search token:', err)
+              }
+            })()
+          },
+        },
         // Muddakir backend — MCP + Gemini orchestration (local Express server)
         '/api/query': {
           target: 'http://localhost:3001',

@@ -74,10 +74,10 @@ function PhraseCard({ phrase, allPhrases, words, colorIndex, currentVerseKey, on
   const highlightMap = buildHighlightMap(allPhrases)
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
+    <div className="border border-slate-200 dark:border-slate-600 rounded-lg overflow-hidden">
       {/* Phrase preview — highlights ALL phrases, this card's phrase gets a left border accent */}
       <div className="px-3.5 py-3" style={{ borderLeft: `3px solid`, borderLeftColor: colorIndex === 0 ? '#fbbf24' : colorIndex === 1 ? '#38bdf8' : colorIndex === 2 ? '#fb7185' : '#a78bfa' }}>
-        <p className="font-arabic text-right text-lg leading-loose text-slate-800 mb-2" dir="rtl">
+        <p className="font-arabic text-right text-lg leading-loose text-slate-800 dark:text-slate-100 mb-2" dir="rtl">
           {filteredWords.map(w => {
             const wordColor = highlightMap.get(w.position)
             return (
@@ -114,7 +114,7 @@ function PhraseCard({ phrase, allPhrases, words, colorIndex, currentVerseKey, on
 
       {/* Expanded verse list */}
       {expanded && (
-        <div className="border-t border-slate-100 bg-slate-50/50">
+        <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
           {displayedKeys.map(vk => (
             <VerseRow
               key={vk}
@@ -178,7 +178,7 @@ function VerseRow({ verseKey, wordRanges, color, onNavigate }: VerseRowProps) {
   const filteredWords = verse?.words.filter(w => w.char_type_name !== 'end') ?? []
 
   return (
-    <div className="px-3.5 py-2.5 border-b border-slate-100 last:border-b-0">
+    <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-700 last:border-b-0">
       <div className="flex items-center justify-between mb-1.5">
         <button
           onClick={() => onNavigate(verseKey)}
@@ -210,7 +210,7 @@ function VerseRow({ verseKey, wordRanges, color, onNavigate }: VerseRowProps) {
           <Loader2 size={10} className="animate-spin" />
         </div>
       ) : (
-        <p className="font-arabic text-right text-sm leading-relaxed text-slate-700" dir="rtl">
+        <p className="font-arabic text-right text-sm leading-relaxed text-slate-700 dark:text-slate-200" dir="rtl">
           {filteredWords.map(w => {
             const highlighted = isWordHighlighted(w.position, wordRanges)
             return (

@@ -98,20 +98,20 @@ export default function DiscoveryPanel() {
   if (!isOpen) return null
 
   return (
-    <div dir="ltr" className="fixed top-12 bottom-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
-      <div className="p-4 border-b border-slate-100 bg-slate-50 space-y-3">
+    <div dir="ltr" className="fixed top-12 bottom-0 right-0 w-96 bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col">
+      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-3">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="font-semibold text-slate-800">{t('title')}</h2>
-            <p className="text-xs text-slate-500">
+            <h2 className="font-semibold text-slate-800 dark:text-slate-100">{t('title')}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {discoveryLoading ? t('searching') : t('results_found', { count: results.length })}
             </p>
           </div>
           <button
             onClick={() => closePanel('discovery')}
-            className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"
           >
-            <X size={20} className="text-slate-500" />
+            <X size={20} className="text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -124,7 +124,7 @@ export default function DiscoveryPanel() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('search_placeholder')}
-              className="w-full pl-9 pr-4 py-2 rounded-full border border-emerald-300 bg-white text-slate-700 text-sm font-arabic font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-emerald-300 dark:border-emerald-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-arabic font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               dir="rtl"
             />
             {discoveryLoading ? (
@@ -143,7 +143,7 @@ export default function DiscoveryPanel() {
           <div ref={modeRef} className="relative">
             <button
               onClick={() => setModeOpen(v => !v)}
-              className="h-9 px-2.5 rounded-full shadow-sm border text-[11px] font-bold transition-all flex items-center gap-1.5 bg-white text-slate-700 border-slate-200 hover:border-slate-300 whitespace-nowrap"
+              className="h-9 px-2.5 rounded-full shadow-sm border text-[11px] font-bold transition-all flex items-center gap-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 whitespace-nowrap"
               title="Search mode"
             >
               <span className={`w-2 h-2 rounded-full shrink-0 ${activeModeOption.dot}`} />
@@ -152,7 +152,7 @@ export default function DiscoveryPanel() {
             </button>
 
             {modeOpen && (
-              <div className="absolute top-11 right-0 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 min-w-[140px] z-50 flex flex-col gap-0.5">
+              <div className="absolute top-11 right-0 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-600 p-1.5 min-w-[140px] z-50 flex flex-col gap-0.5">
                 {MODE_OPTIONS.map(({ key, label, dot }) => {
                   const isActive = key === activeKey
                   return (
@@ -160,7 +160,7 @@ export default function DiscoveryPanel() {
                       key={key}
                       onClick={() => selectMode(key)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-left ${
-                        isActive ? 'bg-slate-100 text-slate-800' : 'text-slate-500 hover:bg-slate-50'
+                        isActive ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                       }`}
                     >
                       <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? dot : 'bg-slate-300'}`} />

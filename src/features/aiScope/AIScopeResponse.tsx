@@ -29,7 +29,7 @@ export default function AIScopeResponse({ content }: Props) {
 
   // If parsing produced no structured blocks, render as plain text
   if (blocks.length === 0) {
-    return <p className="text-sm text-slate-700 leading-relaxed" dir={contentDir}>{content}</p>
+    return <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed" dir={contentDir}>{content}</p>
   }
 
   return (
@@ -41,7 +41,7 @@ export default function AIScopeResponse({ content }: Props) {
           return (
             <div key={i} className="space-y-2">
               {paragraphs.map((p, j) => (
-                <p key={j} className="text-sm text-slate-700 leading-relaxed">
+                <p key={j} className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
                   {p.trim()}
                 </p>
               ))}
@@ -55,7 +55,7 @@ export default function AIScopeResponse({ content }: Props) {
 
         if (block.type === 'reflist') {
           return (
-            <div key={i} className="mt-3 pt-2.5 border-t border-slate-100">
+            <div key={i} className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
                 {t('also_referenced')}
               </p>
@@ -70,7 +70,7 @@ export default function AIScopeResponse({ content }: Props) {
 
         if (block.type === 'receipt') {
           return (
-            <p key={i} className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-relaxed">
+            <p key={i} className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 pt-2 border-t border-slate-100 dark:border-slate-700 leading-relaxed">
               {block.content}
             </p>
           )
@@ -111,9 +111,9 @@ function RefListRow({ verseKey, description }: { verseKey: string; description: 
   }
 
   return (
-    <div className="flex items-center gap-2 py-1 px-1 rounded-md hover:bg-slate-50 transition-colors group">
-      <span className="text-[11px] font-semibold text-slate-500 w-12 shrink-0">{verseKey}</span>
-      <span className="text-[11px] text-slate-400 flex-1 truncate">{description}</span>
+    <div className="flex items-center gap-2 py-1 px-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 w-12 shrink-0">{verseKey}</span>
+      <span className="text-[11px] text-slate-400 dark:text-slate-500 flex-1 truncate">{description}</span>
       {isOnCanvas ? (
         <span className="text-[9px] text-emerald-500 font-medium shrink-0">✓</span>
       ) : (

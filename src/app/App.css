@@ -9,6 +9,10 @@
   background: #f8fafc;
 }
 
+.dark .workspace {
+  background: #1a1f2e;
+}
+
 .workspace-canvas {
   flex: 1;
   position: relative;
@@ -20,6 +24,10 @@
   background: #f8fafc;
 }
 
+.dark .flow-canvas {
+  background: #1a1f2e;
+}
+
 /* ReactFlow handle visibility */
 .react-flow__handle {
   opacity: 0;
@@ -28,4 +36,18 @@
 
 .react-flow__node:hover .react-flow__handle {
   opacity: 1;
+}
+
+/* ReactFlow dark mode overrides */
+.dark .react-flow__controls button {
+  background: #2a3040;
+  color: #94a3b8;
+  border-color: #374151;
+}
+.dark .react-flow__controls button:hover {
+  background: #374151;
+  color: #e2e8f0;
+}
+.dark .react-flow__minimap {
+  background: #1e2433;
 }

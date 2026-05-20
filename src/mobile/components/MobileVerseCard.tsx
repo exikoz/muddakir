@@ -128,11 +128,11 @@ function MobileVerseCard({ nodeId, verse, matchType, matchedTokens, searchQuery,
 
   return (
     <div
-      className="bg-white rounded-xl border-2 shadow-sm overflow-hidden"
+      className="bg-white dark:bg-slate-800 rounded-xl border-2 shadow-sm overflow-hidden"
       style={{ borderColor: matchEdge || '#e2e8f0' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-slate-50/80 border-b border-slate-100">
+      <div className="flex items-center justify-between px-3 py-2 bg-slate-50/80 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-600">
         <div className="flex items-center gap-2">
           <button
             onClick={() => addSequentialVerse(nodeId, 'prev')}
@@ -193,7 +193,7 @@ function MobileVerseCard({ nodeId, verse, matchType, matchedTokens, searchQuery,
 
       {/* Arabic text — tappable words, highlights use getWordHighlights (same as desktop) */}
       <div className="px-3 py-3" dir="rtl">
-        <p className="text-lg leading-loose font-arabic text-slate-800 flex flex-wrap gap-x-1">
+        <p className="text-lg leading-loose font-arabic text-slate-800 dark:text-slate-100 flex flex-wrap gap-x-1">
           {verse.words.map((word, idx) => {
             if (word.char_type_name === 'end') return null
 

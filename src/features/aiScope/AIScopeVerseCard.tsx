@@ -59,9 +59,9 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl my-2.5 overflow-hidden transition-shadow hover:shadow-md">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl my-2.5 overflow-hidden transition-shadow hover:shadow-md">
       {/* Header */}
-      <div className="flex items-center justify-between px-3.5 py-2 border-b border-slate-100">
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-slate-100 dark:border-slate-700">
         <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
           Verse {verseKey}
         </span>
@@ -110,7 +110,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
           <>
             {/* Arabic text */}
             <p
-              className="font-arabic text-right text-xl leading-loose text-slate-800 mb-2.5"
+              className="font-arabic text-right text-xl leading-loose text-slate-800 dark:text-slate-100 mb-2.5"
               dir="rtl"
             >
               {verse.words
@@ -121,7 +121,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
 
             {/* Translation */}
             {verse.translation && (
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 {verse.translation}
               </p>
             )}
@@ -131,7 +131,7 @@ export default function AIScopeVerseCard({ verseKey }: Props) {
 
       {/* Footer */}
       {verse && !loading && (
-        <div className="px-3.5 py-1.5 border-t border-slate-50">
+        <div className="px-3.5 py-1.5 border-t border-slate-50 dark:border-slate-700">
           <button
             onClick={handleOpenMushaf}
             className="flex items-center gap-1.5 text-[10px] text-slate-400 hover:text-emerald-600 transition-colors font-medium"

@@ -38,12 +38,12 @@ export function MushafPanel() {
   return (
     <div
       dir="ltr"
-      className={`fixed top-12 bottom-0 left-0 w-[480px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+      className={`fixed top-12 bottom-0 left-0 w-[480px] bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
         isMushafOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 bg-slate-50 space-y-3 shrink-0">
+      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-3 shrink-0">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <BookOpen size={18} className="text-emerald-600" />

@@ -2,11 +2,13 @@ import { useRef, useEffect } from 'react'
 import { ReactFlow, Background, Controls, useReactFlow, type ReactFlowInstance } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useStore } from '../../store'
+import { useThemeStore } from '../../store/themeStore'
 import { NODE_TYPES, EDGE_TYPES } from '../../app/flow-config'
 
 function GraphCanvasInner() {
   const reactFlowInstance = useReactFlow()
   const instanceRef = useRef<ReactFlowInstance | null>(null)
+  const isDark = useThemeStore(s => s.resolved === 'dark')
 
   useEffect(() => {
     instanceRef.current = reactFlowInstance
@@ -17,7 +19,7 @@ function GraphCanvasInner() {
 
   return (
     <>
-      <Background variant="dots" color="#d4d4d4" gap={20} size={1.5} />
+      <Background variant="dots" color={isDark ? '#334155' : '#d4d4d4'} gap={20} size={1.5} />
       <Controls />
     </>
   )

@@ -80,7 +80,7 @@ export default function WelcomeState() {
             onChange={e => setInput(e.target.value)}
             placeholder={t('input_placeholder')}
             disabled={isLoading}
-            className="h-11 w-72 px-4 text-sm rounded-l-lg border border-slate-300/70 bg-white/70 backdrop-blur-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100/60 transition-all disabled:opacity-50"
+            className="h-11 w-72 px-4 text-sm rounded-l-lg border border-slate-300/70 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100/60 dark:focus:ring-emerald-900/40 transition-all disabled:opacity-50"
             dir="ltr"
           />
           <button

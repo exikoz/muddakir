@@ -30,8 +30,8 @@ export default function AdvancedToggle() {
         onClick={() => setMenuOpen(!menuOpen)}
         className={`h-8 px-2.5 rounded-lg border transition-all flex items-center justify-center gap-1.5 text-[11px] font-semibold ${
           isActive
-            ? 'bg-orange-50 text-orange-600 border-orange-300'
-            : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300'
+            ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-600'
+            : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 hover:text-orange-600 dark:hover:text-orange-400 hover:border-orange-300 dark:hover:border-orange-600'
         }`}
         title={t('advanced_title')}
       >
@@ -40,7 +40,7 @@ export default function AdvancedToggle() {
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-slate-200 shadow-lg py-1 z-50">
+        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 shadow-lg py-1 z-50">
           <button
             onClick={() => {
               setCustomizerOpen(v => !v)

@@ -1,9 +1,9 @@
 /**
- * User store — manages authentication state and bookmarks.
+ * User store — manages authentication state, bookmarks, and streaks.
  *
  * Follows the same Zustand pattern as aiScopeStore / verseDetailStore.
  * Auth tokens are kept in memory (access) and localStorage (refresh).
- * Bookmarks are synced from the Quran Foundation User API on login.
+ * Bookmarks and streaks are synced from the Quran Foundation User API on login.
  */
 
 import { create } from 'zustand'
@@ -13,7 +13,14 @@ import {
   addBookmark as apiAddBookmark,
   removeBookmark as apiRemoveBookmark,
 } from '../services/userApi'
+import {
+  fetchCurrentStreakDays,
+  fetchStreaks,
+  fetchActivityDays,
+  logActivityDay,
+} from '../services/streakApi'
 import type { Bookmark } from '../services/userApi'
+import type { Streak, ActivityDay } from '../services/streakApi'
 
 const REFRESH_TOKEN_KEY = 'muddakir_refresh_token'
 const USER_PROFILE_KEY = 'muddakir_user_profile'
@@ -40,6 +47,13 @@ interface UserState {
   bookmarkedVerseKeys: Set<string>
   bookmarksLoading: boolean
 
+  // Streaks
+  currentStreakDays: number
+  streaks: Streak[]
+  activityDays: ActivityDay[]
+  streakLoading: boolean
+  lastActivityLoggedAt: number | null
+
   // Actions
   login: () => Promise<void>
   handleCallback: (code: string, state: string) => Promise<void>
@@ -50,8 +64,13 @@ interface UserState {
   toggleBookmark: (verseKey: string) => Promise<void>
   isBookmarked: (verseKey: string) => boolean
 
+  // Streak actions
+  logReading: (seconds: number, ranges?: string[]) => Promise<void>
+  refreshStreak: () => Promise<void>
+
   // Internal
   _fetchBookmarks: (token: string) => Promise<void>
+  _fetchStreakData: (token: string) => Promise<void>
 }
 
 /** Convert API bookmark to verse key string */
@@ -71,6 +90,12 @@ export const useUserStore = create<UserState>((set, get) => ({
   bookmarks: [],
   bookmarkedVerseKeys: new Set(),
   bookmarksLoading: false,
+
+  currentStreakDays: 0,
+  streaks: [],
+  activityDays: [],
+  streakLoading: false,
+  lastActivityLoggedAt: null,
 
   // ── Auth actions ────────────────────────────────────────────────────────
 
@@ -140,9 +165,10 @@ export const useUserStore = create<UserState>((set, get) => ({
       loginError: null,
     })
 
-    // Fetch bookmarks after login
+    // Fetch bookmarks and streak data after login
     if (data.accessToken) {
       get()._fetchBookmarks(data.accessToken)
+      get()._fetchStreakData(data.accessToken)
     }
   },
 
@@ -157,6 +183,10 @@ export const useUserStore = create<UserState>((set, get) => ({
       user: null,
       bookmarks: [],
       bookmarkedVerseKeys: new Set(),
+      currentStreakDays: 0,
+      streaks: [],
+      activityDays: [],
+      lastActivityLoggedAt: null,
     })
   },
 
@@ -198,9 +228,10 @@ export const useUserStore = create<UserState>((set, get) => ({
         expiresAt: Date.now() + (data.expiresIn ?? 3600) * 1000,
       })
 
-      // Fetch bookmarks
+      // Fetch bookmarks and streak data
       if (data.accessToken) {
         get()._fetchBookmarks(data.accessToken)
+        get()._fetchStreakData(data.accessToken)
       }
     } catch {
       // Silent fail — user just won't be logged in
@@ -245,6 +276,26 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   isBookmarked: (verseKey) => get().bookmarkedVerseKeys.has(verseKey),
 
+  // ── Streak actions ────────────────────────────────────────────────────
+
+  logReading: async (seconds, ranges) => {
+    const { accessToken } = get()
+    if (!accessToken) return
+
+    const result = await logActivityDay(accessToken, { seconds, ranges })
+    if (result) {
+      set({ lastActivityLoggedAt: Date.now() })
+      // Refresh streak count after logging
+      get().refreshStreak()
+    }
+  },
+
+  refreshStreak: async () => {
+    const { accessToken } = get()
+    if (!accessToken) return
+    await get()._fetchStreakData(accessToken)
+  },
+
   // ── Internal ──────────────────────────────────────────────────────────
 
   _fetchBookmarks: async (token: string) => {
@@ -260,6 +311,33 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch (err) {
       console.error('[UserStore] Fetch bookmarks failed:', err)
       set({ bookmarksLoading: false })
+    }
+  },
+
+  _fetchStreakData: async (token: string) => {
+    set({ streakLoading: true })
+    try {
+      // Fetch current streak days and recent activity in parallel
+      const [days, streaks, activityDays] = await Promise.all([
+        fetchCurrentStreakDays(token),
+        fetchStreaks(token, { status: 'ACTIVE', first: 5 }),
+        fetchActivityDays(
+          token,
+          // Last 30 days
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          new Date().toISOString().split('T')[0],
+        ),
+      ])
+
+      set({
+        currentStreakDays: days,
+        streaks,
+        activityDays,
+        streakLoading: false,
+      })
+    } catch (err) {
+      console.error('[UserStore] Fetch streak data failed:', err)
+      set({ streakLoading: false })
     }
   },
 }))

@@ -73,7 +73,7 @@ export default function MobileVerseDetail({ verseKey }: Props) {
       <VerseHeader />
 
       {/* Tab bar */}
-      <div className="flex border-b border-slate-200 px-2 bg-white sticky top-0 z-10">
+      <div className="flex border-b border-slate-200 dark:border-slate-700 px-2 bg-white dark:bg-slate-900 sticky top-0 z-10">
         {TAB_IDS.map(tabId => {
           const Icon = TAB_ICONS[tabId]
           const isActive = activeTab === tabId

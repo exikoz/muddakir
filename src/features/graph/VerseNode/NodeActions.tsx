@@ -19,7 +19,7 @@ interface Props {
  * and each button has its own hover color flood.
  */
 const cell =
-  'w-9 h-full flex items-center justify-center border-l border-gray-200/60 transition-colors text-gray-400 group-hover:text-gray-500'
+  'w-9 h-full flex items-center justify-center border-l border-gray-200/60 dark:border-slate-600/60 transition-colors text-gray-400 dark:text-slate-500 group-hover:text-gray-500 dark:group-hover:text-slate-400'
 
 function NodeActions({ nodeId, verse }: Props) {
   const { t } = useTranslation('aiScope')
@@ -82,8 +82,8 @@ function NodeActions({ nodeId, verse }: Props) {
           onClick={handleShowResults}
           className={`${cell} ${
             isActiveDiscoveryNode && rightPanel === 'discovery'
-              ? '!text-cyan-500 bg-cyan-50'
-              : 'hover:!text-cyan-500 hover:bg-cyan-50'
+              ? '!text-cyan-500 dark:!text-cyan-400 bg-cyan-50 dark:bg-cyan-900/40'
+              : 'hover:!text-cyan-500 dark:hover:!text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/40'
           }`}
           title={t('show_search_results', 'Show search results')}
         >
@@ -94,8 +94,8 @@ function NodeActions({ nodeId, verse }: Props) {
         onClick={handleBookmark}
         className={`${cell} ${
           isBookmarked
-            ? '!text-amber-500 bg-amber-50'
-            : 'hover:!text-amber-500 hover:bg-amber-50'
+            ? '!text-amber-500 dark:!text-amber-400 bg-amber-50 dark:bg-amber-900/40'
+            : 'hover:!text-amber-500 dark:hover:!text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/40'
         }`}
         title={isBookmarked ? 'Remove bookmark' : 'Bookmark verse'}
       >
@@ -106,8 +106,8 @@ function NodeActions({ nodeId, verse }: Props) {
         onClick={handleOpenDetail}
         className={`${cell} ${
           isDetailActive
-            ? '!text-emerald-500 bg-emerald-50'
-            : 'hover:!text-emerald-500 hover:bg-emerald-50'
+            ? '!text-emerald-500 dark:!text-emerald-400 bg-emerald-50 dark:bg-emerald-900/40'
+            : 'hover:!text-emerald-500 dark:hover:!text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
         }`}
         title={t('verse_details')}
       >
@@ -118,8 +118,8 @@ function NodeActions({ nodeId, verse }: Props) {
         onClick={handleAddToAIScope}
         className={`${cell} ${
           isInContext
-            ? '!text-violet-500 bg-violet-50'
-            : 'hover:!text-violet-500 hover:bg-violet-50'
+            ? '!text-violet-500 dark:!text-violet-400 bg-violet-50 dark:bg-violet-900/40'
+            : 'hover:!text-violet-500 dark:hover:!text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/40'
         }`}
         title={isInContext ? t('in_ai_scope_context') : t('add_to_ai_scope')}
       >
@@ -128,7 +128,7 @@ function NodeActions({ nodeId, verse }: Props) {
 
       <button
         onClick={(e) => { e.stopPropagation(); deleteNode(nodeId) }}
-        className={`${cell} hover:!text-red-500 hover:bg-red-50`}
+        className={`${cell} hover:!text-red-500 dark:hover:!text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40`}
         title={t('remove_verse')}
       >
         <X size={14} />

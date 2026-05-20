@@ -65,23 +65,31 @@ export default function AIScopePanel() {
     }
   }, [handleSubmit])
 
+  // Auto-grow textarea as user types
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px'
+  }, [input])
+
   const logs = useSyncExternalStore(subscribeToLogs, getLogSnapshot)
 
   return (
     <div
       dir="ltr"
-      className={`fixed top-12 bottom-0 right-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+      className={`fixed top-12 bottom-0 right-0 w-[420px] bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0 space-y-2">
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 shrink-0 space-y-2">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-purple-500" />
             <div>
-              <h2 className="font-semibold text-slate-800 text-sm leading-tight">{t('title')}</h2>
-              <p className="text-[10px] text-slate-400">{t('subtitle')}</p>
+              <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight">{t('title')}</h2>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">{t('subtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -89,8 +97,8 @@ export default function AIScopePanel() {
               onClick={() => setShowDebugLogs(!showDebugLogs)}
               className={`p-1.5 rounded-lg transition-colors relative ${
                 showDebugLogs
-                  ? 'bg-amber-50 text-amber-600'
-                  : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'
+                  ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
               }`}
               title={t('toggle_debug')}
             >
@@ -104,7 +112,7 @@ export default function AIScopePanel() {
             {messages.length > 0 && (
               <button
                 onClick={clearChat}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 transition-colors"
                 title={t('clear_chat')}
               >
                 <Trash2 size={14} />
@@ -112,7 +120,7 @@ export default function AIScopePanel() {
             )}
             <button
               onClick={() => closePanel('aiScope')}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <X size={14} />
             </button>
@@ -120,7 +128,7 @@ export default function AIScopePanel() {
         </div>
 
         {/* Model selector — segment control */}
-        <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
           {MODEL_OPTIONS.map(opt => {
             const isActive = selectedModel === opt.id
             const meta = AI_SCOPE_MODELS[opt.id]
@@ -130,8 +138,8 @@ export default function AIScopePanel() {
                 onClick={() => setSelectedModel(opt.id)}
                 className={`flex-1 text-[11px] font-semibold py-1 rounded-md transition-all ${
                   isActive
-                    ? 'bg-white text-purple-700 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
                 title={meta.description}
               >
@@ -154,8 +162,8 @@ export default function AIScopePanel() {
         {messages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
             <Sparkles size={32} className="text-purple-200 mb-3" />
-            <p className="text-sm font-medium text-slate-500 mb-1">{t('empty_title')}</p>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{t('empty_title')}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
               {t('empty_description')}
             </p>
             <div className="mt-4 space-y-1.5 w-full">
@@ -170,7 +178,7 @@ export default function AIScopePanel() {
                     setInput(suggestion)
                     inputRef.current?.focus()
                   }}
-                  className="w-full text-left text-xs text-slate-500 hover:text-purple-600 hover:bg-purple-50 px-3 py-2 rounded-lg border border-slate-100 hover:border-purple-200 transition-all"
+                  className="w-full text-left text-xs text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 px-3 py-2 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-purple-200 dark:hover:border-purple-600 transition-all"
                 >
                   {suggestion}
                 </button>
@@ -194,8 +202,8 @@ export default function AIScopePanel() {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="px-4 py-3 border-t border-slate-100 shrink-0">
-        <div className="flex items-end gap-2 bg-slate-50 rounded-xl border border-slate-200 focus-within:border-purple-300 focus-within:bg-white transition-all px-3 py-2">
+      <form onSubmit={handleSubmit} className="px-4 py-3 border-t border-slate-100 dark:border-slate-700 shrink-0">
+        <div className="flex items-end gap-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-600 focus-within:border-purple-300 dark:focus-within:border-purple-500 focus-within:bg-white dark:focus-within:bg-slate-700 transition-all px-3 py-2">
           <textarea
             ref={inputRef}
             value={input}
@@ -203,7 +211,7 @@ export default function AIScopePanel() {
             onKeyDown={handleKeyDown}
             placeholder={t('input_placeholder')}
             rows={1}
-            className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400 resize-none max-h-24"
+            className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none max-h-[140px] overflow-y-auto"
           />
           <button
             type="submit"

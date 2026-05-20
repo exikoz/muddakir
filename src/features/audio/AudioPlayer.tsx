@@ -46,10 +46,10 @@ export default function AudioPlayer({ verseKey }: Props) {
   }
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
+    <div className="border border-slate-200 dark:border-slate-600 rounded-lg overflow-hidden">
       {/* Progress bar — flush top cell */}
       <div
-        className="h-1.5 bg-slate-100 cursor-pointer relative"
+        className="h-1.5 bg-slate-100 dark:bg-slate-700 cursor-pointer relative"
         onClick={handleSeek}
       >
         <div
@@ -59,11 +59,11 @@ export default function AudioPlayer({ verseKey }: Props) {
       </div>
 
       {/* Controls row */}
-      <div className="flex items-stretch h-8 border-t border-slate-200">
+      <div className="flex items-stretch h-8 border-t border-slate-200 dark:border-slate-600">
         {/* Play / Pause */}
         <button
           onClick={handlePlayPause}
-          className="w-9 flex items-center justify-center border-r border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+          className="w-9 flex items-center justify-center border-r border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
         >
           {isThisPlaying ? <Pause size={12} /> : <Play size={12} />}
         </button>

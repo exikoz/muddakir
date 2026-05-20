@@ -59,7 +59,7 @@ function VerseEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, tar
             className="nodrag nopan"
           >
             <div
-              className="font-arabic text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm bg-white border border-slate-200 text-slate-700"
+              className="font-arabic text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200"
               dir="rtl"
             >
               {searchTerm}

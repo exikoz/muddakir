@@ -62,37 +62,37 @@ export default function WordByWordSection() {
                   <button
                     onClick={() => handleWordTap(word.position)}
                     className={`w-full flex items-center gap-3 py-2 px-2 rounded-lg transition-colors text-left group cursor-pointer ${
-                      isActive ? 'bg-emerald-50' : 'hover:bg-slate-50'
+                      isActive ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     <span
                       className={`font-arabic text-lg w-28 text-right shrink-0 transition-colors ${
-                        isActive ? 'text-emerald-700' : 'text-slate-800 group-hover:text-emerald-700'
+                        isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400'
                       }`}
                       dir="rtl"
                     >
                       {word.text}
                     </span>
-                    <span className="text-[11px] text-slate-400 w-24 shrink-0 truncate">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 w-24 shrink-0 truncate">
                       {word.transliteration ?? ''}
                     </span>
-                    <span className="text-[11px] text-slate-500 flex-1 truncate">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 flex-1 truncate">
                       {word.translation ?? ''}
                     </span>
                     <ChevronRight
                       size={10}
-                      className={`text-slate-300 shrink-0 transition-transform ${
-                        isActive ? 'rotate-90 text-emerald-500' : 'group-hover:text-slate-400'
+                      className={`text-slate-300 dark:text-slate-600 shrink-0 transition-transform ${
+                        isActive ? 'rotate-90 text-emerald-500' : 'group-hover:text-slate-400 dark:group-hover:text-slate-500'
                       }`}
                     />
                   </button>
 
                   {/* Inline expansion */}
                   {isActive && (
-                    <div className="ml-2 mb-2 border-l-2 border-emerald-400 bg-white rounded-r-lg p-3 shadow-sm">
+                    <div className="ml-2 mb-2 border-l-2 border-emerald-400 bg-white dark:bg-slate-800 rounded-r-lg p-3 shadow-sm">
                       <div className="flex items-center gap-1.5 mb-2">
                         <Sparkles size={10} className="text-purple-400" />
-                        <span className="font-arabic text-base text-slate-800" dir="rtl">{word.text}</span>
+                        <span className="font-arabic text-base text-slate-800 dark:text-slate-100" dir="rtl">{word.text}</span>
                       </div>
 
                       {isLoading && !explanation && (
@@ -103,12 +103,12 @@ export default function WordByWordSection() {
                       )}
 
                       {explanation && (
-                        <div className="text-xs text-slate-600 leading-relaxed space-y-1.5" dir={contentDir}>
+                        <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-1.5" dir={contentDir}>
                           {explanation.split(/\n{2,}|\n/).filter(Boolean).map((line, i) => {
                             const trimmed = line.trim()
                             if (trimmed.startsWith('✅') && /Verification Token/i.test(trimmed)) {
                               return (
-                                <p key={i} className="text-[10px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100 leading-relaxed">
+                                <p key={i} className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-700 leading-relaxed">
                                   {trimmed.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')}
                                 </p>
                               )
@@ -119,14 +119,14 @@ export default function WordByWordSection() {
                       )}
 
                       {/* Ask more about this word */}
-                      <form onSubmit={(e) => handleAskMore(e, word.position)} className="mt-2 pt-2 border-t border-slate-100">
+                      <form onSubmit={(e) => handleAskMore(e, word.position)} className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
                             value={askInput}
                             onChange={e => setAskInput(e.target.value)}
                             placeholder={t('ask_more_about_word', { word: word.text })}
-                            className="flex-1 text-[10px] text-slate-600 placeholder:text-slate-400 bg-transparent outline-none"
+                            className="flex-1 text-[10px] text-slate-600 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-transparent outline-none"
                             dir="ltr"
                           />
                           <button

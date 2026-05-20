@@ -28,8 +28,8 @@ export default function UndoRedo() {
   }, [undo, redo])
 
   const base = 'h-8 px-2 rounded-lg border text-[11px] font-semibold transition-all flex items-center justify-center gap-1'
-  const enabled = 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700 hover:border-slate-300'
-  const disabled = 'bg-transparent text-slate-300 border-transparent cursor-not-allowed'
+  const enabled = 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-500'
+  const disabled = 'bg-transparent text-slate-300 dark:text-slate-600 border-transparent cursor-not-allowed'
 
   return (
     <div className="flex gap-0.5">

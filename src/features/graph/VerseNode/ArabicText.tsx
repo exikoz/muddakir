@@ -19,9 +19,10 @@ interface Props {
   tokenTypes?: Record<string, string>
   matchType?: MatchType
   searchQuery?: string
+  highlightedName?: string
 }
 
-function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId, matchedTokens, matchType, searchQuery }: Props) {
+function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId, matchedTokens, matchType, searchQuery, highlightedName }: Props) {
   const searchOptions = useStore(s => s.searchOptions)
 
   // Word builder state
@@ -67,12 +68,12 @@ function ArabicText({ verse, activeWordIndex, activeWordMatchType, sourceNodeId,
 
   const wordHighlights = useMemo(() => {
     if (!matchType) return null
-    const map = getWordHighlights(verse.words, matchedTokens ?? [], matchType, searchQuery, verse.verse_key)
+    const map = getWordHighlights(verse.words, matchedTokens ?? [], matchType, searchQuery, verse.verse_key, highlightedName)
     return map.size > 0 ? map : null
-  }, [verse.words, verse.verse_key, matchedTokens, matchType, searchQuery])
+  }, [verse.words, verse.verse_key, matchedTokens, matchType, searchQuery, highlightedName])
 
   return (
-    <div className="font-arabic text-right text-2xl leading-loose text-slate-800 w-full" dir="rtl">
+    <div className="font-arabic text-right text-2xl leading-loose text-slate-800 dark:text-slate-100 w-full" dir="rtl">
       {verse.words.map((word, index) => {
         if (word.char_type_name === 'end') return null
 

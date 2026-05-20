@@ -37,7 +37,7 @@ export default function VerseDetailPanel() {
   return (
     <div
       dir="ltr"
-      className={`fixed top-12 bottom-0 right-0 w-[420px] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
+      className={`fixed top-12 bottom-0 right-0 w-[420px] bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
@@ -45,7 +45,7 @@ export default function VerseDetailPanel() {
       <VerseHeader />
 
       {/* Tab bar */}
-      <div className="flex border-b border-slate-200 px-2 shrink-0 bg-white">
+      <div className="flex border-b border-slate-200 dark:border-slate-700 px-2 shrink-0 bg-white dark:bg-slate-900">
         {TAB_IDS.map(tabId => {
           const { Icon, accent } = TAB_CONFIG[tabId]
           const isActive = activeTab === tabId
@@ -55,8 +55,8 @@ export default function VerseDetailPanel() {
               onClick={() => setActiveTab(tabId)}
               className={`flex items-center gap-1 px-2.5 py-2 text-[11px] font-medium transition-colors relative ${
                 isActive
-                  ? accent ? 'text-emerald-600' : 'text-emerald-600'
-                  : accent ? 'text-emerald-400 hover:text-emerald-600' : 'text-slate-400 hover:text-slate-600'
+                  ? accent ? 'text-emerald-600 dark:text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'
+                  : accent ? 'text-emerald-400 hover:text-emerald-600' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
             >
               <Icon size={11} />

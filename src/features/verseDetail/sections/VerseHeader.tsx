@@ -35,23 +35,23 @@ export default function VerseHeader() {
   }
 
   return (
-    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0">
+    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 shrink-0">
       <div className="flex items-center justify-between mb-1">
         <button
           onClick={handleBack}
-          className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
+          className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium transition-colors"
         >
           {isRtl ? <ArrowRight size={12} /> : <ArrowLeft size={12} />}
           {previousPanel === 'aiScope' ? t('back_to_ai_scope') : previousPanel === 'discovery' ? t('back_to_discovery') : t('close')}
         </button>
         <button
           onClick={handleClose}
-          className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+          className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
         >
           <X size={14} />
         </button>
       </div>
-      <h2 className="font-semibold text-slate-800 text-lg leading-tight">
+      <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-lg leading-tight">
         {verse.verse_key}
       </h2>
       <div className="flex items-center justify-between mt-0.5">
@@ -61,7 +61,7 @@ export default function VerseHeader() {
         <BookmarkButton
           verseKey={verse.verse_key}
           size={14}
-          className="bg-white text-slate-400 border-slate-100 hover:text-amber-500 hover:bg-amber-50 hover:border-amber-200"
+          className="bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-600 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:border-amber-200 dark:hover:border-amber-600"
         />
       </div>
     </div>

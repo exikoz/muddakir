@@ -26,6 +26,10 @@ export interface SearchResult {
   matchedTokens: string[]
   tokenTypes?: Record<string, string>
   text: string
+  /** API search: raw Uthmani HTML with <em> tags around matched words */
+  highlightedName?: string
+  /** true when we have data to highlight (tokens, <em>, or suffixMatch) */
+  hasHighlight?: boolean
 }
 
 export interface SearchOptions {

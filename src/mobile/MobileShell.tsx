@@ -45,7 +45,7 @@ export default function MobileShell() {
   }, [openMushafToVerse, initWorkspaces, restoreSession])
 
   return (
-    <div className="flex flex-col h-dvh bg-slate-50 overflow-hidden">
+    <div className="flex flex-col h-dvh bg-slate-50 dark:bg-slate-900 overflow-hidden">
       {/* Top toolbar (only on explorer tab) */}
       {activeTab === 'explorer' && <MobileToolbar />}
 

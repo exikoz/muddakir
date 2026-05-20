@@ -46,7 +46,13 @@ export function getWordHighlights(
   matchType: MatchType,
   searchQuery?: string,
   verseKey?: string,
+  highlightedName?: string,
 ): Map<number, MatchType> {
+  // Strategy 0: API <em> tag matching — highest priority when available
+  if (highlightedName && highlightedName.includes('<em>')) {
+    return getHighlights_EmTags(words, highlightedName, matchType, verseKey)
+  }
+
   // Regex → always use regex strategy
   if (matchType === 'regex' && searchQuery) {
     return getHighlightPositions_RegexB(words, searchQuery, verseKey)
@@ -63,6 +69,55 @@ export function getWordHighlights(
   }
 
   return new Map()
+}
+
+/**
+ * Strategy 0: API <em> tag matching.
+ * The quran.com Search API returns Uthmani text with <em> tags around matched words.
+ * Extract those words and match them against the verse's API word objects.
+ */
+function getHighlights_EmTags(
+  words: Word[],
+  highlightedName: string,
+  matchType: MatchType,
+  verseKey?: string,
+): Map<number, MatchType> {
+  const map = new Map<number, MatchType>()
+
+  // Extract all words inside <em> tags
+  const emWords: string[] = []
+  const re = /<em>(.*?)<\/em>/g
+  let m
+  while ((m = re.exec(highlightedName)) !== null) {
+    m[1].trim().split(/\s+/).forEach(w => emWords.push(w))
+  }
+
+  if (emWords.length === 0) return map
+
+  // Strip tashkeel from <em> words for comparison
+  const strippedEmWords = emWords.map(w => removeTashkeel(w).trim())
+
+  if (DEBUG) {
+    console.groupCollapsed(`[highlight:em] ${verseKey ?? '?'} — <em> words: [${emWords.join(', ')}]`)
+  }
+
+  words.forEach((word, index) => {
+    if (word.char_type_name === 'end') return
+    const strippedWord = removeTashkeel(word.text).trim()
+    const matched = strippedEmWords.some(emW => emW === strippedWord)
+    if (DEBUG) {
+      console.log(`  [${index}] "${word.text}" → "${strippedWord}" ${matched ? '✅' : '—'}`)
+    }
+    if (matched) {
+      map.set(index, matchType === 'none' ? 'exact' : matchType)
+    }
+  })
+
+  if (DEBUG) {
+    console.log(`  Result: ${map.size} words highlighted`)
+    console.groupEnd()
+  }
+  return map
 }
 
 /**

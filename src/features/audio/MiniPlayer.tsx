@@ -78,7 +78,7 @@ export default function MiniPlayer({ verseKey }: Props) {
     <div className="flex flex-col flex-1 min-w-0" onClick={e => e.stopPropagation()}>
       {/* Progress bar — flush top edge of the cell */}
       <div
-        className="h-1 bg-slate-100 cursor-pointer relative shrink-0"
+        className="h-1 bg-slate-100 dark:bg-slate-700 cursor-pointer relative shrink-0"
         onClick={handleSeek}
       >
         <div

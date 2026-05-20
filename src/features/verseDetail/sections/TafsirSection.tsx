@@ -59,20 +59,20 @@ export default function TafsirSection() {
       <div className="relative mb-3">
         <button
           onClick={() => setShowPicker(!showPicker)}
-          className="flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
+          className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium transition-colors"
         >
           {selectedName}
           <ChevronDown size={10} className={`transition-transform ${showPicker ? 'rotate-180' : ''}`} />
         </button>
 
         {showPicker && (
-          <div className="absolute top-6 left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1">
+          <div className="absolute top-6 left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1">
             {available.map(t => (
               <button
                 key={t.id}
                 onClick={() => { setSelectedId(t.id); setShowPicker(false) }}
-                className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 transition-colors ${
-                  selectedId === t.id ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-600'
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-left text-[10px] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
+                  selectedId === t.id ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium' : 'text-slate-600 dark:text-slate-300'
                 }`}
               >
                 <span className="truncate">{t.name}</span>
@@ -105,7 +105,7 @@ export default function TafsirSection() {
 
       {!loading && !error && tafsir && (
         <>
-          <p className="text-sm text-slate-600 leading-relaxed">{displayText}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{displayText}</p>
           {isLong && (
             <button
               onClick={() => setExpanded(!expanded)}

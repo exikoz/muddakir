@@ -26,7 +26,7 @@ export default function MobileBottomNav() {
   const isDiscoveryOpen = panel?.type === 'discovery'
 
   return (
-    <nav className="sticky bottom-0 z-50 flex items-stretch bg-white/95 backdrop-blur-md border-t border-slate-200/80 safe-area-bottom">
+    <nav className="sticky bottom-0 z-50 flex items-stretch bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-700/80 safe-area-bottom">
       {TABS.map(({ id, Icon, labelKey }) => {
         const active = activeTab === id
         return (

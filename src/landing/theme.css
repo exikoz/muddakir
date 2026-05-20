@@ -1,0 +1,280 @@
+/* ==========================================================
+ * Landing Page — Scoped Theme
+ * ----------------------------------------------------------
+ * All tokens/utilities live under `.landing-root` so the app's
+ * own theme store is never touched. Default = light; add the
+ * `.landing-dark` modifier class on the same wrapper to flip.
+ * ========================================================== */
+
+.landing-root {
+  /* ── Surfaces (warm off-white, not blinding) ── */
+  --lp-bg: #faf9f5;
+  --lp-surface: #ffffff;
+  --lp-surface-2: #f3f1ea;
+  --lp-surface-3: #ece9df;
+  --lp-hairline: rgba(15, 23, 42, 0.08);
+  --lp-hairline-strong: rgba(15, 23, 42, 0.14);
+
+  /* ── Text ── */
+  --lp-text: #111827;
+  --lp-text-muted: #334155;
+  --lp-text-dim: #64748b;
+  --lp-text-faint: #94a3b8;
+
+  /* ── Feature accents (tuned for light) ── */
+  --lp-emerald: #047857;
+  --lp-emerald-soft: rgba(4, 120, 87, 0.08);
+  --lp-emerald-border: rgba(4, 120, 87, 0.28);
+  --lp-emerald-strong: #065f46;
+
+  --lp-amber: #a16207;
+  --lp-amber-soft: rgba(161, 98, 7, 0.08);
+  --lp-amber-border: rgba(161, 98, 7, 0.28);
+  --lp-amber-strong: #854d0e;
+
+  --lp-blue: #1d4ed8;
+  --lp-blue-soft: rgba(29, 78, 216, 0.08);
+  --lp-blue-border: rgba(29, 78, 216, 0.28);
+
+  --lp-violet: #6d28d9;
+  --lp-violet-soft: rgba(109, 40, 217, 0.08);
+  --lp-violet-border: rgba(109, 40, 217, 0.28);
+
+  --lp-cyan: #0e7490;
+  --lp-cyan-soft: rgba(14, 116, 144, 0.08);
+  --lp-cyan-border: rgba(14, 116, 144, 0.28);
+
+  --lp-sepia: #92400e;
+  --lp-sepia-soft: rgba(146, 64, 14, 0.08);
+  --lp-sepia-border: rgba(146, 64, 14, 0.28);
+
+  --lp-rose: #be123c;
+  --lp-rose-soft: rgba(190, 18, 60, 0.08);
+  --lp-rose-border: rgba(190, 18, 60, 0.28);
+
+  /* ── Fonts (landing scope) ── */
+  font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--lp-text);
+  background: var(--lp-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Dark variant (softer than near-black) ── */
+.landing-root.landing-dark {
+  --lp-bg: #10151f;
+  --lp-surface: #151c2a;
+  --lp-surface-2: #1b2334;
+  --lp-surface-3: #222c42;
+  --lp-hairline: rgba(148, 163, 184, 0.12);
+  --lp-hairline-strong: rgba(148, 163, 184, 0.22);
+
+  --lp-text: #e5e7eb;
+  --lp-text-muted: #cbd5e1;
+  --lp-text-dim: #94a3b8;
+  --lp-text-faint: #64748b;
+
+  --lp-emerald: #34d399;
+  --lp-emerald-soft: rgba(52, 211, 153, 0.12);
+  --lp-emerald-border: rgba(52, 211, 153, 0.32);
+  --lp-emerald-strong: #10b981;
+
+  --lp-amber: #e5b567;
+  --lp-amber-soft: rgba(229, 181, 103, 0.12);
+  --lp-amber-border: rgba(229, 181, 103, 0.32);
+  --lp-amber-strong: #d4a24c;
+
+  --lp-blue: #60a5fa;
+  --lp-blue-soft: rgba(96, 165, 250, 0.12);
+  --lp-blue-border: rgba(96, 165, 250, 0.32);
+
+  --lp-violet: #a78bfa;
+  --lp-violet-soft: rgba(167, 139, 250, 0.12);
+  --lp-violet-border: rgba(167, 139, 250, 0.32);
+
+  --lp-cyan: #22d3ee;
+  --lp-cyan-soft: rgba(34, 211, 238, 0.12);
+  --lp-cyan-border: rgba(34, 211, 238, 0.32);
+
+  --lp-sepia: #f5d287;
+  --lp-sepia-soft: rgba(245, 210, 135, 0.12);
+  --lp-sepia-border: rgba(245, 210, 135, 0.3);
+
+  --lp-rose: #fb7185;
+  --lp-rose-soft: rgba(251, 113, 133, 0.12);
+  --lp-rose-border: rgba(251, 113, 133, 0.32);
+}
+
+/* ──────────────────────────────────────────────────────────
+ * Typography utilities
+ * ────────────────────────────────────────────────────────── */
+
+.lp-font-logo-ar {
+  font-family: 'Tajawal', 'Amiri', serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.lp-font-logo-en {
+  font-family: 'Cairo', 'Geist', sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
+.lp-font-arabic {
+  font-family: 'Amiri', serif;
+  line-height: 2.2;
+}
+
+.lp-font-display {
+  font-family: 'Geist', system-ui, sans-serif;
+  letter-spacing: -0.028em;
+}
+
+/* ──────────────────────────────────────────────────────────
+ * Per-section accent overrides — subtle borders & glows.
+ * Apply ONE of these classes on the Section wrapper; children
+ * can then read `var(--lp-accent)` etc. for borders & icons.
+ * ────────────────────────────────────────────────────────── */
+
+.lp-accent-emerald {
+  --lp-accent: var(--lp-emerald);
+  --lp-accent-soft: var(--lp-emerald-soft);
+  --lp-accent-border: var(--lp-emerald-border);
+  --lp-accent-strong: var(--lp-emerald-strong);
+}
+.lp-accent-amber {
+  --lp-accent: var(--lp-amber);
+  --lp-accent-soft: var(--lp-amber-soft);
+  --lp-accent-border: var(--lp-amber-border);
+  --lp-accent-strong: var(--lp-amber-strong);
+}
+.lp-accent-blue {
+  --lp-accent: var(--lp-blue);
+  --lp-accent-soft: var(--lp-blue-soft);
+  --lp-accent-border: var(--lp-blue-border);
+  --lp-accent-strong: var(--lp-blue);
+}
+.lp-accent-violet {
+  --lp-accent: var(--lp-violet);
+  --lp-accent-soft: var(--lp-violet-soft);
+  --lp-accent-border: var(--lp-violet-border);
+  --lp-accent-strong: var(--lp-violet);
+}
+.lp-accent-cyan {
+  --lp-accent: var(--lp-cyan);
+  --lp-accent-soft: var(--lp-cyan-soft);
+  --lp-accent-border: var(--lp-cyan-border);
+  --lp-accent-strong: var(--lp-cyan);
+}
+.lp-accent-sepia {
+  --lp-accent: var(--lp-sepia);
+  --lp-accent-soft: var(--lp-sepia-soft);
+  --lp-accent-border: var(--lp-sepia-border);
+  --lp-accent-strong: var(--lp-sepia);
+}
+.lp-accent-slate {
+  --lp-accent: var(--lp-text-dim);
+  --lp-accent-soft: var(--lp-hairline);
+  --lp-accent-border: var(--lp-hairline-strong);
+  --lp-accent-strong: var(--lp-text-muted);
+}
+
+/* ──────────────────────────────────────────────────────────
+ * Motion primitives
+ * ────────────────────────────────────────────────────────── */
+
+@keyframes lp-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lp-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 var(--lp-emerald-soft); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+@keyframes lp-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.lp-animate-fade-up { animation: lp-fade-up 0.5s ease-out both; }
+.lp-animate-pulse-ring { animation: lp-pulse-ring 2.2s ease-in-out infinite; }
+
+/* ──────────────────────────────────────────────────────────
+ * Custom scrollbar inside landing interactive demos
+ * ────────────────────────────────────────────────────────── */
+
+.lp-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.lp-scroll::-webkit-scrollbar-track { background: transparent; }
+.lp-scroll::-webkit-scrollbar-thumb {
+  background: var(--lp-hairline-strong);
+  border-radius: 3px;
+}
+.lp-scroll::-webkit-scrollbar-thumb:hover { background: var(--lp-text-faint); }
+
+/* ──────────────────────────────────────────────────────────
+ * ReactFlow overrides — grid & edges inside landing canvas
+ * ────────────────────────────────────────────────────────── */
+
+.landing-root .react-flow__attribution { display: none; }
+.landing-root .react-flow__edge-path { stroke-linecap: round; }
+.landing-root .react-flow__background {
+  background-color: var(--lp-surface-2);
+}
+.landing-root .react-flow__edge-textbg { fill: var(--lp-surface); }
+.landing-root .react-flow__edge-text {
+  font-family: 'Amiri', serif;
+  fill: var(--lp-text-muted);
+}
+
+/* Section eyebrow chip */
+.lp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--lp-accent-border, var(--lp-hairline-strong));
+  background: var(--lp-accent-soft, var(--lp-surface-2));
+  color: var(--lp-accent, var(--lp-text-muted));
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Bento card base */
+.lp-card {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-hairline);
+  border-radius: 20px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.lp-card:hover {
+  border-color: var(--lp-accent-border, var(--lp-hairline-strong));
+}
+
+/* Soft accent card (uses section accent for its top-left corner stripe) */
+.lp-card-accented {
+  position: relative;
+  overflow: hidden;
+}
+.lp-card-accented::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 44px; height: 3px;
+  background: var(--lp-accent, var(--lp-text-dim));
+  border-radius: 0 0 3px 0;
+  opacity: 0.65;
+}
+
+/* Grid bg for canvas frame */
+.lp-grid-bg {
+  background-image:
+    linear-gradient(to right, var(--lp-hairline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lp-hairline) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
