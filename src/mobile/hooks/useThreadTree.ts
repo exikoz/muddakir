@@ -81,7 +81,7 @@ export function useThreadTree(): ThreadRoot[] {
 
       // Group search edges by searchTerm
       const searchEdgesByTerm = new Map<string, VerseEdge[]>()
-      let seqPrevEdge: VerseEdge | undefined
+      let _seqPrevEdge: VerseEdge | undefined
       let seqNextEdge: VerseEdge | undefined
 
       for (const edge of outEdges) {
@@ -97,14 +97,14 @@ export function useThreadTree(): ThreadRoot[] {
           // For prev edges, the source is the new (earlier) node
           // and target is the current node — but we stored it as
           // source=current, target=new in some cases. Check both.
-          seqPrevEdge = edge
+          _seqPrevEdge = edge
         }
       }
 
       // Also check incoming edges for sequential-prev (source=newNode, target=thisNode)
       for (const edge of edges) {
         if (edge.target === nodeId && edge.data?.edgeType === 'sequential-prev' && !visited.has(edge.source)) {
-          seqPrevEdge = edge
+          _seqPrevEdge = edge
         }
       }
 

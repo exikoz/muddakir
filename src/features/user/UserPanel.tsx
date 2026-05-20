@@ -7,7 +7,7 @@
  *   3. Bookmarked verses (clickable to navigate)
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Flame, Bookmark, Calendar, LogIn, Loader2 } from 'lucide-react'
 import { useSidePanelStore } from '../../store/sidePanelStore'
 import { useUserStore } from '../../store/userStore'

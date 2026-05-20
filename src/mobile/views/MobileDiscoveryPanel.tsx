@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Search, Loader2, ChevronDown, X } from 'lucide-react'
+import { Search, Loader2, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from '../../store'
 import { useDiscoveryCacheStore } from '../../store/discoveryCacheStore'

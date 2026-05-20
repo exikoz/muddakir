@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { ReactFlow, Background, Controls, useReactFlow, type ReactFlowInstance } from '@xyflow/react'
+import { ReactFlow, Background, BackgroundVariant, Controls, useReactFlow, type ReactFlowInstance } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useStore } from '../../store'
 import { useThemeStore } from '../../store/themeStore'
@@ -19,7 +19,7 @@ function GraphCanvasInner() {
 
   return (
     <>
-      <Background variant="dots" color={isDark ? '#334155' : '#d4d4d4'} gap={20} size={1.5} />
+      <Background variant={BackgroundVariant.Dots} color={isDark ? '#334155' : '#d4d4d4'} gap={20} size={1.5} />
       <Controls />
     </>
   )

@@ -72,6 +72,18 @@ export const MODE_COLORS = {
     edge: '#06b6d4', // cyan-500
     badge: 'bg-cyan-100 text-cyan-700 border-cyan-200',
   },
+  regex: {
+    name: 'Regex',
+    dot: 'bg-rose-500',
+    active: 'text-rose-700 bg-rose-50 border-rose-300',
+    hover: 'hover:bg-rose-50 hover:text-rose-700',
+    clickedBg: 'bg-rose-100',
+    clickedText: 'text-rose-900',
+    clickedBorder: 'border-rose-300',
+    matchHighlight: 'bg-rose-100 text-rose-900',
+    edge: '#f43f5e', // rose-500
+    badge: 'bg-rose-100 text-rose-700 border-rose-200',
+  },
   none: {
     name: 'None',
     dot: 'bg-slate-400',

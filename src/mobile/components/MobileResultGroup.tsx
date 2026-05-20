@@ -19,7 +19,7 @@ interface Props {
 
 const INITIAL_SHOW = 5
 
-function MobileResultGroup({ sourceNodeId, results, matchType, searchTerm }: Props) {
+function MobileResultGroup({ sourceNodeId, results, matchType }: Props) {
   const { t } = useTranslation('discovery')
   const addVerseNode = useStore(s => s.addVerseNode)
   const [expanded, setExpanded] = useState(false)

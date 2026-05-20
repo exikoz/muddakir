@@ -33,7 +33,7 @@ interface Props {
 }
 
 function MobileVerseCard({ nodeId, verse, matchType, matchedTokens, searchQuery, activeWordIndex, activeWordMatchType }: Props) {
-  const { t, i18n } = useTranslation('graph')
+  const { i18n } = useTranslation('graph')
   const deleteNode = useStore(s => s.deleteNode)
   const addSequentialVerse = useStore(s => s.addSequentialVerse)
   const searchOptions = useStore(s => s.searchOptions)
