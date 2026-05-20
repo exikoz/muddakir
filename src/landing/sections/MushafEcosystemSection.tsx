@@ -3,7 +3,7 @@
  * Three companion surfaces — each with its own subtle accent.
  */
 
-import { BookOpen, LogIn, Smartphone, ArrowUpRight } from 'lucide-react'
+import { BookOpen, LogIn, Smartphone, ArrowUpRight, Clock } from 'lucide-react'
 import ScrollReveal from '../components/ScrollReveal'
 import { Section, Eyebrow, BentoCard } from '../primitives'
 
@@ -16,7 +16,7 @@ const MOCK_VERSES = [
 function MushafCard() {
   return (
     <div className="lp-accent-sepia">
-      <BentoCard accented className="h-full">
+      <BentoCard accented>
         <div className="flex items-center justify-between mb-4">
           <Eyebrow icon={BookOpen}>Mushaf reader</Eyebrow>
           <span className="text-[10.5px] font-semibold" style={{ color: 'var(--lp-text-faint)' }}>
@@ -31,7 +31,7 @@ function MushafCard() {
           Open any verse node straight to its page in the Mushaf. Read a verse in context, then drop it back onto your canvas in one click.
         </p>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {MOCK_VERSES.map((v, i) => {
             const highlight = i === 0
             return (
@@ -45,7 +45,7 @@ function MushafCard() {
                     : '1px solid var(--lp-hairline)',
                 }}
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span
                     className="text-[10px] font-semibold uppercase tracking-wider"
                     style={{ color: highlight ? 'var(--lp-sepia)' : 'var(--lp-text-faint)' }}
@@ -80,7 +80,7 @@ function MushafCard() {
 function SignInCard() {
   return (
     <div className="lp-accent-emerald">
-      <BentoCard accented className="h-full">
+      <BentoCard accented>
         <Eyebrow icon={LogIn}>Quran.com sign-in</Eyebrow>
         <h3
           className="lp-font-display text-lg md:text-xl font-semibold mt-3 mb-2"
@@ -106,94 +106,52 @@ function SignInCard() {
         </button>
 
         <ul className="mt-4 space-y-1.5 text-[11.5px]" style={{ color: 'var(--lp-text-dim)' }}>
-          <li className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full" style={{ background: 'var(--lp-emerald)' }} />
-            Bookmarks synced both ways
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full" style={{ background: 'var(--lp-emerald)' }} />
-            Translation + reciter preferences
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full" style={{ background: 'var(--lp-emerald)' }} />
-            Optional — Muddakir works without signing in too
-          </li>
+          {[
+            'Bookmarks synced both ways',
+            'Translation + reciter preferences',
+            'Optional — Muddakir works without signing in too',
+          ].map(item => (
+            <li key={item} className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full shrink-0" style={{ background: 'var(--lp-emerald)' }} />
+              {item}
+            </li>
+          ))}
         </ul>
       </BentoCard>
     </div>
   )
 }
 
-function MobileCompanionCard() {
+function ComingSoonCard() {
   return (
     <div className="lp-accent-slate">
-      <BentoCard accented className="h-full">
-        <Eyebrow icon={Smartphone}>Mobile companion</Eyebrow>
-        <h3
-          className="lp-font-display text-lg md:text-xl font-semibold mt-3 mb-2"
-          style={{ color: 'var(--lp-text)' }}
-        >
-          Desktop for exploring. Phone for carrying it around.
-        </h3>
-        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: 'var(--lp-text-dim)' }}>
-          On phones the canvas flows vertically as a readable thread — same verses, same AI, no pan and zoom.
-        </p>
-
-        {/* Miniature phone */}
-        <div className="flex justify-center">
+      <BentoCard accented>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div
-            className="relative w-[150px] h-[280px] rounded-[26px] p-1.5"
-            style={{
-              background: 'var(--lp-surface-3)',
-              border: '1px solid var(--lp-hairline-strong)',
-              boxShadow: '0 6px 24px rgba(15,23,42,0.08)',
-            }}
+            className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'var(--lp-surface-2)', border: '1px solid var(--lp-hairline-strong)' }}
           >
-            <div
-              className="absolute top-1.5 left-1/2 -translate-x-1/2 w-14 h-3 rounded-full"
-              style={{ background: 'var(--lp-surface-3)' }}
-            />
-            <div
-              className="h-full rounded-[20px] overflow-hidden p-2 flex flex-col gap-1.5"
-              style={{ background: 'var(--lp-surface)', border: '1px solid var(--lp-hairline)' }}
-            >
-              {[
-                { k: '2:255', t: 'ٱللَّهُ لَآ إِلَـٰهَ' },
-                { k: '3:2', t: 'ٱلْحَىُّ ٱلْقَيُّومُ' },
-                { k: '20:111', t: 'وَعَنَتِ ٱلْوُجُوهُ' },
-              ].map(v => (
-                <div
-                  key={v.k}
-                  className="p-2 rounded-lg"
-                  style={{ background: 'var(--lp-surface-2)', border: '1px solid var(--lp-hairline)' }}
-                >
-                  <p className="text-[8px] font-semibold tracking-wide" style={{ color: 'var(--lp-text-faint)' }}>
-                    {v.k}
-                  </p>
-                  <p
-                    className="lp-font-arabic text-[11px] text-right truncate"
-                    style={{ color: 'var(--lp-text)', lineHeight: 1.6 }}
-                    dir="rtl"
-                  >
-                    {v.t}
-                  </p>
-                </div>
-              ))}
-              <div
-                className="mt-auto h-7 rounded-lg flex items-center justify-around px-2"
-                style={{ background: 'var(--lp-surface-2)', border: '1px solid var(--lp-hairline)' }}
+            <Smartphone size={18} style={{ color: 'var(--lp-text-dim)' }} />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <Eyebrow icon={Smartphone}>Mobile companion</Eyebrow>
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                style={{
+                  background: 'var(--lp-amber-soft)',
+                  color: 'var(--lp-amber)',
+                  border: '1px solid var(--lp-amber-border)',
+                }}
               >
-                {[0, 1, 2, 3].map(i => (
-                  <span
-                    key={i}
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      background: i === 0 ? 'var(--lp-emerald)' : 'var(--lp-hairline-strong)',
-                    }}
-                  />
-                ))}
-              </div>
+                <Clock size={9} strokeWidth={2.5} />
+                Coming soon
+              </span>
             </div>
+            <p className="text-[12.5px]" style={{ color: 'var(--lp-text-dim)' }}>
+              Native iOS &amp; Android app — take your canvas on the go, read offline, and get verse reminders. Same workspace, same AI.
+            </p>
           </div>
         </div>
       </BentoCard>
@@ -204,7 +162,7 @@ function MobileCompanionCard() {
 export default function MushafEcosystemSection() {
   return (
     <Section id="mushaf" accent="sepia" pad="xl" width="6xl">
-      <ScrollReveal className="max-w-2xl mb-14">
+      <ScrollReveal className="max-w-2xl mb-8">
         <Eyebrow icon={BookOpen}>Ecosystem</Eyebrow>
         <h2
           className="lp-font-display text-3xl md:text-5xl font-semibold mt-4 mb-4 leading-[1.05]"
@@ -218,18 +176,18 @@ export default function MushafEcosystemSection() {
         </p>
       </ScrollReveal>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
-        <ScrollReveal className="lg:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-5 items-start">
+        <ScrollReveal className="md:col-span-4">
           <MushafCard />
         </ScrollReveal>
-        <div className="flex flex-col gap-4 md:gap-5">
-          <ScrollReveal delay={100}>
-            <SignInCard />
-          </ScrollReveal>
-          <ScrollReveal delay={180}>
-            <MobileCompanionCard />
-          </ScrollReveal>
-        </div>
+
+        <ScrollReveal delay={100} className="md:col-span-2">
+          <SignInCard />
+        </ScrollReveal>
+
+        <ScrollReveal delay={180} className="md:col-span-6">
+          <ComingSoonCard />
+        </ScrollReveal>
       </div>
     </Section>
   )

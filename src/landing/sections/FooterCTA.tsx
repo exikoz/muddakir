@@ -13,10 +13,10 @@ export default function FooterCTA() {
         <div className="relative text-center">
           <p
             className="lp-font-arabic text-3xl md:text-4xl select-none mb-6"
-            style={{ color: 'var(--lp-text-faint)', opacity: 0.45 }}
+            style={{ color: 'var(--lp-text-muted)', opacity: 0.6 }}
             dir="rtl"
           >
-            فَبِأَىِّ ءَالَآءِ رَبِّكُمَا تُكَذِّبَانِ
+            أَفَلَا يَتَدَبَّرُونَ ٱلْقُرْءَانَ
           </p>
 
           <h2

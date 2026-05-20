@@ -76,8 +76,8 @@ function VerseResultCard({ v, delay }: { v: VerseCard; delay: number }) {
           <button
             className="inline-flex items-center gap-1 text-[10.5px] font-semibold rounded-md px-1.5 py-0.5"
             style={{
-              color: 'var(--lp-amber-strong)',
-              background: 'var(--lp-amber-soft)',
+              color: 'var(--lp-violet)',
+              background: 'var(--lp-violet-soft)',
             }}
           >
             <Plus size={10} strokeWidth={2.4} /> Canvas
@@ -123,9 +123,9 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
         <span
           className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
           style={{
-            background: 'var(--lp-amber-soft)',
-            color: 'var(--lp-amber-strong)',
-            border: '1px solid var(--lp-amber-border)',
+            background: 'var(--lp-violet-soft)',
+            color: 'var(--lp-violet)',
+            border: '1px solid var(--lp-violet-border)',
           }}
         >
           <ShieldCheck size={10} strokeWidth={2.4} /> grounded
@@ -159,9 +159,9 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
                   style={
                     active
                       ? {
-                          border: '1px solid var(--lp-amber-border)',
-                          background: 'var(--lp-amber-soft)',
-                          color: 'var(--lp-amber-strong)',
+                          border: '1px solid var(--lp-violet-border)',
+                          background: 'var(--lp-violet-soft)',
+                          color: 'var(--lp-violet)',
                         }
                       : {
                           border: '1px solid var(--lp-hairline)',
@@ -199,9 +199,9 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
               <span
                 className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
                 style={{
-                  background: 'var(--lp-amber-soft)',
-                  border: '1px solid var(--lp-amber-border)',
-                  color: 'var(--lp-amber-strong)',
+                  background: 'var(--lp-violet-soft)',
+                  border: '1px solid var(--lp-violet-border)',
+                  color: 'var(--lp-violet)',
                 }}
               >
                 <Sparkles size={11} strokeWidth={2.4} />
@@ -215,7 +215,7 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
                   {!bodyDone && (
                     <span
                       className="inline-block w-1.5 h-4 ml-0.5 align-middle"
-                      style={{ background: 'var(--lp-amber-strong)', animation: 'lp-blink 1s infinite' }}
+                      style={{ background: 'var(--lp-violet)', animation: 'lp-blink 1s infinite' }}
                     />
                   )}
                 </div>
@@ -241,9 +241,9 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
                     <span
                       className="inline-flex items-center gap-1.5 text-[10.5px] font-mono px-2 py-1 rounded-full"
                       style={{
-                        background: 'var(--lp-amber-soft)',
-                        color: 'var(--lp-amber-strong)',
-                        border: '1px solid var(--lp-amber-border)',
+                        background: 'var(--lp-violet-soft)',
+                        color: 'var(--lp-violet)',
+                        border: '1px solid var(--lp-violet-border)',
                       }}
                     >
                       <ShieldCheck size={11} strokeWidth={2.4} />
@@ -283,7 +283,7 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
           </div>
           <button
             className="h-8 w-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'var(--lp-amber-strong)', color: 'var(--lp-bg)' }}
+            style={{ background: 'var(--lp-violet)', color: 'var(--lp-bg)' }}
           >
             <SendHorizonal size={13} />
           </button>
@@ -298,14 +298,14 @@ function ChatDemo({ activeId, onPick }: { activeId: string | null; onPick: (id: 
 }
 
 export default function AIScopeSection() {
-  const [activeQ, setActiveQ] = useState<string | null>(null)
+  const [activeQ, setActiveQ] = useState<string | null>('q1')
 
   return (
-    <Section id="ai-scope" accent="amber" pad="xl" width="6xl">
+    <Section id="ai-scope" accent="violet" pad="xl" width="6xl">
       <div
         aria-hidden
         className="absolute -z-10 top-1/4 right-0 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none"
-        style={{ background: 'var(--lp-amber-soft)' }}
+        style={{ background: 'var(--lp-violet-soft)' }}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
@@ -319,7 +319,7 @@ export default function AIScopeSection() {
             >
               Answers you can verify,
               <br />
-              <span style={{ color: 'var(--lp-amber-strong)' }}>down to the nonce.</span>
+              <span style={{ color: 'var(--lp-violet)' }}>down to the nonce.</span>
             </h2>
             <p
               className="text-[15px] leading-relaxed mb-5"
@@ -347,9 +347,9 @@ export default function AIScopeSection() {
                   <span
                     className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-semibold lp-font-display"
                     style={{
-                      background: 'var(--lp-amber-soft)',
-                      color: 'var(--lp-amber-strong)',
-                      border: '1px solid var(--lp-amber-border)',
+                      background: 'var(--lp-violet-soft)',
+                      color: 'var(--lp-violet)',
+                      border: '1px solid var(--lp-violet-border)',
                     }}
                   >
                     {s.n}

@@ -32,7 +32,7 @@ export default function BentoCard({
     <div
       className={`lp-card ${accentCls} ${accented ? 'lp-card-accented' : ''} ${
         padded ? 'p-5 md:p-6' : ''
-      } ${interactive ? 'hover:-translate-y-0.5' : ''} ${className}`}
+      } ${interactive ? 'hover:-translate-y-0.5' : ''} ${className}`.trim()}
     >
       {children}
     </div>

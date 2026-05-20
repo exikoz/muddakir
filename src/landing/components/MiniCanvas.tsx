@@ -14,6 +14,7 @@ import {
   BackgroundVariant,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type Node,
   type Edge,
   type NodeProps,
@@ -239,6 +240,7 @@ function useIsNarrow() {
 
 function MiniCanvasInner() {
   const narrow = useIsNarrow()
+  const { fitView } = useReactFlow()
   const [clickedWordIdx, setClickedWordIdx] = useState<number | null>(null)
   const [hasClicked, setHasClicked] = useState(false)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
@@ -257,14 +259,14 @@ function MiniCanvasInner() {
       const results = (RESULTS_MAP[idx] ?? []).slice(0, 2)
       if (results.length === 0) return
 
-      // Desktop: results in right column, centered vertically around seed.
+      // Desktop: seed shifts left, results appear to the right with a clear gap.
       // Narrow: seed on top, results stacked below.
       const newNodes: Node[] = results.map((r, i) => ({
         id: `r-${idx}-${i}`,
         type: 'result',
         position: narrow
-          ? { x: 30 + i * 0, y: 260 + i * 140 }
-          : { x: 620, y: i === 0 ? 40 : 200 },
+          ? { x: 30, y: 260 + i * 150 }
+          : { x: 490, y: i === 0 ? 20 : 190 },
         data: { verseKey: r.key, surah: r.surah, text: r.text, onClose: handleClose },
       }))
 
@@ -288,9 +290,8 @@ function MiniCanvasInner() {
       setClickedWordIdx(idx)
       setHasClicked(true)
 
-      const seedPos = narrow ? { x: 30, y: 30 } : { x: 40, y: 95 }
-      // Note: onWordClick is a placeholder here — `finalNodes` memo below
-      // re-injects the live callback on every render.
+      // Seed moves to the left to make room for result nodes on the right.
+      const seedPos = narrow ? { x: 30, y: 30 } : { x: 20, y: 90 }
       setNodes([
         {
           id: SEED_ID,
@@ -302,8 +303,11 @@ function MiniCanvasInner() {
         ...newNodes,
       ])
       setEdges(newEdges)
+
+      // Fit all nodes into view after the state update settles.
+      setTimeout(() => fitView({ padding: 0.1, duration: 450, maxZoom: 0.98 }), 60)
     },
-    [handleClose, setNodes, setEdges, narrow],
+    [handleClose, setNodes, setEdges, narrow, fitView],
   )
 
   const initialNodes = useMemo<Node[]>(
@@ -381,13 +385,13 @@ function MiniCanvasInner() {
             onEdgesChange={onEdgesChange}
             nodeTypes={NODE_TYPES}
             fitView
-            fitViewOptions={{ padding: 0.18, maxZoom: 1, minZoom: 1 }}
+            fitViewOptions={{ padding: 0.18, maxZoom: 0.95, minZoom: 0.55 }}
             zoomOnScroll={false}
             zoomOnPinch={false}
             zoomOnDoubleClick={false}
             panOnScroll={false}
             preventScrolling={false}
-            minZoom={1}
+            minZoom={0.55}
             maxZoom={1}
             proOptions={{ hideAttribution: true }}
             style={{ background: 'var(--lp-surface-2)' }}

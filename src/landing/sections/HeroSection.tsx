@@ -12,16 +12,18 @@ export default function HeroSection() {
         style={{ background: 'var(--lp-accent-soft)' }}
       />
 
-      <ScrollReveal className="text-center max-w-3xl mx-auto mb-10">
-        {/* Watermark */}
+      {/* Watermark — sits at top of section with breathing room below */}
+      <div className="text-center mb-14 md:mb-18 pointer-events-none" aria-hidden>
         <p
-          className="lp-font-arabic text-4xl md:text-5xl leading-tight select-none mb-4"
-          style={{ color: 'var(--lp-text-faint)', opacity: 0.35 }}
+          className="lp-font-arabic text-4xl md:text-5xl leading-tight select-none"
+          style={{ color: 'var(--lp-text-muted)', opacity: 0.55 }}
           dir="rtl"
         >
-          أَفَلَا يَتَدَبَّرُونَ ٱلْقُرْءَانَ
+          وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ
         </p>
+      </div>
 
+      <ScrollReveal className="text-center max-w-3xl mx-auto mb-10">
         <h1
           className="lp-font-display text-4xl md:text-6xl font-semibold leading-[1.05] mb-5"
           style={{ color: 'var(--lp-text)' }}

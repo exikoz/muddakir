@@ -43,10 +43,10 @@ export default function Section({
   }[width]
 
   const padCls = {
-    sm: 'py-14 md:py-20',
-    md: 'py-20 md:py-28',
-    lg: 'py-24 md:py-32',
-    xl: 'py-28 md:py-40',
+    sm: 'py-8 md:py-10',
+    md: 'py-10 md:py-14',
+    lg: 'py-12 md:py-16',
+    xl: 'py-14 md:py-20',
   }[pad]
 
   return (

@@ -410,19 +410,36 @@ function WordBuilderCell() {
 /* ───────────────────────── Audio cell (real audio playback) ───────────────────────── */
 
 const RECITERS = [
-  { name: 'Abdul Basit', id: 1 },
-  { name: 'Al-Minshāwī', id: 9 },
-  { name: 'Al-Ḥuṣarī', id: 6 },
+  { name: 'Abdul Basit', url: 'https://audio.qurancdn.com/Abdul-Basit/Mujawwad/mp3/001001.mp3' },
+  { name: 'Al-Minshāwī', url: 'https://audio.qurancdn.com/Minshawi/Murattal/mp3/001001.mp3' },
+  { name: 'Al-Ḥuṣarī',   url: 'https://audio.qurancdn.com/Husary/mp3/001001.mp3' },
 ]
 const FATIHA_WORDS = ['بِسْمِ', 'ٱللَّهِ', 'ٱلرَّحْمَـٰنِ', 'ٱلرَّحِيمِ']
 
-// Word timing approximations for Fatiha 1:1 (ms offsets within the verse audio)
 const WORD_TIMINGS = [
-  { start: 0, end: 800 },
-  { start: 800, end: 1600 },
-  { start: 1600, end: 2800 },
-  { start: 2800, end: 4200 },
+  { start: 0,    end: 900 },
+  { start: 900,  end: 1900 },
+  { start: 1900, end: 3100 },
+  { start: 3100, end: 4600 },
 ]
+
+function runSimulation(
+  setActive: (i: number) => void,
+  setPlaying: (v: boolean) => void,
+) {
+  let i = 0
+  setActive(0)
+  const id = setInterval(() => {
+    i++
+    if (i >= FATIHA_WORDS.length) {
+      clearInterval(id)
+      setTimeout(() => { setPlaying(false); setActive(-1) }, 800)
+      return
+    }
+    setActive(i)
+  }, 800)
+  return id
+}
 
 function AudioCell() {
   const [playing, setPlaying] = useState(false)
@@ -430,38 +447,11 @@ function AudioCell() {
   const [reciter, setReciter] = useState(0)
   const [audioEl] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null)
   const animFrameRef = useRef<number>(0)
-
-  // Audio URL for Fatiha 1:1 by recitation ID
-  function getAudioUrl(recitationId: number) {
-    return `https://audio.qurancdn.com/Abdul-Basit/Mujawwad/mp3/001001.mp3`
-      .replace('Abdul-Basit/Mujawwad', 
-        recitationId === 1 ? 'Abdul-Basit/Mujawwad' :
-        recitationId === 9 ? 'Minshawi/Murattal/mp3' :
-        'Husary/mp3'
-      )
-      .replace('/mp3/001001.mp3',
-        recitationId === 1 ? '/mp3/001001.mp3' :
-        recitationId === 9 ? '/001001.mp3' :
-        '/001001.mp3'
-      )
-  }
-
-  // Highlight words based on audio currentTime
-  const updateHighlight = () => {
-    if (!audioEl || !playing) return
-    const t = audioEl.currentTime * 1000
-    const idx = WORD_TIMINGS.findIndex(w => t >= w.start && t < w.end)
-    setActive(idx >= 0 ? idx : -1)
-    animFrameRef.current = requestAnimationFrame(updateHighlight)
-  }
+  const simRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     if (!audioEl) return
-    
-    const handleEnded = () => {
-      setPlaying(false)
-      setActive(-1)
-    }
+    const handleEnded = () => { setPlaying(false); setActive(-1) }
     audioEl.addEventListener('ended', handleEnded)
     return () => {
       audioEl.removeEventListener('ended', handleEnded)
@@ -470,63 +460,50 @@ function AudioCell() {
     }
   }, [audioEl])
 
+  function startHighlightLoop(el: HTMLAudioElement) {
+    cancelAnimationFrame(animFrameRef.current)
+    function loop() {
+      if (el.paused) return
+      const t = el.currentTime * 1000
+      const idx = WORD_TIMINGS.findIndex(w => t >= w.start && t < w.end)
+      setActive(idx >= 0 ? idx : -1)
+      animFrameRef.current = requestAnimationFrame(loop)
+    }
+    animFrameRef.current = requestAnimationFrame(loop)
+  }
+
   function handlePlay() {
     if (!audioEl) {
-      // Fallback: simulate if Audio not available (SSR)
       setPlaying(true)
-      let i = 0
-      setActive(0)
-      const id = setInterval(() => {
-        i++
-        if (i >= FATIHA_WORDS.length) {
-          clearInterval(id)
-          setTimeout(() => { setPlaying(false); setActive(-1) }, 700)
-          return
-        }
-        setActive(i)
-      }, 720)
+      simRef.current = runSimulation(setActive, setPlaying)
       return
     }
 
     if (playing) {
       audioEl.pause()
+      cancelAnimationFrame(animFrameRef.current)
+      if (simRef.current) { clearInterval(simRef.current); simRef.current = null }
       setPlaying(false)
       setActive(-1)
-      cancelAnimationFrame(animFrameRef.current)
-    } else {
-      const url = getAudioUrl(RECITERS[reciter].id)
-      if (audioEl.src !== url) {
-        audioEl.src = url
-      }
-      audioEl.currentTime = 0
-      audioEl.play().then(() => {
-        setPlaying(true)
-        animFrameRef.current = requestAnimationFrame(updateHighlight)
-      }).catch(() => {
-        // Autoplay blocked — fall back to simulation
-        setPlaying(true)
-        let i = 0
-        setActive(0)
-        const id = setInterval(() => {
-          i++
-          if (i >= FATIHA_WORDS.length) {
-            clearInterval(id)
-            setTimeout(() => { setPlaying(false); setActive(-1) }, 700)
-            return
-          }
-          setActive(i)
-        }, 720)
-      })
+      return
     }
+
+    const url = RECITERS[reciter].url
+    if (audioEl.src !== url) audioEl.src = url
+    audioEl.currentTime = 0
+    setPlaying(true)
+    audioEl.play()
+      .then(() => startHighlightLoop(audioEl))
+      .catch(() => {
+        simRef.current = runSimulation(setActive, setPlaying)
+      })
   }
 
   function handleReciterChange(i: number) {
-    if (playing && audioEl) {
-      audioEl.pause()
-      setPlaying(false)
-      setActive(-1)
-      cancelAnimationFrame(animFrameRef.current)
-    }
+    if (audioEl) { audioEl.pause(); cancelAnimationFrame(animFrameRef.current) }
+    if (simRef.current) { clearInterval(simRef.current); simRef.current = null }
+    setPlaying(false)
+    setActive(-1)
     setReciter(i)
   }
 
@@ -668,7 +645,7 @@ function WorkspaceCell() {
 export default function ExplorerBentoSection() {
   return (
     <Section id="explore" accent="slate" pad="xl" width="7xl">
-      <ScrollReveal className="max-w-2xl mb-14">
+      <ScrollReveal className="max-w-2xl mb-8">
         <Eyebrow>The explorer</Eyebrow>
         <h2
           className="lp-font-display text-3xl md:text-5xl font-semibold mt-4 mb-4 leading-[1.05]"
@@ -681,27 +658,27 @@ export default function ExplorerBentoSection() {
         </p>
       </ScrollReveal>
 
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-5 auto-rows-min">
-        <ScrollReveal className="md:col-span-4">
-          <BentoCard accent="emerald" accented>
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-5">
+        <ScrollReveal className="md:col-span-4 flex flex-col">
+          <BentoCard accent="emerald" accented className="flex-1">
             <SearchFiltersCell />
           </BentoCard>
         </ScrollReveal>
 
-        <ScrollReveal delay={80} className="md:col-span-2">
-          <BentoCard accent="violet" accented>
+        <ScrollReveal delay={80} className="md:col-span-2 flex flex-col">
+          <BentoCard accent="violet" accented className="flex-1">
             <WordBuilderCell />
           </BentoCard>
         </ScrollReveal>
 
-        <ScrollReveal delay={120} className="md:col-span-3">
-          <BentoCard accent="cyan" accented>
+        <ScrollReveal delay={120} className="md:col-span-3 flex flex-col">
+          <BentoCard accent="cyan" accented className="flex-1">
             <VerseDetailCell />
           </BentoCard>
         </ScrollReveal>
 
-        <ScrollReveal delay={160} className="md:col-span-3">
-          <BentoCard accent="blue" accented>
+        <ScrollReveal delay={160} className="md:col-span-3 flex flex-col">
+          <BentoCard accent="blue" accented className="flex-1">
             <AudioCell />
           </BentoCard>
         </ScrollReveal>
