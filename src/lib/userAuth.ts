@@ -73,10 +73,11 @@ export async function buildLoginUrl(): Promise<string> {
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: 'offline_access collection bookmark reading_session streak',
+    scope: 'offline_access collection bookmark activity_day streak',
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
+    prompt: 'consent',   // force fresh approval when scopes change
   })
 
   return `${authBase}/oauth2/auth?${params.toString()}`

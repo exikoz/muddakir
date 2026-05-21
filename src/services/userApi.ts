@@ -59,7 +59,7 @@ async function userFetch(
  * Returns a Set of verse keys (e.g. "2:255") for fast lookup.
  */
 export async function fetchBookmarks(token: string): Promise<Bookmark[]> {
-  const res = await userFetch('/auth/v1/bookmarks?mushafId=2', token)
+  const res = await userFetch('/auth/v1/bookmarks?mushafId=2&first=100', token)
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     console.error('[userApi] fetchBookmarks error body:', body)

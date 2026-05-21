@@ -84,9 +84,8 @@ export async function fetchStreaks(
   token: string,
   options?: { status?: 'ACTIVE' | 'BROKEN'; first?: number },
 ): Promise<Streak[]> {
-  const params = new URLSearchParams({ type: 'QURAN' })
+  const params = new URLSearchParams({ type: 'QURAN', first: String(options?.first ?? 5) })
   if (options?.status) params.set('status', options.status)
-  if (options?.first) params.set('first', String(options.first))
 
   const res = await userFetch(`/auth/v1/streaks?${params}`, token)
   if (!res.ok) {
@@ -115,9 +114,9 @@ export async function logActivityDay(
   const body: Record<string, unknown> = {
     type: 'QURAN',
     seconds: options.seconds,
-    mushafId: options.mushafId ?? 2, // QCFV1
+    mushafId: options.mushafId ?? 2,          // QCFV1
+    ranges: options.ranges ?? [],              // required by API, empty = no specific range
   }
-  if (options.ranges?.length) body.ranges = options.ranges
   if (options.date) body.date = options.date
 
   const res = await userFetch('/auth/v1/activity-days', token, {
@@ -141,7 +140,7 @@ export async function fetchActivityDays(
   from: string,
   to: string,
 ): Promise<ActivityDay[]> {
-  const params = new URLSearchParams({ from, to, type: 'QURAN' })
+  const params = new URLSearchParams({ from, to, type: 'QURAN', first: '60' })
   const res = await userFetch(`/auth/v1/activity-days?${params}`, token)
   if (!res.ok) {
     console.warn('[streakApi] fetchActivityDays failed:', res.status)
