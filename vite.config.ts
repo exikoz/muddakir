@@ -133,11 +133,14 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
-        // Content API — strips the /api prefix, injects client_credentials token
+        // Content API — strips /api/content prefix, forwards to contentTarget
+        // contentTarget must include the full base path, e.g.
+        //   https://apis.quran.foundation/content
+        // so /api/content/api/v4/… → /api/v4/… → hits contentTarget/api/v4/…
         '/api/content': {
           target: contentTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          rewrite: (path) => path.replace(/^\/api\/content/, ''),
           configure: (proxy) => {
             // Cache content token in memory for dev server
             let devContentToken = ''
