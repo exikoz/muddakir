@@ -37,7 +37,19 @@ async function userFetch(
     ...(init?.headers as Record<string, string> | undefined),
   }
 
-  return fetch(`${base}${path}`, { ...init, headers })
+  console.debug(`[userApi] ${init?.method ?? 'GET'} ${base}${path}`, {
+    'x-client-id': clientId || '(empty!)',
+    'x-auth-token': token ? `${token.slice(0, 20)}…` : '(missing!)',
+  })
+
+  const res = await fetch(`${base}${path}`, { ...init, headers })
+
+  if (!res.ok) {
+    const body = await res.clone().text().catch(() => '')
+    console.error(`[userApi] ${init?.method ?? 'GET'} ${path} → ${res.status}:`, body)
+  }
+
+  return res
 }
 
 // ── Bookmarks (Favorites collection) ────────────────────────────────────────
@@ -48,7 +60,11 @@ async function userFetch(
  */
 export async function fetchBookmarks(token: string): Promise<Bookmark[]> {
   const res = await userFetch('/auth/v1/bookmarks', token)
-  if (!res.ok) throw new Error(`Bookmarks fetch failed: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    console.error('[userApi] fetchBookmarks error body:', body)
+    throw new Error(`Bookmarks fetch failed: ${res.status}`)
+  }
   const json = await res.json()
   // API returns all bookmark types — filter to ayah only for verse keys
   const all = (json.data ?? []) as Bookmark[]

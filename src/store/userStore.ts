@@ -25,6 +25,26 @@ import type { Streak, ActivityDay } from '../services/streakApi'
 const REFRESH_TOKEN_KEY = 'muddakir_refresh_token'
 const USER_PROFILE_KEY = 'muddakir_user_profile'
 
+/** Decode JWT payload (no verification — debug only) */
+function decodeJwt(token: string): Record<string, unknown> | null {
+  try {
+    const payload = token.split('.')[1]
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
+  } catch { return null }
+}
+
+function logTokenScopes(label: string, token: string | null | undefined) {
+  if (!token) { console.warn(`[Auth] ${label}: no token`); return }
+  const decoded = decodeJwt(token)
+  if (!decoded) { console.warn(`[Auth] ${label}: could not decode token`); return }
+  console.group(`[Auth] ${label}`)
+  console.log('scope   :', decoded.scope ?? decoded.scp ?? '(none)')
+  console.log('sub     :', decoded.sub ?? '(none)')
+  console.log('client  :', decoded.client_id ?? decoded.aud ?? '(none)')
+  console.log('exp     :', decoded.exp ? new Date((decoded.exp as number) * 1000).toISOString() : '(none)')
+  console.groupEnd()
+}
+
 interface UserProfile {
   sub: string
   firstName?: string
@@ -137,6 +157,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     const data = await res.json()
     clearStoredPkce()
+    logTokenScopes('fresh login — access token', data.accessToken)
 
     const user: UserProfile | null = data.user
       ? {
@@ -216,6 +237,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       }
 
       const data = await res.json()
+      logTokenScopes('restore session — refreshed access token', data.accessToken)
 
       if (data.refreshToken) {
         localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken)

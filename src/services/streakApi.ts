@@ -52,7 +52,14 @@ async function userFetch(
     ...(init?.headers as Record<string, string> | undefined),
   }
 
-  return fetch(`${base}${path}`, { ...init, headers })
+  const res = await fetch(`${base}${path}`, { ...init, headers })
+
+  if (!res.ok) {
+    const body = await res.clone().text().catch(() => '')
+    console.error(`[streakApi] ${init?.method ?? 'GET'} ${path} → ${res.status}:`, body)
+  }
+
+  return res
 }
 
 // ── Streak endpoints ────────────────────────────────────────────────────────
