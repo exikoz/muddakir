@@ -269,15 +269,30 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     const isCurrentlyBookmarked = bookmarkedVerseKeys.has(verseKey)
 
-    // Optimistic update
-    const newSet = new Set(bookmarkedVerseKeys)
     if (isCurrentlyBookmarked) {
+      // ── REMOVE ────────────────────────────────────────────────────────────
+      // Capture the bookmark ID BEFORE changing state
+      const bookmarkToRemove = bookmarks.find(b => bookmarkToVerseKey(b) === verseKey)
+
+      // Optimistic: remove from both set and list immediately
+      const newSet = new Set(bookmarkedVerseKeys)
       newSet.delete(verseKey)
       set({
         bookmarkedVerseKeys: newSet,
         bookmarks: bookmarks.filter(b => bookmarkToVerseKey(b) !== verseKey),
       })
+
+      try {
+        if (!bookmarkToRemove) throw new Error('Bookmark ID not found — cannot delete')
+        await apiRemoveBookmark(accessToken, bookmarkToRemove.id)
+      } catch (err) {
+        console.error('[UserStore] Remove bookmark failed:', err)
+        // Revert: put it back
+        get()._fetchBookmarks(accessToken)
+      }
+
     } else {
+      // ── ADD ───────────────────────────────────────────────────────────────
       const [surahStr, ayahStr] = verseKey.split(':')
       const optimistic: Bookmark = {
         id: `optimistic-${verseKey}`,
@@ -286,29 +301,35 @@ export const useUserStore = create<UserState>((set, get) => ({
         verseNumber: Number(ayahStr),
         createdAt: new Date().toISOString(),
       }
+
+      // Optimistic: show in list and mark as bookmarked immediately
+      const newSet = new Set(bookmarkedVerseKeys)
       newSet.add(verseKey)
       set({ bookmarkedVerseKeys: newSet, bookmarks: [...bookmarks, optimistic] })
-    }
 
-    try {
-      if (isCurrentlyBookmarked) {
-        const existing = get().bookmarks.find(b => bookmarkToVerseKey(b) === verseKey)
-        if (!existing) { get()._fetchBookmarks(accessToken); return }
-        await apiRemoveBookmark(accessToken, existing.id)
-      } else {
+      try {
         const newBookmark = await apiAddBookmark(accessToken, verseKey)
-        // Replace optimistic entry with real bookmark from API
+        if (newBookmark?.id) {
+          // Replace optimistic entry with real bookmark (has real ID for future delete)
+          set({
+            bookmarks: get().bookmarks.map(b =>
+              b.id === `optimistic-${verseKey}` ? newBookmark : b,
+            ),
+          })
+        } else {
+          // API didn't return a bookmark — refetch to get real state + IDs
+          get()._fetchBookmarks(accessToken)
+        }
+      } catch (err) {
+        console.error('[UserStore] Add bookmark failed:', err)
+        // Revert optimistic add
+        const revertSet = new Set(get().bookmarkedVerseKeys)
+        revertSet.delete(verseKey)
         set({
-          bookmarks: [
-            ...get().bookmarks.filter(b => b.id !== `optimistic-${verseKey}`),
-            newBookmark,
-          ],
+          bookmarkedVerseKeys: revertSet,
+          bookmarks: get().bookmarks.filter(b => b.id !== `optimistic-${verseKey}`),
         })
       }
-    } catch (err) {
-      console.error('[UserStore] Bookmark toggle failed:', err)
-      // Revert optimistic update
-      get()._fetchBookmarks(accessToken)
     }
   },
 
