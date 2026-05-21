@@ -54,13 +54,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(upstream.status).json({ error: json.error ?? 'Token exchange failed' })
     }
 
-    // Decode id_token for user info (no verification needed — we trust the issuer)
+    // Prefer id_token if present (openid scope). Otherwise fetch /userinfo
+    // with the access token — same data, just one extra round-trip.
     let user = null
+
     if (json.id_token) {
       try {
         const payload = json.id_token.split('.')[1]
         user = JSON.parse(Buffer.from(payload, 'base64').toString())
       } catch { /* ignore decode errors */ }
+    }
+
+    if (!user && json.access_token) {
+      try {
+        const userRes = await fetch(`${authEndpoint}/userinfo`, {
+          headers: { Authorization: `Bearer ${json.access_token}` },
+        })
+        if (userRes.ok) user = await userRes.json()
+      } catch { /* ignore userinfo errors — user stays null */ }
     }
 
     return res.status(200).json({
