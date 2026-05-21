@@ -59,7 +59,7 @@ async function userFetch(
  * Returns a Set of verse keys (e.g. "2:255") for fast lookup.
  */
 export async function fetchBookmarks(token: string): Promise<Bookmark[]> {
-  const res = await userFetch('/auth/v1/bookmarks', token)
+  const res = await userFetch('/auth/v1/bookmarks?mushafId=2', token)
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     console.error('[userApi] fetchBookmarks error body:', body)
@@ -87,6 +87,7 @@ export async function addBookmark(
       key: surah,
       verseNumber: ayah,
       type: 'ayah',
+      mushafId: 2,
     }),
   })
 
@@ -105,7 +106,7 @@ export async function removeBookmark(
   const [surah, ayah] = verseKey.split(':').map(Number)
 
   const res = await userFetch(
-    `/auth/v1/collections/__default__/bookmarks?key=${surah}&verseNumber=${ayah}&type=ayah`,
+    `/auth/v1/collections/__default__/bookmarks?key=${surah}&verseNumber=${ayah}&type=ayah&mushafId=2`,
     token,
     { method: 'DELETE' },
   )
