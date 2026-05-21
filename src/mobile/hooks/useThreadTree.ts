@@ -81,7 +81,6 @@ export function useThreadTree(): ThreadRoot[] {
 
       // Group search edges by searchTerm
       const searchEdgesByTerm = new Map<string, VerseEdge[]>()
-      let _seqPrevEdge: VerseEdge | undefined
       let seqNextEdge: VerseEdge | undefined
 
       for (const edge of outEdges) {
@@ -93,20 +92,11 @@ export function useThreadTree(): ThreadRoot[] {
           searchEdgesByTerm.set(term, list)
         } else if (edgeType === 'sequential-next') {
           seqNextEdge = edge
-        } else if (edgeType === 'sequential-prev') {
-          // For prev edges, the source is the new (earlier) node
-          // and target is the current node — but we stored it as
-          // source=current, target=new in some cases. Check both.
-          _seqPrevEdge = edge
         }
       }
 
-      // Also check incoming edges for sequential-prev (source=newNode, target=thisNode)
-      for (const edge of edges) {
-        if (edge.target === nodeId && edge.data?.edgeType === 'sequential-prev' && !visited.has(edge.source)) {
-          _seqPrevEdge = edge
-        }
-      }
+      // Also check incoming edges for sequential-prev (not used yet but reserved for future)
+      // (intentionally not stored — mobile thread only renders forward)
 
       // Build search groups
       const searchGroups: ThreadGroup[] = []

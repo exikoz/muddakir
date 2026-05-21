@@ -19,7 +19,7 @@ function MobileNoteCard({ nodeId, title, text, color }: Props) {
   const [editing, setEditing] = useState(false)
   const [localTitle, setLocalTitle] = useState(title)
   const [localText, setLocalText] = useState(text)
-  const saveTimer = useRef<ReturnType<typeof setTimeout>>()
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const save = useCallback(() => {
     updateNodeData(nodeId, {
