@@ -120,8 +120,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Step 1: Fetch grounding nonce
     const groundingResult = await client.callTool({ name: 'fetch_grounding_rules', arguments: {} })
-    const rulesText = groundingResult.content
-      ?.map((c: any) => c.text ?? '').join('\n') ?? ''
+    const rulesText = (groundingResult.content as Array<{ text?: string }>)
+      ?.map((c) => c.text ?? '').join('\n') ?? ''
     const nonceMatch = NONCE_RE.exec(rulesText)
     if (!nonceMatch) {
       throw new Error('Could not extract grounding_nonce from MCP server')
@@ -183,8 +183,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         try {
           const mcpResult = await client.callTool({ name, arguments: finalArgs })
-          const outputText = mcpResult.content
-            ?.map((c: any) => c.text ?? JSON.stringify(c)).join('\n') ?? ''
+          const outputText = (mcpResult.content as Array<{ text?: string }>)
+            ?.map((c) => c.text ?? JSON.stringify(c)).join('\n') ?? ''
 
           toolCallLogs.push({
             tool: name, input: finalArgs,
