@@ -64,18 +64,19 @@ export async function buildLoginUrl(): Promise<string> {
   const codeVerifier = randomString(32)
   const codeChallenge = base64url(await sha256(codeVerifier))
   const state = randomString(16)
+  const nonce = randomString(16)
   const redirectUri = `${window.location.origin}/api/auth/callback/quran`
 
-  // Persist for the callback page (nonce only needed with openid scope)
-  const pkce: PkceParams = { codeVerifier, state, nonce: '', redirectUri }
+  const pkce: PkceParams = { codeVerifier, state, nonce, redirectUri }
   sessionStorage.setItem(PKCE_STORAGE_KEY, JSON.stringify(pkce))
 
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: 'offline_access user collection',
+    scope: 'openid offline_access user collection',
     state,
+    nonce,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
   })
