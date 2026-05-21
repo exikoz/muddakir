@@ -87,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
   const qs = queryParams.toString()
-  const targetUrl = `${contentEndpoint}/content/${apiPath}${qs ? `?${qs}` : ''}`
+  const targetUrl = `${contentEndpoint}/${apiPath}${qs ? `?${qs}` : ''}`
 
   try {
     const headers: Record<string, string> = {

@@ -70,7 +70,7 @@ export async function fetchTranslations(verseKey: string, translationIds: number
   if (isCacheValid(cached)) return cached.data
 
   try {
-    const path = `/v4/verses/by_key/${verseKey}` +
+    const path = `/api/v4/verses/by_key/${verseKey}` +
       `?translations=${ids}` +
       `&translation_fields=resource_name,language_name` +
       `&fields=text_imlaei`
@@ -103,7 +103,7 @@ export async function fetchTafsir(verseKey: string, tafsirId: number): Promise<T
   if (isCacheValid(cached)) return cached.data
 
   try {
-    const path = `/v4/tafsirs/${tafsirId}/by_ayah/${verseKey}` +
+    const path = `/api/v4/tafsirs/${tafsirId}/by_ayah/${verseKey}` +
       `?fields=resource_name,language_name`
 
     const res = await contentFetch(path)
@@ -136,7 +136,7 @@ export async function fetchAudioUrl(verseKey: string, recitationId: number): Pro
   if (isCacheValid(cached)) return cached.data
 
   try {
-    const path = `/v4/recitations/${recitationId}/by_ayah/${verseKey}`
+    const path = `/api/v4/recitations/${recitationId}/by_ayah/${verseKey}`
     const res = await contentFetch(path)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
 

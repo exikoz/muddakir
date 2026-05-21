@@ -56,7 +56,7 @@ export async function fetchVerse(verseKey: string): Promise<Verse | null> {
   if (isCacheValid(cached)) return cached.data
 
   try {
-    const path = `/v4/verses/by_key/${verseKey}?words=true` +
+    const path = `/api/v4/verses/by_key/${verseKey}?words=true` +
       `&word_fields=text_imlaei,root_name,lemma_name` +
       `&fields=text_imlaei&translation_fields=text` +
       `&translations=${TRANSLATION_ID}` +
@@ -114,7 +114,7 @@ export async function fetchChapterVerses(
   if (isCacheValid(cached)) return cached.data
 
   try {
-    const path = `/v4/verses/by_chapter/${chapterNumber}?words=true` +
+    const path = `/api/v4/verses/by_chapter/${chapterNumber}?words=true` +
       `&word_fields=text_imlaei,root_name,lemma_name` +
       `&fields=text_imlaei&translation_fields=text` +
       `&translations=${TRANSLATION_ID}` +
