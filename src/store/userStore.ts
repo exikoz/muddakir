@@ -278,8 +278,16 @@ export const useUserStore = create<UserState>((set, get) => ({
         bookmarks: bookmarks.filter(b => bookmarkToVerseKey(b) !== verseKey),
       })
     } else {
+      const [surahStr, ayahStr] = verseKey.split(':')
+      const optimistic: Bookmark = {
+        id: `optimistic-${verseKey}`,
+        type: 'ayah',
+        key: Number(surahStr),
+        verseNumber: Number(ayahStr),
+        createdAt: new Date().toISOString(),
+      }
       newSet.add(verseKey)
-      set({ bookmarkedVerseKeys: newSet })
+      set({ bookmarkedVerseKeys: newSet, bookmarks: [...bookmarks, optimistic] })
     }
 
     try {
@@ -287,7 +295,13 @@ export const useUserStore = create<UserState>((set, get) => ({
         await apiRemoveBookmark(accessToken, verseKey)
       } else {
         const newBookmark = await apiAddBookmark(accessToken, verseKey)
-        set({ bookmarks: [...get().bookmarks, newBookmark] })
+        // Replace optimistic entry with real bookmark from API
+        set({
+          bookmarks: [
+            ...get().bookmarks.filter(b => b.id !== `optimistic-${verseKey}`),
+            newBookmark,
+          ],
+        })
       }
     } catch (err) {
       console.error('[UserStore] Bookmark toggle failed:', err)
