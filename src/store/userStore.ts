@@ -292,7 +292,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     try {
       if (isCurrentlyBookmarked) {
-        await apiRemoveBookmark(accessToken, verseKey)
+        const existing = get().bookmarks.find(b => bookmarkToVerseKey(b) === verseKey)
+        if (!existing) { get()._fetchBookmarks(accessToken); return }
+        await apiRemoveBookmark(accessToken, existing.id)
       } else {
         const newBookmark = await apiAddBookmark(accessToken, verseKey)
         // Replace optimistic entry with real bookmark from API

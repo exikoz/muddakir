@@ -101,12 +101,10 @@ export async function addBookmark(
  */
 export async function removeBookmark(
   token: string,
-  verseKey: string,
+  bookmarkId: string,
 ): Promise<void> {
-  const [surah, ayah] = verseKey.split(':').map(Number)
-
   const res = await userFetch(
-    `/auth/v1/collections/__default__/bookmarks?key=${surah}&verseNumber=${ayah}&type=ayah&mushafId=2`,
+    `/auth/v1/collections/__default__/bookmarks/${bookmarkId}`,
     token,
     { method: 'DELETE' },
   )
