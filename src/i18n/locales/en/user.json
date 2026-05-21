@@ -8,5 +8,19 @@
   "signing_in": "Signing you in…",
   "signed_in": "Signed in! Redirecting…",
   "auth_error": "Authentication failed",
-  "back_to_app": "Back to Muddakir"
+  "back_to_app": "Back to Muddakir",
+  "my_profile": "My Profile",
+  "profile": "Profile",
+  "streak_tab": "Streak",
+  "bookmarks_tab": "Bookmarks",
+  "no_bookmarks": "No bookmarks yet",
+  "no_bookmarks_hint": "Tap the bookmark icon on any verse to save it here",
+  "last_30_days": "Last 30 days",
+  "current_streak": "Current streak",
+  "no_streak": "No active streak",
+  "day": "day",
+  "days": "days",
+  "day_streak": "day streak",
+  "sign_in_to_track": "Sign in to track your journey",
+  "sign_in_description": "View your bookmarks, reading streak, and activity — synced with Quran.com"
 }

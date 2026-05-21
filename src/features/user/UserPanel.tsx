@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { X, Flame, Bookmark, Calendar, LogIn, Loader2 } from 'lucide-react'
 import { useSidePanelStore } from '../../store/sidePanelStore'
 import { useUserStore } from '../../store/userStore'
@@ -49,6 +50,7 @@ function getSurahName(num: number): string {
 // ── Sub-components ──────────────────────────────────────────────────────────
 
 function StreakSection({ days, activityDays }: { days: number; activityDays: ActivityDay[] }) {
+  const { t } = useTranslation('user')
   // Build a 30-day grid showing which days had activity
   const today = new Date()
   const grid: { date: string; active: boolean }[] = []
@@ -72,10 +74,10 @@ function StreakSection({ days, activityDays }: { days: number; activityDays: Act
         </div>
         <div>
           <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-            {days} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">day{days !== 1 ? 's' : ''}</span>
+            {days} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">{days !== 1 ? t('days') : t('day')}</span>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400">
-            {days > 0 ? 'Current streak' : 'No active streak'}
+            {days > 0 ? t('current_streak') : t('no_streak')}
           </div>
         </div>
       </div>
@@ -83,7 +85,7 @@ function StreakSection({ days, activityDays }: { days: number; activityDays: Act
       {/* Activity grid (last 30 days) */}
       <div className="flex items-center gap-1 mb-1">
         <Calendar size={11} className="text-slate-400" />
-        <span className="text-[10px] text-slate-400">Last 30 days</span>
+        <span className="text-[10px] text-slate-400">{t('last_30_days')}</span>
       </div>
       <div className="grid grid-cols-10 gap-1">
         {grid.map(({ date, active }) => (
@@ -103,13 +105,14 @@ function StreakSection({ days, activityDays }: { days: number; activityDays: Act
 }
 
 function BookmarksList({ bookmarks, onNavigate }: { bookmarks: BookmarkType[]; onNavigate: (verseKey: string) => void }) {
+  const { t } = useTranslation('user')
   if (bookmarks.length === 0) {
     return (
       <div className="px-4 py-8 text-center">
         <Bookmark size={24} className="text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-        <p className="text-xs text-slate-400 dark:text-slate-500">No bookmarks yet</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">{t('no_bookmarks')}</p>
         <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-          Tap the bookmark icon on any verse to save it here
+          {t('no_bookmarks_hint')}
         </p>
       </div>
     )
@@ -149,6 +152,7 @@ function BookmarksList({ bookmarks, onNavigate }: { bookmarks: BookmarkType[]; o
 }
 
 function SignedOutState() {
+  const { t } = useTranslation('user')
   const login = useUserStore(s => s.login)
   const loginLoading = useUserStore(s => s.loginLoading)
 
@@ -158,10 +162,10 @@ function SignedOutState() {
         <LogIn size={24} className="text-emerald-500" />
       </div>
       <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">
-        Sign in to track your journey
+        {t('sign_in_to_track')}
       </h3>
       <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 max-w-[200px]">
-        View your bookmarks, reading streak, and activity — synced with Quran.com
+        {t('sign_in_description')}
       </p>
       <button
         onClick={() => login()}
@@ -169,7 +173,7 @@ function SignedOutState() {
         className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
       >
         {loginLoading ? <Loader2 size={12} className="animate-spin" /> : <LogIn size={12} />}
-        Sign in with Quran.com
+        {t('sign_in_with_quran')}
       </button>
     </div>
   )
@@ -178,6 +182,7 @@ function SignedOutState() {
 // ── Main Panel ──────────────────────────────────────────────────────────────
 
 export default function UserPanel() {
+  const { t } = useTranslation('user')
   const isOpen = useSidePanelStore(s => s.rightPanel === 'userProfile')
   const closePanel = useSidePanelStore(s => s.close)
   const isLoggedIn = useUserStore(s => s.isLoggedIn)
@@ -218,13 +223,13 @@ export default function UserPanel() {
             )}
             <div>
               <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
-                {isLoggedIn ? displayName : 'My Profile'}
+                {isLoggedIn ? displayName : t('my_profile')}
               </h2>
               {isLoggedIn && currentStreakDays > 0 && (
                 <div className="flex items-center gap-1 mt-0.5">
                   <Flame size={10} className="text-orange-500" />
                   <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium">
-                    {currentStreakDays} day streak
+                    {currentStreakDays} {t('day_streak')}
                   </span>
                 </div>
               )}
@@ -255,7 +260,7 @@ export default function UserPanel() {
               }`}
             >
               <Flame size={12} />
-              Streak
+              {t('streak_tab')}
             </button>
             <button
               onClick={() => setActiveTab('bookmarks')}
@@ -266,7 +271,7 @@ export default function UserPanel() {
               }`}
             >
               <Bookmark size={12} />
-              Bookmarks
+              {t('bookmarks_tab')}
               {bookmarks.length > 0 && (
                 <span className="ml-1 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full text-[9px]">
                   {bookmarks.filter(b => b.type === 'ayah').length}

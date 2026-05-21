@@ -410,9 +410,9 @@ function WordBuilderCell() {
 /* ───────────────────────── Audio cell (real audio playback) ───────────────────────── */
 
 const RECITERS = [
-  { name: 'Abdul Basit', url: 'https://audio.qurancdn.com/Abdul-Basit/Mujawwad/mp3/001001.mp3' },
+  { name: 'Abdul Basit', url: 'https://audio.qurancdn.com/AbdulBaset/Mujawwad/mp3/001001.mp3' },
   { name: 'Al-Minshāwī', url: 'https://audio.qurancdn.com/Minshawi/Murattal/mp3/001001.mp3' },
-  { name: 'Al-Ḥuṣarī',   url: 'https://audio.qurancdn.com/Husary/mp3/001001.mp3' },
+  { name: 'Al-Ḥuṣarī',   url: 'https://mirrors.quranicaudio.com/everyayah/Husary_64kbps/001001.mp3' },
 ]
 const FATIHA_WORDS = ['بِسْمِ', 'ٱللَّهِ', 'ٱلرَّحْمَـٰنِ', 'ٱلرَّحِيمِ']
 

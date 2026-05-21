@@ -7,11 +7,13 @@
  */
 
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LogIn, LogOut, User, Flame } from 'lucide-react'
 import { useUserStore } from '../../store/userStore'
 import { useSidePanelStore } from '../../store/sidePanelStore'
 
 export default function UserMenu() {
+  const { t } = useTranslation('user')
   const isLoggedIn = useUserStore(s => s.isLoggedIn)
   const user = useUserStore(s => s.user)
   const login = useUserStore(s => s.login)
@@ -38,10 +40,10 @@ export default function UserMenu() {
         onClick={() => login()}
         disabled={loginLoading}
         className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-emerald-200 transition-all disabled:opacity-50"
-        title="Sign in with Quran.com"
+        title={t('sign_in_with_quran')}
       >
         <LogIn size={12} />
-        Sign in
+        {t('sign_in')}
       </button>
     )
   }
@@ -84,14 +86,14 @@ export default function UserMenu() {
             className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             <User size={12} />
-            Profile
+            {t('profile')}
           </button>
           <button
             onClick={() => { logout(); setShowDropdown(false) }}
             className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 transition-colors"
           >
             <LogOut size={12} />
-            Sign out
+            {t('sign_out')}
           </button>
         </div>
       )}

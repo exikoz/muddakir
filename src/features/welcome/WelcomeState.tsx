@@ -73,20 +73,21 @@ export default function WelcomeState() {
         </p>
 
         {/* Verse input — the only solid interactive element */}
-        <form onSubmit={handleSubmit} className="flex items-center mt-2">
+        {/* dir="ltr" keeps input+button layout consistent in both Arabic and English */}
+        <form onSubmit={handleSubmit} className="flex items-center mt-2" dir="ltr">
           <input
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder={t('input_placeholder')}
             disabled={isLoading}
-            className="h-11 w-72 px-4 text-sm rounded-l-lg border border-slate-300/70 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100/60 dark:focus:ring-emerald-900/40 transition-all disabled:opacity-50"
+            className="h-11 w-72 px-4 text-sm rounded-s-lg border border-slate-300/70 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100/60 dark:focus:ring-emerald-900/40 transition-all disabled:opacity-50"
             dir="ltr"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="h-11 px-5 rounded-r-lg bg-emerald-600/90 text-white font-medium text-sm hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="h-11 px-5 rounded-e-lg bg-emerald-600/90 text-white font-medium text-sm hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {loading ? <Loader2 size={15} className="animate-spin" /> : t('go')}
           </button>

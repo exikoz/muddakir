@@ -8,5 +8,19 @@
   "signing_in": "جارٍ تسجيل الدخول…",
   "signed_in": "تم تسجيل الدخول! جارٍ التحويل…",
   "auth_error": "فشل التحقق",
-  "back_to_app": "العودة إلى مذكّر"
+  "back_to_app": "العودة إلى مذكّر",
+  "my_profile": "ملفي الشخصي",
+  "profile": "الملف الشخصي",
+  "streak_tab": "السلسلة",
+  "bookmarks_tab": "العلامات",
+  "no_bookmarks": "لا علامات بعد",
+  "no_bookmarks_hint": "انقر على أيقونة العلامة في أي آية لحفظها هنا",
+  "last_30_days": "آخر ٣٠ يومًا",
+  "current_streak": "السلسلة الحالية",
+  "no_streak": "لا سلسلة نشطة",
+  "day": "يوم",
+  "days": "أيام",
+  "day_streak": "يوم متتالٍ",
+  "sign_in_to_track": "سجّل دخولك لتتبع رحلتك",
+  "sign_in_description": "اعرض علاماتك وسلسلة قراءتك ونشاطك — متزامن مع Quran.com"
 }
