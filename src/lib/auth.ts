@@ -50,12 +50,12 @@ export async function contentFetch(path: string): Promise<Response> {
     'x-client-id': CLIENT_ID ?? '',
   }
 
-  let res = await fetch(`/api/content${path}`, { headers })
+  let res = await fetch(`/api/content-proxy${path}`, { headers })
 
   if (res.status === 401) {
     clearToken()
     headers['x-auth-token'] = await getAccessToken()
-    res = await fetch(`/api/content${path}`, { headers })
+    res = await fetch(`/api/content-proxy${path}`, { headers })
   }
 
   return res

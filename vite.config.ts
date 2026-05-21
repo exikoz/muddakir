@@ -133,14 +133,13 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
-        // Content API — strips /api/content prefix, forwards to contentTarget
+        // Content API — strips /api/content-proxy, forwards to contentTarget
         // contentTarget must include the full base path, e.g.
         //   https://apis.quran.foundation/content
-        // so /api/content/api/v4/… → /api/v4/… → hits contentTarget/api/v4/…
-        '/api/content': {
+        '/api/content-proxy': {
           target: contentTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/content/, ''),
+          rewrite: (path) => path.replace(/^\/api\/content-proxy/, ''),
           configure: (proxy) => {
             // Cache content token in memory for dev server
             let devContentToken = ''
@@ -181,10 +180,10 @@ export default defineConfig(({ mode }) => {
           },
         },
         // Search API — proxies to quran.com search endpoint with 'search' scope token
-        '/api/search': {
+        '/api/search-proxy': {
           target: contentTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/search/, '/search'),
+          rewrite: (path) => path.replace(/^\/api\/search-proxy/, '/search'),
           configure: (proxy) => {
             let devSearchToken = ''
             let devSearchTokenExpiry = 0
