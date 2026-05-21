@@ -44,7 +44,10 @@ export async function searchQuranAPI(
   if (options?.page) params.set('page', String(options.page))
   if (options?.exact_matches_only) params.set('exact_matches_only', '1')
 
-  const res = await fetch(`/api/search-proxy/v1/search?${params}`)
+  // Send path as ?p= so the proxy function is hit at its exact route
+  const proxyParams = new URLSearchParams({ p: 'v1/search' })
+  params.forEach((v, k) => proxyParams.append(k, v))
+  const res = await fetch(`/api/search-proxy?${proxyParams}`)
   if (!res.ok) {
     const body = await res.text()
     throw new Error(`Search API error ${res.status}: ${body}`)

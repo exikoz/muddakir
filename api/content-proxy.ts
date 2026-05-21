@@ -71,15 +71,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Content endpoint not configured' })
   }
 
-  // Extract everything after /api/content-proxy from the raw request URL.
-  // req.url = '/api/content-proxy/api/v4/verses/by_key/2:225?words=true&...'
-  const rawUrl = req.url ?? ''
-  const afterPrefix = rawUrl.replace(/^\/api\/content-proxy\/?/, '')
-  const qmark = afterPrefix.indexOf('?')
-  const apiPath = qmark === -1 ? afterPrefix : afterPrefix.slice(0, qmark)
-  const qs      = qmark === -1 ? ''          : afterPrefix.slice(qmark + 1)
+  // API path comes in as query param ?p= to avoid sub-path routing issues.
+  // e.g. /api/content-proxy?p=api/v4/verses/by_key/2:225&words=true&...
+  const { p, ...rest } = req.query
+  const apiPath = (Array.isArray(p) ? p[0] : p) ?? ''
 
-  const targetUrl = `${contentBase}/${apiPath}${qs ? `?${qs}` : ''}`
+  const qs = new URLSearchParams()
+  for (const [k, v] of Object.entries(rest)) {
+    if (Array.isArray(v)) v.forEach(val => qs.append(k, val))
+    else if (v != null) qs.append(k, v as string)
+  }
+
+  const targetUrl = `${contentBase}/${apiPath}${qs.toString() ? `?${qs}` : ''}`
 
   console.log(`[content proxy] → ${targetUrl}`)
 

@@ -133,13 +133,21 @@ export default defineConfig(({ mode }) => {
             })
           },
         },
-        // Content API — strips /api/content-proxy, forwards to contentTarget
-        // contentTarget must include the full base path, e.g.
-        //   https://apis.quran.foundation/content
+        // Content API — reads ?p= param, strips it, forwards remainder to contentTarget
+        // e.g. /api/content-proxy?p=api/v4/verses/by_key/2:225&words=true
+        //   → https://apis.quran.foundation/content/api/v4/verses/by_key/2:225?words=true
         '/api/content-proxy': {
           target: contentTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/content-proxy/, ''),
+          rewrite: (fullPath) => {
+            const qIdx = fullPath.indexOf('?')
+            const qs = qIdx === -1 ? '' : fullPath.slice(qIdx + 1)
+            const sp = new URLSearchParams(qs)
+            const p = sp.get('p') ?? ''
+            sp.delete('p')
+            const remaining = sp.toString()
+            return `/${p}${remaining ? `?${remaining}` : ''}`
+          },
           configure: (proxy) => {
             // Cache content token in memory for dev server
             let devContentToken = ''
@@ -179,11 +187,19 @@ export default defineConfig(({ mode }) => {
             })()
           },
         },
-        // Search API — proxies to quran.com search endpoint with 'search' scope token
+        // Search API — reads ?p= param, forwards to searchTarget
         '/api/search-proxy': {
           target: contentTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/search-proxy/, '/search'),
+          rewrite: (fullPath) => {
+            const qIdx = fullPath.indexOf('?')
+            const qs = qIdx === -1 ? '' : fullPath.slice(qIdx + 1)
+            const sp = new URLSearchParams(qs)
+            const p = sp.get('p') ?? ''
+            sp.delete('p')
+            const remaining = sp.toString()
+            return `/search/${p}${remaining ? `?${remaining}` : ''}`
+          },
           configure: (proxy) => {
             let devSearchToken = ''
             let devSearchTokenExpiry = 0

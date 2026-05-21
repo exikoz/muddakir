@@ -63,14 +63,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Search endpoint not configured' })
   }
 
-  // Extract everything after /api/search-proxy from the raw URL
-  const rawUrl = req.url ?? ''
-  const afterPrefix = rawUrl.replace(/^\/api\/search-proxy\/?/, '')
-  const qmark = afterPrefix.indexOf('?')
-  const apiPath = qmark === -1 ? afterPrefix : afterPrefix.slice(0, qmark)
-  const qs      = qmark === -1 ? ''          : afterPrefix.slice(qmark + 1)
+  // API path comes in as query param ?p= to avoid sub-path routing issues.
+  const { p, ...rest } = req.query
+  const apiPath = (Array.isArray(p) ? p[0] : p) ?? ''
 
-  const targetUrl = `${searchBase}/${apiPath}${qs ? `?${qs}` : ''}`
+  const qs = new URLSearchParams()
+  for (const [k, v] of Object.entries(rest)) {
+    if (Array.isArray(v)) v.forEach(val => qs.append(k, val))
+    else if (v != null) qs.append(k, v as string)
+  }
+
+  const targetUrl = `${searchBase}/${apiPath}${qs.toString() ? `?${qs}` : ''}`
   console.log(`[search proxy] → ${targetUrl}`)
 
   try {

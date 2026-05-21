@@ -42,20 +42,36 @@ export function clearToken(): void {
   expiresAt = 0
 }
 
-/** Authenticated fetch against the Content API proxy. Retries once on 401. */
+/**
+ * Authenticated fetch against the Content API proxy.
+ * The API path is sent as query param ?p= so the browser always hits
+ * exactly /api/content-proxy (no sub-path), which Vercel routes reliably.
+ * Retries once on 401.
+ */
 export async function contentFetch(path: string): Promise<Response> {
+  // Split path from its own query string: '/api/v4/verses/by_key/2:225?words=true&...'
+  const qIdx = path.indexOf('?')
+  const pathPart  = qIdx === -1 ? path      : path.slice(0, qIdx)
+  const queryPart = qIdx === -1 ? ''        : path.slice(qIdx + 1)
+
+  // Build proxy URL: /api/content-proxy?p=api/v4/verses/by_key/2:225&words=true&...
+  const params = new URLSearchParams()
+  params.set('p', pathPart.replace(/^\//, ''))   // strip leading slash
+  if (queryPart) new URLSearchParams(queryPart).forEach((v, k) => params.append(k, v))
+  const proxyUrl = `/api/content-proxy?${params}`
+
   const token = await getAccessToken()
   const headers: Record<string, string> = {
     'x-auth-token': token,
     'x-client-id': CLIENT_ID ?? '',
   }
 
-  let res = await fetch(`/api/content-proxy${path}`, { headers })
+  let res = await fetch(proxyUrl, { headers })
 
   if (res.status === 401) {
     clearToken()
     headers['x-auth-token'] = await getAccessToken()
-    res = await fetch(`/api/content-proxy${path}`, { headers })
+    res = await fetch(proxyUrl, { headers })
   }
 
   return res
