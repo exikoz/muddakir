@@ -75,7 +75,7 @@ export async function buildLoginUrl(): Promise<string> {
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: 'openid offline_access user bookmark collection',
+    scope: 'openid offline_access user collection',
     state,
     nonce,
     code_challenge: codeChallenge,
