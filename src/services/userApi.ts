@@ -30,15 +30,14 @@ async function userFetch(
   const base = getUserApiBase()
   const clientId = getUserClientId()
 
-  return fetch(`${base}${path}`, {
-    ...init,
-    headers: {
-      'x-auth-token': token,
-      'x-client-id': clientId,
-      'Content-Type': 'application/json',
-      ...init?.headers,
-    },
-  })
+  const headers: Record<string, string> = {
+    'x-auth-token': token,
+    'x-client-id': clientId,
+    ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(init?.headers as Record<string, string> | undefined),
+  }
+
+  return fetch(`${base}${path}`, { ...init, headers })
 }
 
 // ── Bookmarks (Favorites collection) ────────────────────────────────────────

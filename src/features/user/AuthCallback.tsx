@@ -37,7 +37,7 @@ export default function AuthCallback() {
         setStatus('success')
         // Redirect back to app after brief success message
         setTimeout(() => {
-          window.location.href = '/'
+          window.location.href = '/app'
         }, 800)
       })
       .catch(err => {
@@ -66,7 +66,7 @@ export default function AuthCallback() {
             <AlertCircle size={32} className="text-red-500 mx-auto mb-4" />
             <p className="text-sm text-red-600 mb-4">{error}</p>
             <a
-              href="/"
+              href="/app"
               className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
             >
               Back to Muddakir
