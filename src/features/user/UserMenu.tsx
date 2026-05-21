@@ -61,12 +61,11 @@ export default function UserMenu() {
         </div>
       )}
 
-      {/* Avatar button — click opens panel, right-click shows dropdown */}
+      {/* Avatar button — click toggles dropdown */}
       <button
-        onClick={() => togglePanel('userProfile')}
-        onContextMenu={(e) => { e.preventDefault(); setShowDropdown(!showDropdown) }}
+        onClick={() => setShowDropdown(!showDropdown)}
         className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center hover:bg-emerald-200 transition-colors border border-emerald-200"
-        title={`${displayName} — Click to open profile, right-click for menu`}
+        title={displayName}
       >
         {initial}
       </button>
@@ -81,8 +80,15 @@ export default function UserMenu() {
             </div>
           </div>
           <button
+            onClick={() => { togglePanel('userProfile'); setShowDropdown(false) }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <User size={12} />
+            Profile
+          </button>
+          <button
             onClick={() => { logout(); setShowDropdown(false) }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-600 hover:bg-slate-50 hover:text-red-600 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 transition-colors"
           >
             <LogOut size={12} />
             Sign out
